@@ -2,11 +2,6 @@
     "configurations": [
         {
             "name": "Linux",
-            "includePath": [
-                "${workspaceFolder}/**",
-                "/usr/include/x86_64-linux-gnu/qt6/QtGui",
-                "/usr/include/x86_64-linux-gnu/qt6/QtQml"
-            ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "c17",

@@ -1,10 +1,10 @@
 <!DOCTYPE RCC>
 <RCC version="1.0">
 <qresource prefix="/">
-    <file>src/View/Main.qml</file>
-    <file>src/View/Home.qml</file>
-    <file>src/View/Settings.qml</file>
-    <file>src/View/Record.qml</file>
-    <file>src/WebSocket/WebSocketClient.qml</file>
+    <file>qml/View/Main.qml</file>
+    <file>qml/View/Home.qml</file>
+    <file>qml/View/Settings.qml</file>
+    <file>qml/View/Record.qml</file>
+    <file>qml/WebSocket/WebSocketClient.qml</file>
 </qresource>
 </RCC>

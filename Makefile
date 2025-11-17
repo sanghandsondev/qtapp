@@ -15,26 +15,8 @@ clean:
 
 .PHONY: all configure build clean
 
-# rebuild: clean all
-
-# run: build
-# 	./$(BUILD_DIR)/QmlBasicApp
-
-# run_offscreen: build
-# 	QT_QPA_PLATFORM=offscreen ./$(BUILD_DIR)/QmlBasicApp
-
-# run_xvfb: build
-# 	xvfb-run -s "-screen 0 1024x768x24" ./$(BUILD_DIR)/QmlBasicApp
-
-# help:
-# 	@echo "Usage: make [target]"
-# 	@echo "Targets:" \
-# 		&& echo "  all (default)    - configure and build" \
-# 		&& echo "  configure        - run cmake configure" \
-# 		&& echo "  build            - build the project" \
-# 		&& echo "  run              - run binary" \
-# 		&& echo "  run_offscreen    - run with QT_QPA_PLATFORM=offscreen" \
-# 		&& echo "  run_xvfb         - run inside Xvfb (requires xvfb-run)" \
-# 		&& echo "  clean            - remove build dir" \
-# 		&& echo "  rebuild          - clean + all" \
-# 		&& echo "Variables: BUILD_TYPE (default Release), JOBS (default nproc)"
+# rm -rf build
+# mkdir build
+# cd build
+# cmake .. -DCMAKE_PREFIX_PATH="/home/sang/Qt/6.10.0/gcc_64"
+# make -j

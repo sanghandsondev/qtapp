@@ -9,10 +9,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Find the Qt6 packages
 find_package(Qt6 REQUIRED COMPONENTS Quick Qml WebSockets)
 
-# Add executable
-add_executable(QtApp
-    main.cpp
+file(GLOB SOURCES 
+    src/*.cpp
 )
+
+add_executable(QtApp ${SOURCES})
 
 # Enable automatic MOC, UIC, and RCC
 set(CMAKE_AUTOMOC ON)
