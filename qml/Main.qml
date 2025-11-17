@@ -1,5 +1,6 @@
 import QtQuick 6.4
 import QtQuick.Window 6.4
+import "qrc:/qml/WebSocketClient.qml" as WSClient
 
 Window {
     width: 900
@@ -9,7 +10,7 @@ Window {
 
     property string currentPage: "Home"
     // Instantiate WebSocket client (default host points to your Pi server)
-    WebSocketClient {
+    WSClient.WebSocketClient {
         id: wsClient
         host: "ws://192.168.1.50:9000"
     }
@@ -84,7 +85,7 @@ Window {
                 Loader {
                     id: pageLoader
                     anchors.fill: parent
-                    source: "qrc:/" + currentPage + ".qml"
+                    source: "qrc:/qml/" + currentPage + ".qml"
                 }
             }
         }

@@ -29,9 +29,6 @@ Item {
             root.wsMessage(text)
             console.log("WebSocket message:", text)
         }
-        onError: {
-            console.log("WebSocket error:", errorString)
-        }
     }
 
     function open() { socket.active = true }
