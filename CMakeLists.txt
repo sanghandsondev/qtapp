@@ -9,7 +9,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Tìm kiếm các gói Qt 6 cần thiết
-find_package(Qt6 REQUIRED COMPONENTS Quick Qml)
+find_package(Qt6 REQUIRED COMPONENTS Quick Qml WebSockets)
 
 # Add executable
 add_executable(QmlBasicApp
@@ -23,6 +23,7 @@ target_sources(QmlBasicApp PRIVATE ${QML_RESOURCES})
 target_link_libraries(QmlBasicApp PRIVATE
     Qt6::Quick
     Qt6::Qml
+    Qt6::WebSockets
 )
 
 # Optional: ensure C++ standard is set (kept from top of file)

@@ -8,6 +8,11 @@ Window {
     title: "IVI-style QML Demo"
 
     property string currentPage: "Home"
+    // Instantiate WebSocket client (default host points to your Pi server)
+    WebSocketClient {
+        id: wsClient
+        host: "ws://192.168.1.50:9000"
+    }
 
     Rectangle {
         anchors.fill: parent
@@ -81,6 +86,54 @@ Window {
                     anchors.fill: parent
                     source: "qrc:/" + currentPage + ".qml"
                 }
+            }
+        }
+    }
+
+    // Top-right status + controls
+    Rectangle {
+        anchors.top: parent.top
+        anchors.right: parent.right
+        anchors.topMargin: 8
+        anchors.rightMargin: 8
+        color: "transparent"
+
+        Row {
+            spacing: 8
+
+            Rectangle {
+                id: status
+                width: 160
+                height: 28
+                radius: 6
+                color: wsClient.connected ? "#10b981" : "#ef4444"
+
+                Text {
+                    anchors.centerIn: parent
+                    text: wsClient.connected ? "WS: connected" : "WS: disconnected"
+                    color: "white"
+                    font.pixelSize: 12
+                }
+            }
+
+            Rectangle {
+                id: btnConnect
+                width: 90
+                height: 28
+                radius: 6
+                color: "#2563eb"
+                MouseArea { anchors.fill: parent; onClicked: wsClient.open() }
+                Text { anchors.centerIn: parent; text: "Connect"; color: "white" }
+            }
+
+            Rectangle {
+                id: btnDisconnect
+                width: 100
+                height: 28
+                radius: 6
+                color: "#6b7280"
+                MouseArea { anchors.fill: parent; onClicked: wsClient.close() }
+                Text { anchors.centerIn: parent; text: "Disconnect"; color: "white" }
             }
         }
     }
