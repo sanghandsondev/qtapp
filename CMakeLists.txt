@@ -1,29 +1,31 @@
-# Yêu cầu phiên bản CMake tối thiểu
 cmake_minimum_required(VERSION 3.16)
 
-# Tên dự án và ngôn ngữ
-project(QmlBasicApp LANGUAGES CXX)
+project(QtApp LANGUAGES CXX)
 
-# Thiết lập chuẩn C++ (Qt 6 khuyến nghị C++17 trở lên)
+# QT 6 requires at least C++17
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Tìm kiếm các gói Qt 6 cần thiết
+# Find the Qt6 packages
 find_package(Qt6 REQUIRED COMPONENTS Quick Qml WebSockets)
 
 # Add executable
-add_executable(QmlBasicApp
+add_executable(QtApp
     main.cpp
 )
 
+# Enable automatic MOC, UIC, and RCC
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTORCC ON)
+
 # Compile Qt resource (main.qrc) and add to the target
 qt_add_resources(QML_RESOURCES main.qrc)
-target_sources(QmlBasicApp PRIVATE ${QML_RESOURCES})
 
-target_link_libraries(QmlBasicApp PRIVATE
+target_sources(QtApp PRIVATE ${QML_RESOURCES})
+
+target_link_libraries(QtApp PRIVATE
     Qt6::Quick
     Qt6::Qml
     Qt6::WebSockets
 )
-
-# Optional: ensure C++ standard is set (kept from top of file)
