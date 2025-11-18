@@ -1,0 +1,4 @@
+1. Sau này tạo một file .json hoặc gì đó để lưu setting default mỗi khi start app
+
+2. File systemd của thằng này nên start sau khi CoreManager, nhưng ko required
+

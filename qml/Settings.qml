@@ -1,30 +1,163 @@
 import QtQuick 6.4
 import QtQuick.Window 6.4
+import QtQuick.Layouts 1.15
+import QtQuick.Controls 2.15
+import QtWebSockets 1.0
+import com.company.style 1.0
 
 Item {
-    width: 640
-    height: 480
+    id: settingsRoot
+    width: parent.width
+    height: parent.height
 
-    Rectangle {
+    // Property to hold the WebSocket client instance from Main.qml
+    property var wsClient
+
+    ColumnLayout {
         anchors.fill: parent
-        color: "#fffaf0"
+        anchors.margins: 20
+        spacing: 16
+
+        // --- Fixed Header ---
+        Text {
+            text: "Settings"
+            color: Theme.primaryText
+            font.pointSize: 20
+            font.bold: true
+        }
 
         Rectangle {
-            id: btn
-            width: 160
-            height: 48
-            radius: 8
-            color: "#ff8c42"
-            anchors.centerIn: parent
+            Layout.fillWidth: true
+            Layout.preferredHeight: 1
+            color: Theme.separator // Separator line
+        }
 
-            Text {
-                anchors.centerIn: parent
-                text: "Settings"
-                color: "white"
-                font.pointSize: 16
+        // --- Settings List (Scrollable) ---
+        ScrollView {
+            id: settingsScrollView // Add an id to the ScrollView
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            clip: true
+            ScrollBar.vertical.policy: ScrollBar.AsNeeded
+
+            ColumnLayout {
+                width: parent.width // Occupy available width inside ScrollView
+                spacing: 20
+
+                // Connection Status Setting - Replaced RowLayout with Item for better control
+                Item {
+                    Layout.fillWidth: true
+                    // Automatically adjust height based on the text content
+                    height: Math.max(statusTextColumn.implicitHeight, connectionToggle.implicitHeight)
+
+                    ColumnLayout {
+                        id: statusTextColumn
+                        anchors.left: parent.left
+                        anchors.verticalCenter: parent.verticalCenter
+                        spacing: 2
+
+                        Text {
+                            text: "WebSocket Server Connection Status"
+                            color: Theme.primaryText
+                            font.pointSize: 16
+                        }
+                        Text {
+                            // Detailed status text
+                            text: {
+                                if (!wsClient) return "WS: Not available";
+                                switch(wsClient.status) {
+                                    case WebSocket.Open: return "Connected";
+                                    case WebSocket.Connecting: return "Connecting...";
+                                    case WebSocket.Closing: return "Closing...";
+                                    case WebSocket.Closed: return "Disconnected";
+                                    case WebSocket.Error: return "Error";
+                                    default: return "Unknown";
+                                }
+                            }
+                            color: Theme.secondaryText // Lighter gray for description
+                            font.pointSize: 12
+                        }
+                    }
+
+                    // Custom Toggle Switch
+                    Text {
+                        id: connectionToggle
+                        anchors.right: parent.right
+                        anchors.rightMargin: 20 // Add margin to the right
+                        anchors.verticalCenter: parent.verticalCenter
+                        font.family: materialFontFamily
+                        font.pixelSize: 60
+
+                        property bool isConnecting: wsClient && wsClient.status === WebSocket.Connecting
+                        property bool isConnected: wsClient && wsClient.status === WebSocket.Open
+                        property bool canConnect: wsClient ? (wsClient.status === WebSocket.Closed || wsClient.status === WebSocket.Error) : false
+
+                        text: isConnected || isConnecting ? "toggle_on" : "toggle_off"
+                        color: isConnected ? Theme.toggleOn : Theme.toggleOff // Green when connected, gray otherwise
+
+                        opacity: isConnecting ? 0.2 : 1.0
+
+                        MouseArea {
+                            anchors.fill: parent
+                            enabled: connectionToggle.canConnect
+                            cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                            onClicked: {
+                                if (wsClient) {
+                                    wsClient.open()
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 1
+                    color: Theme.separator
+                }
+
+                // --- Dark Mode Setting ---
+                Item {
+                    Layout.fillWidth: true
+                    height: Math.max(themeTextColumn.implicitHeight, themeToggle.implicitHeight)
+
+                    ColumnLayout {
+                        id: themeTextColumn
+                        anchors.left: parent.left
+                        anchors.verticalCenter: parent.verticalCenter
+                        spacing: 2
+
+                        Text {
+                            text: "Graphical Dark Mode"
+                            color: Theme.primaryText
+                            font.pointSize: 16
+                        }
+                        Text {
+                            text: Theme.isDark ? "Dark Theme" : "Light Theme"
+                            color: Theme.secondaryText
+                            font.pointSize: 12
+                        }
+                    }
+
+                    Text {
+                        id: themeToggle
+                        anchors.right: parent.right
+                        anchors.rightMargin: 20
+                        anchors.verticalCenter: parent.verticalCenter
+                        font.family: materialFontFamily
+                        font.pixelSize: 60
+
+                        text: Theme.isDark ? "toggle_on" : "toggle_off"
+                        color: Theme.isDark ? Theme.toggleOn : Theme.toggleOff
+
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: Theme.toggle()
+                        }
+                    }
+                }
             }
-
-            MouseArea { anchors.fill: parent; onClicked: console.log("Settings button clicked") }
         }
     }
 }

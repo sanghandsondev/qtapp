@@ -4,34 +4,62 @@ import QtWebSockets 1.0
 Item {
     id: root
     property url host: "ws://192.168.1.50:9000"
-    property bool connected: false
+    property bool autoConnect: true         // Auto connect WebSocket on component completion (Init loaded)
 
-    signal wsConnected()
-    signal wsDisconnected()
-    signal wsMessage(string message)
+    // --- Thuộc tính (Properties) ---
+    readonly property alias status: socket.status
+    readonly property bool connected: socket.status === WebSocket.Open
+
+    // --- Tín hiệu (Signals) ---
+    signal wsMessage(variant message)
+    signal wsStatusChanged() // Thêm tín hiệu này
+
+    // Tự động kết nối khi component được hoàn thành
+    Component.onCompleted: {
+        if (autoConnect) {
+            open()
+        }
+    }
 
     WebSocket {
         id: socket
         url: host
         active: false
 
-        onConnected: {
-            root.connected = true
-            root.wsConnected()
-            console.log("WebSocket connected to", host)
+        // Cập nhật thuộc tính 'connected' khi trạng thái thay đổi
+        onStatusChanged: function(status) {
+            console.log("WebSocket status changed:", status)
+            root.wsStatusChanged() // Phát tín hiệu khi status thay đổi
         }
-        onDisconnected: {
-            root.connected = false
-            root.wsDisconnected()
-            console.log("WebSocket disconnected")
-        }
+
         onTextMessageReceived: {
-            root.wsMessage(text)
-            console.log("WebSocket message:", text)
+            console.log("WebSocket raw message:", message)
+            try {
+                var jsonObj = JSON.parse(message)
+                root.wsMessage(jsonObj)
+            } catch (e) {
+                console.error("Error parsing JSON from WebSocket:", e)
+            }
+        }
+        
+        onErrorStringChanged: function() {
+            if (socket.errorString) {
+                console.error("WebSocket error:", socket.errorString)
+            }
         }
     }
 
-    function open() { socket.active = true }
-    function close() { socket.active = false }
-    function sendText(msg) { socket.sendTextMessage(msg) }
+    function open() {
+        if (socket.status === WebSocket.Open || socket.status === WebSocket.Connecting) {
+            console.log("WebSocket is already open or connecting.")
+            return
+        }
+        console.log("Try to connect WebSocket to", host)
+        if (socket.active) {
+            socket.active = false
+        }
+        socket.active = true
+    }
+    // function sendRawText(msg) { socket.sendTextMessage(msg) }
+    // function sendJson(jsonObject) { socket.sendTextMessage(JSON.stringify(jsonObject)) }
 }

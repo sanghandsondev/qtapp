@@ -1,73 +1,122 @@
 import QtQuick 6.4
 import QtQuick.Window 6.4
-import "qrc:/qml/WebSocketClient.qml" as WSClient
+import QtWebSockets 1.0
+import com.company.ws 1.0
+import QtQuick.Layouts 1.15
+import com.company.style 1.0
 
 Window {
-    width: 900
+    width: 1024
     height: 600
     visible: true
-    title: "IVI-style QML Demo"
+    title: "Qt App"
 
-    property string currentPage: "Home"
+    property string currentPageId: "Home"
+    property url currentPageSource: "qrc:/qml/Home.qml"
+    
+    // Hàm để hiển thị thông báo
+    function showNotification(text, type) {
+        notificationBanner.show(text, type);
+    }
+
     // Instantiate WebSocket client (default host points to your Pi server)
-    WSClient.WebSocketClient {
+    WebSocketClient {
         id: wsClient
-        host: "ws://192.168.1.50:9000"
+        host: "ws://127.0.0.1:9000"
+
+        // Handle signal 'wsMessage' to process incoming messages
+        onWsMessage: {
+            console.log("Received JSON from server:", JSON.stringify(message))
+
+            // Example of how to process the message based on its content
+            // if (message.type === "status_update") {
+            //     console.log("Received a status update:", message.data)
+            // }
+        }
+
+        onWsStatusChanged: {
+            switch(status) {
+                case WebSocket.Open:
+                    showNotification("WebSocket Server connected successfully.", "success");
+                    break;
+                case WebSocket.Connecting:
+                    // Có thể không cần thông báo khi đang kết nối, hoặc chỉ là thông báo 'info'
+                    // showNotification("Connecting to WebSocket...", "info");
+                    break;
+                case WebSocket.Closed:
+                    showNotification("WebSocket Server disconnected.", "warning");
+                    break;
+                case WebSocket.Error:
+                    showNotification("WebSocket Server connection error.", "error");
+                    break;
+            }
+        }
     }
 
     Rectangle {
         anchors.fill: parent
-        color: "#e9eef6"
+        color: Theme.primaryBg // Nền chính màu xám đậm
 
-        Row {
+        RowLayout {
             anchors.fill: parent
+            spacing: 0
 
             // Left vertical bar
             Rectangle {
                 id: sidebar
-                width: 96
-                anchors.top: parent.top
-                anchors.bottom: parent.bottom
-                color: "#1f2937"
+                Layout.preferredWidth: 120
+                Layout.fillHeight: true
+                color: Theme.secondaryBg
 
-                Column {
-                    anchors { left: parent.left; right: parent.right; horizontalCenter: parent.horizontalCenter }
-                    spacing: 12
-                    anchors.top: parent.top
-                    anchors.topMargin: 20
+                ColumnLayout {
+                    anchors.fill: parent
+                    anchors.topMargin: 4
+                    anchors.bottomMargin: 4
+                    spacing: 4
 
                     Repeater {
-                        model: [
-                            {id: "Home", icon: "🏠"},
-                            {id: "Settings", icon: "⚙️"},
-                            {id: "Record", icon: "⏺️"}
-                        ]
+                        model: ListModel {
+                            id: pageModel
+                            ListElement { pageId: "Home"; icon: "home"; sourceUrl: "qrc:/qml/Home.qml" }
+                            ListElement { pageId: "Record"; icon: "fiber_manual_record"; sourceUrl: "qrc:/qml/Record.qml" }
+                            ListElement { pageId: "Media"; icon: "perm_media"; sourceUrl: "qrc:/qml/Media.qml" }
+                            ListElement { pageId: "Camera"; icon: "photo_camera"; sourceUrl: "qrc:/qml/Camera.qml" }
+                            ListElement { pageId: "Settings"; icon: "settings"; sourceUrl: "qrc:/qml/Settings.qml" }
+                        }
 
                         delegate: Rectangle {
-                            width: parent.width
-                            height: 72
-                            color: currentPage === modelData.id ? "#374151" : "transparent"
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 100
+                            color: currentPageId === model.pageId ? Theme.tertiaryBg : "transparent"
                             radius: 8
 
-                            Column {
+                            ColumnLayout {
                                 anchors.centerIn: parent
                                 spacing: 4
 
                                 Text {
-                                    text: modelData.icon
-                                    font.pixelSize: 28
-                                    horizontalAlignment: Text.AlignHCenter
+                                    text: model.icon
+                                    font.pixelSize: 36
+                                    font.family: materialFontFamily // Sử dụng font Material Symbols
+                                    color: Theme.icon // Màu icon xám nhạt
+                                    Layout.alignment: Qt.AlignHCenter // Căn giữa theo chiều ngang
                                 }
 
                                 Text {
-                                    text: modelData.id
-                                    color: "#cbd5e1"
-                                    font.pixelSize: 10
-                                    horizontalAlignment: Text.AlignHCenter
+                                    text: model.pageId
+                                    color: Theme.iconSubtle
+                                    font.pixelSize: 16
+                                    Layout.alignment: Text.AlignHCenter // Căn giữa theo chiều ngang
                                 }
                             }
 
-                            MouseArea { anchors.fill: parent; onClicked: currentPage = modelData.id }
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: {
+                                    currentPageId = model.pageId
+                                    currentPageSource = model.sourceUrl
+                                }
+                            }
                         }
                     }
                 }
@@ -76,65 +125,36 @@ Window {
             // Right content area
             Rectangle {
                 id: contentArea
-                anchors.top: parent.top
-                anchors.bottom: parent.bottom
-                anchors.left: sidebar.right
-                anchors.right: parent.right
+                Layout.fillWidth: true
+                Layout.fillHeight: true
                 color: "transparent"
 
                 Loader {
                     id: pageLoader
                     anchors.fill: parent
-                    source: "qrc:/qml/" + currentPage + ".qml"
+                    source: currentPageSource
+                    onLoaded: {
+                        // Pass the WebSocket client to the loaded page if it has a 'wsClient' property
+                        if (item.hasOwnProperty("wsClient")) {
+                            item.wsClient = wsClient
+                        }
+                    }
                 }
-            }
-        }
-    }
 
-    // Top-right status + controls
-    Rectangle {
-        anchors.top: parent.top
-        anchors.right: parent.right
-        anchors.topMargin: 8
-        anchors.rightMargin: 8
-        color: "transparent"
-
-        Row {
-            spacing: 8
-
-            Rectangle {
-                id: status
-                width: 160
-                height: 28
-                radius: 6
-                color: wsClient.connected ? "#10b981" : "#ef4444"
-
-                Text {
-                    anchors.centerIn: parent
-                    text: wsClient.connected ? "WS: connected" : "WS: disconnected"
-                    color: "white"
-                    font.pixelSize: 12
+                // --- Notification Banner ---
+                NotificationBanner {
+                    id: notificationBanner
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    topMargin: 16 // Sử dụng thuộc tính topMargin thay cho anchors
+                    width: 640 // Chiều rộng của banner
+                    radius: 8
+                    z: 10 // Đảm bảo nó hiển thị trên các thành phần khác
                 }
-            }
 
-            Rectangle {
-                id: btnConnect
-                width: 90
-                height: 28
-                radius: 6
-                color: "#2563eb"
-                MouseArea { anchors.fill: parent; onClicked: wsClient.open() }
-                Text { anchors.centerIn: parent; text: "Connect"; color: "white" }
-            }
-
-            Rectangle {
-                id: btnDisconnect
-                width: 100
-                height: 28
-                radius: 6
-                color: "#6b7280"
-                MouseArea { anchors.fill: parent; onClicked: wsClient.close() }
-                Text { anchors.centerIn: parent; text: "Disconnect"; color: "white" }
+                // --- Confirmation Dialog ---
+                ConfirmationDialog {
+                    id: confirmationDialog
+                }
             }
         }
     }

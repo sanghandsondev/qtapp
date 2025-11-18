@@ -20,12 +20,12 @@ Item {
 
             Text {
                 anchors.centerIn: parent
-                text: "Home"
+                text: "Media"
                 color: Theme.primaryText
                 font.pointSize: 16
             }
 
-            MouseArea { anchors.fill: parent; onClicked: console.log("Home button clicked") }
+            MouseArea { anchors.fill: parent; onClicked: console.log("Media button clicked") }
         }
     }
 }
