@@ -33,9 +33,12 @@ install: clean
 # 	scp $(RPI_BUILD_DIR)/qtapp $(RPI_HOST):$(RPI_DEST_DIR)/
 # 	@echo ">>> Deployment finished."
 
+setenv:
+	./setenv.sh
+
 clean:
 # 	rm -rf $(BUILD_DIR) $(RPI_BUILD_DIR)
 	rm -rf build
 
 # .PHONY: all install build-rpi deploy clean
-.PHONY: all install clean
+.PHONY: all install setenv clean
