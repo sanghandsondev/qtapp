@@ -303,7 +303,7 @@ Item {
                                         // Send delete command to server.
                                         // The UI will update only when the server sends back a confirmation.
                                         if (wsClient && recordId) {
-                                            wsClient.sendMessage({ command: "delete_record", data: { id: recordId } })
+                                            wsClient.sendMessage({ command: "remove_record", data: { id: recordId } })
                                         }
                                         // Disconnect this function from the signal (one-time signal)
                                         confirmationDialog.accepted.disconnect(onAccepted)
