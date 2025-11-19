@@ -1,31 +1,34 @@
 import QtQuick 6.4
-import QtQuick.Window 6.4
+import QtQuick.Layouts 1.15
 import com.company.style 1.0
 
 Item {
     width: parent.width
     height: parent.height
 
-    Rectangle {
+    ColumnLayout {
         anchors.fill: parent
-        color: "transparent" // Nền trong suốt
+        anchors.margins: 20
+        spacing: 16
+
+        // --- Header ---
+        Text {
+            text: "Media"
+            color: Theme.primaryText
+            font.pointSize: 20
+            font.bold: true
+        }
 
         Rectangle {
-            id: btn
-            width: 160
-            height: 48
-            radius: 8
-            color: Theme.tertiaryBg // Màu nút xám đậm
-            anchors.centerIn: parent
+            Layout.fillWidth: true
+            Layout.preferredHeight: 1
+            color: Theme.separator
+        }
 
-            Text {
-                anchors.centerIn: parent
-                text: "Media"
-                color: Theme.primaryText
-                font.pointSize: 16
-            }
-
-            MouseArea { anchors.fill: parent; onClicked: console.log("Media button clicked") }
+        // --- Page Content ---
+        // Spacer to push content to the top
+        Item {
+            Layout.fillHeight: true
         }
     }
 }

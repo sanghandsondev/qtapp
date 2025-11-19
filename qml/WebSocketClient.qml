@@ -12,7 +12,8 @@ Item {
 
     // --- Tín hiệu (Signals) ---
     signal wsMessage(variant message)
-    signal wsStatusChanged() // Thêm tín hiệu này
+    signal wsStatusChanged()
+    signal wsError(string errorMessage)
 
     // Tự động kết nối khi component được hoàn thành
     Component.onCompleted: {
@@ -60,6 +61,16 @@ Item {
         }
         socket.active = true
     }
-    // function sendRawText(msg) { socket.sendTextMessage(msg) }
-    // function sendJson(jsonObject) { socket.sendTextMessage(JSON.stringify(jsonObject)) }
+
+    // Send a JSON object via WebSocket
+    function sendMessage(jsonObject) {
+        if (socket.status === WebSocket.Open) {
+            var jsonString = JSON.stringify(jsonObject) // Convert object to JSON string
+            console.log("Sending WebSocket message:", jsonString)
+            socket.sendTextMessage(jsonString)
+        } else {
+            console.warn("Cannot send message, WebSocket is not open. Current status:", socket.status)
+            root.wsError("Action failed: Not connected to the server.")
+        }
+    }
 }

@@ -1,18 +1,3 @@
-
-3. Đang record mà khi chuyển qua chỗ khác cũng bị mất đi (chắc do Loader)
-Khả năng sẽ ko xài Loader nữa -> Xử lý sớm
-
-4. Bắt đầu implement send msg cho WSServer với format JSON chung:
-(JSON.stringify({ command: 'stop_record', data: {id: '323321123', v.v...} }));
-
-Còn implement nhận msg từ Server thì sẽ có:
-status: success / fail
-msg: (rỗng khi mà success) hoặc (khi sucess thì ko show banner msg ra như khi fail)
-data: JSON
-    id : 232132132321321231
-    name: đâsadsdaddas
-    state: dấdasdasdasdasdasda
-
 5. BẮT BUỘC PHÍA DƯỚI COREMANAGER Service sẽ implement lại nhiều
 TRƯỚC TIÊN: Nhận msg từ WebClient. Viết một class TranslateMsgFromWS, học lỏm ServiceManager, trả về event để chỗ WebSocket push vào queue
             Nhớ bên trong TranslateMsg phải tạo dược Payload tương ứng với các request riêng. Giả sử với Start Record thì ko cần payload

@@ -8,8 +8,51 @@ Item {
     width: parent.width
     height: parent.height
 
+    property var wsClient // Property to receive the WebSocket client
+
+    signal notify(string message, string type)
+
     property bool isRecording: false
     property int recordTime: 0 // in seconds
+
+    // Function to handle messages from the server routed by Main.qml
+    function processServerMessage(serverData) {
+        console.log("RecordPage processing message:", JSON.stringify(serverData))
+        switch (serverData.msg) {
+            case "update_list_record":
+                // Replace the entire list with new data from the server
+                recordListView.model.clear()
+                if (serverData.data && serverData.data.records) {
+                    for (var i = 0; i < serverData.data.records.length; i++) {
+                        recordListView.model.append(serverData.data.records[i])
+                    }
+                }
+                break
+
+            case "add_record_noti":
+                // Add a new record to the list
+                if (serverData.data && serverData.data.record) {
+                    recordListView.model.insert(0, serverData.data.record)
+                }
+                break
+
+            case "remove_record_noti":
+                // Find and remove a specific record by its ID
+                if (serverData.data && serverData.data.id) {
+                    for (var j = 0; j < recordListView.model.count; j++) {
+                        if (recordListView.model.get(j).id === serverData.data.id) {
+                            recordListView.model.remove(j)
+                            break
+                        }
+                    }
+                }
+                break
+
+            default:
+                console.warn("RecordPage received unhandled message:", serverData.msg)
+                break
+        }
+    }
 
     // Timer to update the recording duration
     Timer {
@@ -22,6 +65,7 @@ Item {
                 recordTime++
             } else {
                 stopRecording() // Auto-stop at 4 minutes
+                recordRoot.notify("Recording automatically saved after 4 minutes.", "info")
             }
         }
     }
@@ -36,6 +80,9 @@ Item {
     // Function to start recording
     function startRecording() {
         console.log("Start recording...")
+        if (wsClient) {
+            wsClient.sendMessage({ command: "start_record", data: {} })
+        }
         recordTime = 0
         isRecording = true
     }
@@ -43,6 +90,9 @@ Item {
     // Function to stop recording
     function stopRecording() {
         console.log("Recording finished. Duration:", recordTime, "seconds.")
+        if (wsClient) {
+            wsClient.sendMessage({ command: "stop_record", data: {  } })
+        }
         isRecording = false
         // Here you would typically save the recording and add it to the list
 
@@ -52,6 +102,9 @@ Item {
     // Function to cancel recording
     function cancelRecording() {
         console.log("Recording cancelled.")
+        if (wsClient) {
+            wsClient.sendMessage({ command: "cancel_record", data: {} })
+        }
         isRecording = false
         recordTime = 0
     }
@@ -182,16 +235,8 @@ Item {
                 width: parent.width
                 spacing: 8
                 model: ListModel {
-                    ListElement { name: "Meeting Notes 2023-10-27" }
-                    ListElement { name: "Voice Memo - Idea" }
-                    ListElement { name: "Interview with John Doe" }
-                    ListElement { name: "Lecture Recording - Part 1" }
-                    ListElement { name: "Ambient Sounds - Park" }
-                    ListElement { name: "Guitar Riff Idea" }
-                    ListElement { name: "Project Brainstorm" }
-                    ListElement { name: "Family Gathering Clip" }
-                    ListElement { name: "Podcast Intro Draft" }
-                    ListElement { name: "Language Practice Session" }
+                    // Model is now initially empty. It will be populated by the server.
+                    // {model.id, model.name, model.duration}
                 }
 
                 delegate: Rectangle {
@@ -204,14 +249,29 @@ Item {
                         anchors.fill: parent
                         anchors.leftMargin: 16
                         anchors.rightMargin: 16
-                        spacing: 12 // Add spacing between name and icon
+                        spacing: 12 // Add spacing between elements
 
                         Text {
                             text: model.name
                             color: Theme.primaryText
                             font.pointSize: 14
                             elide: Text.ElideRight
+                            // Layout.fillWidth: true // Removed to allow duration to be shown
+                            Layout.alignment: Qt.AlignVCenter
+                        }
+
+                        // Spacer to push duration and delete icon to the right
+                        Item {
                             Layout.fillWidth: true
+                        }
+
+                        // Duration Text
+                        Text {
+                            // Assumes model has 'duration' in seconds
+                            text: formatTime(model.duration || 0)
+                            color: Theme.secondaryText
+                            font.pointSize: 14
+                            font.family: "monospace"
                             Layout.alignment: Qt.AlignVCenter
                         }
 
@@ -228,7 +288,7 @@ Item {
                                 anchors.margins: -10    // Increase clickable area
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: {
-                                    // Open confirmation dialog instead of deleting directly
+                                    // Open confirmation dialog
                                     confirmationDialog.open(
                                         "Delete Recording",
                                         "Are you sure you want to permanently delete '" + model.name + "'?",
@@ -236,20 +296,20 @@ Item {
                                     )
 
                                     // Capture context for the callback
-                                    var listView = recordListView
-                                    var itemIndex = index
+                                    var recordId = model.id // Use the ID for deletion
 
                                     // Define the function to be called on acceptance
                                     var onAccepted = function() {
-                                        // Use the captured context
-                                        if (listView && listView.model && itemIndex >= 0) {
-                                            listView.model.remove(itemIndex)
+                                        // Send delete command to server.
+                                        // The UI will update only when the server sends back a confirmation.
+                                        if (wsClient && recordId) {
+                                            wsClient.sendMessage({ command: "delete_record", data: { id: recordId } })
                                         }
                                         // Disconnect this function from the signal (one-time signal)
                                         confirmationDialog.accepted.disconnect(onAccepted)
                                     }
 
-                                    // Connect the signal to our function (one-time signal)
+                                    // Connect the signal to our function
                                     confirmationDialog.accepted.connect(onAccepted)
                                 }
                             }

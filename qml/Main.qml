@@ -5,6 +5,9 @@ import com.company.ws 1.0
 import QtQuick.Layouts 1.15
 import com.company.style 1.0
 
+// Import các trang con
+import "qrc:/qml/" as Pages
+
 Window {
     width: 1024
     height: 600
@@ -12,11 +15,48 @@ Window {
     title: "Qt App"
 
     property string currentPageId: "Home"
-    property url currentPageSource: "qrc:/qml/Home.qml"
-    
+
     // Hàm để hiển thị thông báo
     function showNotification(text, type) {
         notificationBanner.show(text, type);
+    }
+
+    // Handle signal 'wsMessage' to process incoming messages
+    function handleMessageFromServer(message) {
+        console.log("Received JSON from server:", JSON.stringify(message))
+
+        if (message.status === "fail") {
+            if (message.msg) {
+                showNotification(message.msg, "error")
+            }
+            return
+        }
+
+        if (message.status === "success") {
+            if (message.data) {
+                // Lấy ra message.data.component để xử lý tùy theo component
+                switch (message.data.component) {
+                    case "Settings":
+                        settingsPage.processServerMessage(message.data)
+                        break;
+                    case "Record":
+                        recordPage.processServerMessage(message.data)
+                        break;
+                    // case "Home":
+                        // homePage.processServerMessage(message.data)
+                        // break;
+                    // case "Media":
+                        // mediaPage.processServerMessage(message.data)
+                        // break;
+                    // case "Camera":
+                        // cameraPage.processServerMessage(message.data)
+                        // break;
+                    default:
+                        console.warn("Unknown component in server message:", message.data.component)
+                        break;
+                }
+            }
+        }
     }
 
     // Instantiate WebSocket client (default host points to your Pi server)
@@ -24,14 +64,12 @@ Window {
         id: wsClient
         // host: "ws://127.0.0.1:9000"
 
-        // Handle signal 'wsMessage' to process incoming messages
         onWsMessage: {
-            console.log("Received JSON from server:", JSON.stringify(message))
+            handleMessageFromServer(message)
+        }
 
-            // Example of how to process the message based on its content
-            // if (message.type === "status_update") {
-            //     console.log("Received a status update:", message.data)
-            // }
+        onWsError: {
+            showNotification(errorMessage, "error")
         }
 
         onWsStatusChanged: {
@@ -77,11 +115,11 @@ Window {
                     Repeater {
                         model: ListModel {
                             id: pageModel
-                            ListElement { pageId: "Home"; icon: "home"; sourceUrl: "qrc:/qml/Home.qml" }
-                            ListElement { pageId: "Record"; icon: "fiber_manual_record"; sourceUrl: "qrc:/qml/Record.qml" }
-                            ListElement { pageId: "Media"; icon: "perm_media"; sourceUrl: "qrc:/qml/Media.qml" }
-                            ListElement { pageId: "Camera"; icon: "photo_camera"; sourceUrl: "qrc:/qml/Camera.qml" }
-                            ListElement { pageId: "Settings"; icon: "settings"; sourceUrl: "qrc:/qml/Settings.qml" }
+                            ListElement { pageId: "Home"; icon: "home"; }
+                            ListElement { pageId: "Record"; icon: "fiber_manual_record"; }
+                            ListElement { pageId: "Media"; icon: "perm_media"; }
+                            ListElement { pageId: "Camera"; icon: "photo_camera"; }
+                            ListElement { pageId: "Settings"; icon: "settings"; }
                         }
 
                         delegate: Rectangle {
@@ -114,7 +152,6 @@ Window {
                                 anchors.fill: parent
                                 onClicked: {
                                     currentPageId = model.pageId
-                                    currentPageSource = model.sourceUrl
                                 }
                             }
                         }
@@ -129,16 +166,36 @@ Window {
                 Layout.fillHeight: true
                 color: "transparent"
 
-                Loader {
-                    id: pageLoader
+                // Khởi tạo tất cả các trang và chỉ hiển thị trang hiện tại.
+                // Điều này giúp giữ trạng thái của các trang khi chuyển đổi.
+                Pages.Home {
                     anchors.fill: parent
-                    source: currentPageSource
-                    onLoaded: {
-                        // Pass the WebSocket client to the loaded page if it has a 'wsClient' property
-                        if (item.hasOwnProperty("wsClient")) {
-                            item.wsClient = wsClient
-                        }
-                    }
+                    visible: currentPageId === "Home"
+                }
+
+                Pages.Record {
+                    id: recordPage
+                    anchors.fill: parent
+                    visible: currentPageId === "Record"
+                    onNotify: showNotification(message, type)   // slot để hiển thị thông báo
+                    wsClient: wsClient // Truyền wsClient
+                }
+
+                Pages.Media {
+                    anchors.fill: parent
+                    visible: currentPageId === "Media"
+                }
+
+                Pages.Camera {
+                    anchors.fill: parent
+                    visible: currentPageId === "Camera"
+                }
+
+                Pages.Settings {
+                    id: settingsPage
+                    anchors.fill: parent
+                    visible: currentPageId === "Settings"
+                    wsClient: wsClient // Truyền wsClient
                 }
 
                 // --- Notification Banner ---
