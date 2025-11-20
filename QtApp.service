@@ -1,0 +1,14 @@
+[Unit]
+Description=QT App Service for Raspberry Pi
+After=network-online.target coremanager.service
+Wants=network-online.target
+
+[Service]
+ExecStart=/usr/local/bin/QtApp --platform eglfs
+User=pi
+Group=pi
+Restart=always
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
