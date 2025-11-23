@@ -24,6 +24,7 @@ install: clean
 
 setenv:
 	./setenv.sh
+# 	./build_qt_rpi.sh
 
 clean:
 	rm -rf build
