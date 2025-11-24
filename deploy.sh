@@ -5,42 +5,42 @@ PI_HOST="192.168.1.50"
 PROJECT_NAME="QtApp"
 SERVICE_FILE="QtApp.service"
 
-LOCAL_BINARY="build/${PROJECT_NAME}"
-LOCAL_SERVICE_FILE="${SERVICE_FILE}"
-
-REMOTE_TMP_PATH="/tmp"
+# Đường dẫn trên Pi
+REMOTE_PROJECT_PATH="/home/${PI_USER}/sangank/${PROJECT_NAME}"
 REMOTE_INSTALL_PATH="/usr/local/bin"
 REMOTE_SERVICE_PATH="/etc/systemd/system"
 
 set -e
 
-# 1. Copy binary and service file to Pi
-echo ">>> [1/3] Copying binary and service file to Pi..."
-scp "${LOCAL_BINARY}" "${LOCAL_SERVICE_FILE}" "${PI_USER}@${PI_HOST}:${REMOTE_TMP_PATH}"
+# 1. Đồng bộ hóa mã nguồn sang Pi, loại trừ thư mục 'build'
+echo ">>> [1/3] Syncing source code to Pi..."
+rsync -avz --delete --exclude 'build' . "${PI_USER}@${PI_HOST}:${REMOTE_PROJECT_PATH}"
 
-# TODO: Copy Qt runtime libraries to Pi
-echo ">>> Copying Qt runtime libraries to Pi..."
-
-# 2. Install files on Pi
-echo ">>> [2/3] Installing files on Pi..."
+# 2. Xây dựng và cài đặt trên Pi
+echo ">>> [2/3] Building and installing on Pi..."
 ssh "${PI_USER}@${PI_HOST}" "
     set -e
+    echo '>>> Changing directory to ${REMOTE_PROJECT_PATH}'
+    cd \"${REMOTE_PROJECT_PATH}\"
+
+    echo '>>> Building project on Pi...'
+    make cross
+
+    echo '>>> Installing service...'
     sudo systemctl stop ${SERVICE_FILE} || true
 
-    sudo mv \"${REMOTE_TMP_PATH}/${PROJECT_NAME}\" \"${REMOTE_INSTALL_PATH}/${PROJECT_NAME}\"
+    # sudo cp \"build/${PROJECT_NAME}\" \"${REMOTE_INSTALL_PATH}/${PROJECT_NAME}\"
     sudo chmod +x \"${REMOTE_INSTALL_PATH}/${PROJECT_NAME}\"
 
-    sudo mv \"${REMOTE_TMP_PATH}/${SERVICE_FILE}\" \"${REMOTE_SERVICE_PATH}/${SERVICE_FILE}\"
+    sudo cp \"${SERVICE_FILE}\" \"${REMOTE_SERVICE_PATH}/${SERVICE_FILE}\"
 "
 
-# 3. Reload and restart service on Pi
+# 3. Tải lại và khởi động lại dịch vụ trên Pi
 echo ">>> [3/3] Reloading and restarting service on Pi..."
 ssh "${PI_USER}@${PI_HOST}" "
     set -e
     sudo systemctl daemon-reload
-
     sudo systemctl enable ${SERVICE_FILE}
-
     sudo systemctl restart ${SERVICE_FILE}
     
     sleep 2

@@ -3,7 +3,7 @@ import QtWebSockets 1.0
 
 Item {
     id: root
-    property url host: "ws://192.168.1.50:9000"
+    property url host: "ws://127.0.0.1:9000"
     property bool autoConnect: true         // Auto connect WebSocket on component completion (Init loaded)
 
     // --- Thuộc tính (Properties) ---

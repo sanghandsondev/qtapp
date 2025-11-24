@@ -59,10 +59,10 @@ Window {
         }
     }
 
-    // Instantiate WebSocket client (default host points to your Pi server)
+    // Instantiate WebSocket client
     WebSocketClient {
         id: wsClient
-        // host: "ws://127.0.0.1:9000"
+        host: isPiBuild ? "ws://192.168.1.50:9000" : "ws://127.0.0.1:9000" 
 
         onWsMessage: {
             handleMessageFromServer(message)

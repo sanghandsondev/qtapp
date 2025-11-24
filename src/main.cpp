@@ -2,7 +2,7 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QFontDatabase>
-// #include <QQuickWindow>
+#include <QQuickWindow>
 
 int main(int argc, char *argv[])
 {
@@ -19,6 +19,12 @@ int main(int argc, char *argv[])
     // Cung cấp tên font cho QML thông qua context property
     engine.rootContext()->setContextProperty("materialFontFamily", materialFontFamily);
 
+#ifdef RASPBERRYPI_BUILD
+    engine.rootContext()->setContextProperty("isPiBuild", true);
+#else
+    engine.rootContext()->setContextProperty("isPiBuild", false);
+#endif
+
     // Đăng ký Theme singleton
     qmlRegisterSingletonType(QUrl("qrc:/qml/Theme.qml"), "com.company.style", 1, 0, "Theme");
 
@@ -34,11 +40,11 @@ int main(int argc, char *argv[])
         if (!obj && url == objUrl)
             QCoreApplication::exit(-1);
 
-// #ifdef RPI_BUILD
-//         if (auto window = qobject_cast<QQuickWindow*>(obj)) {
-//             window->setVisibility(QWindow::FullScreen);
-//         }
-// #endif
+#ifdef RASPBERRYPI_BUILD
+        if (auto window = qobject_cast<QQuickWindow*>(obj)) {
+            window->setVisibility(QWindow::FullScreen);
+        }
+#endif
     }, Qt::QueuedConnection);
 
     engine.load(url);

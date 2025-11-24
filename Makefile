@@ -1,32 +1,22 @@
-# BUILD_DIR := build
-# CMAKE := cmake
-# BUILD_TYPE ?= Release
-# JOBS ?= $(shell nproc)
-
 all: install
 
 install: clean
 	mkdir -p build
 	cd build && cmake \
-		-DCMAKE_PREFIX_PATH="/home/sang/Qt/6.10.0/gcc_64" ..
-	cd build && make
+		-DCMAKE_PREFIX_PATH="/home/sang/Qt/6.10.1/gcc_64" ..
+	cd build && make && make install
 
-# deploy: clean
-# 	mkdir -p build
-# 	cd build && cmake \
-# 		-DCMAKE_TOOLCHAIN_FILE=../rpi4_toolchain.cmake \
-# 		-DCMAKE_PREFIX_PATH="$(CMAKE_SYSROOT)/usr/local/qt6" \
-# 		-DQT_HOST_PATH="/home/sang/Qt/6.10.0/gcc_64" \
-# 		-DRPI_BUILD=ON \
-# 		..
-# 	cd build && make
-# 	./deploy.sh
+# No cross-compiler
+deploy:
+	./deploy.sh
 
-setenv:
-	./setenv.sh
-# 	./build_qt_rpi.sh
+cross: clean
+	mkdir -p build
+	cd build && cmake \
+		-DCMAKE_PREFIX_PATH="/home/pi/Qt/6.10.1/gcc_arm64" ..
+	cd build && make && make install
 
 clean:
 	rm -rf build
 
-.PHONY: all install setenv clean
+.PHONY: all install setenv cross clean

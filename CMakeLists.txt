@@ -22,6 +22,12 @@ file(GLOB_RECURSE SOURCES "src/*.cpp")
 # --- Target Definition ---
 qt_add_executable(QtApp ${SOURCES})
 
+# --- Add build definition for Raspberry Pi ---
+if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
+    target_compile_definitions(QtApp PRIVATE RASPBERRYPI_BUILD)
+    message(STATUS "Raspberry Pi build detected. RASPBERRYPI_BUILD is defined.")
+endif()
+
 # --- QML Resources ---
 file(GLOB QML_FILES CONFIGURE_DEPENDS RELATIVE 
     "${CMAKE_CURRENT_SOURCE_DIR}" "qml/*.qml"
@@ -37,4 +43,9 @@ target_link_libraries(QtApp PRIVATE
     Qt6::Quick
     Qt6::Qml
     Qt6::WebSockets
+)
+
+# --- Installation ---
+install(TARGETS QtApp
+    RUNTIME DESTINATION /usr/local/bin
 )
