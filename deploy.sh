@@ -28,10 +28,6 @@ ssh "${PI_USER}@${PI_HOST}" "
 
     echo '>>> Installing service...'
     sudo systemctl stop ${SERVICE_FILE} || true
-
-    # sudo cp \"build/${PROJECT_NAME}\" \"${REMOTE_INSTALL_PATH}/${PROJECT_NAME}\"
-    sudo chmod +x \"${REMOTE_INSTALL_PATH}/${PROJECT_NAME}\"
-
     sudo cp \"${SERVICE_FILE}\" \"${REMOTE_SERVICE_PATH}/${SERVICE_FILE}\"
 "
 

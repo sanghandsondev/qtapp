@@ -15,10 +15,22 @@ Item {
     signal wsStatusChanged()
     signal wsError(string errorMessage)
 
+    // Timer to handle automatic reconnection
+    // Timer {
+    //     id: reconnectTimer
+    //     interval: 10000 // Try to reconnect every 10 seconds
+    //     repeat: true
+    //     running: false // Initially stopped
+    //     onTriggered: {
+    //         console.log("Attempting to reconnect WebSocket...")
+    //         root.open()
+    //     }
+    // }
+
     // Tự động kết nối khi component được hoàn thành
     Component.onCompleted: {
         if (autoConnect) {
-            open()
+            root.open()
         }
     }
 
@@ -31,9 +43,18 @@ Item {
         onStatusChanged: function(status) {
             console.log("WebSocket status changed:", status)
             root.wsStatusChanged() // Phát tín hiệu khi status thay đổi
+
+            // Manage reconnection timer based on status
+            // if (status === WebSocket.Open || status === WebSocket.Connecting) {
+            //     reconnectTimer.stop()
+            // } else if (status === WebSocket.Closed) {
+            //     if (autoConnect) {
+            //         reconnectTimer.start()
+            //     }
+            // }
         }
 
-        onTextMessageReceived: {
+        onTextMessageReceived: function(message) {
             console.log("WebSocket raw message:", message)
             try {
                 var jsonObj = JSON.parse(message)
@@ -45,6 +66,7 @@ Item {
         
         onErrorStringChanged: function() {
             if (socket.errorString) {
+                root.wsError(socket.errorString)
                 console.error("WebSocket error:", socket.errorString)
             }
         }
@@ -68,9 +90,11 @@ Item {
             var jsonString = JSON.stringify(jsonObject) // Convert object to JSON string
             console.log("Sending WebSocket message:", jsonString)
             socket.sendTextMessage(jsonString)
+            return true
         } else {
             console.warn("Cannot send message, WebSocket is not open. Current status:", socket.status)
-            root.wsError("Action failed: Not connected to the server.")
+            root.wsError("Not connected to the Server.")
+            return false
         }
     }
 }

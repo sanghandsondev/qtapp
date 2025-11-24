@@ -11,7 +11,7 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
 # --- Find Qt Packages ---
-find_package(Qt6 REQUIRED COMPONENTS Quick Qml WebSockets)
+find_package(Qt6 REQUIRED COMPONENTS Gui Quick Qml WebSockets)
 
 qt_policy(SET QTP0001 NEW)
 
@@ -30,7 +30,9 @@ endif()
 
 # --- QML Resources ---
 file(GLOB QML_FILES CONFIGURE_DEPENDS RELATIVE 
-    "${CMAKE_CURRENT_SOURCE_DIR}" "qml/*.qml"
+    "${CMAKE_CURRENT_SOURCE_DIR}" 
+    "qml/*.qml"
+    "qml/PageView/*.qml"
 )
 
 qt_add_resources(QtApp qml_resources
@@ -40,6 +42,7 @@ qt_add_resources(QtApp qml_resources
 
 # --- Target Linking ---
 target_link_libraries(QtApp PRIVATE
+    Qt6::Gui
     Qt6::Quick
     Qt6::Qml
     Qt6::WebSockets

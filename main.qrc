@@ -2,11 +2,11 @@
 <RCC version="1.0">
 <qresource prefix="/">
     <file>qml/Main.qml</file>
-    <file>qml/Home.qml</file>
-    <file>qml/Record.qml</file>
-    <file>qml/Media.qml</file>
-    <file>qml/Camera.qml</file>
-    <file>qml/Settings.qml</file>
+    <file>qml/PageView/Home.qml</file>
+    <file>qml/PageView/Record.qml</file>
+    <file>qml/PageView/Media.qml</file>
+    <file>qml/PageView/Camera.qml</file>
+    <file>qml/PageView/Settings.qml</file>
     <file>qml/WebSocketClient.qml</file>
     <file>qml/NotificationBanner.qml</file>
     <file>qml/ConfirmationDialog.qml</file>

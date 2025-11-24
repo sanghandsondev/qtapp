@@ -41,6 +41,7 @@ Item {
                 if (serverData.data && serverData.data.id) {
                     for (var j = 0; j < recordListView.model.count; j++) {
                         if (recordListView.model.get(j).id === serverData.data.id) {
+                            recordRoot.notify("Recording '" + recordListView.model.get(j).name + "' has been deleted.", "success")
                             recordListView.model.remove(j)
                             break
                         }
@@ -79,34 +80,44 @@ Item {
 
     // Function to start recording
     function startRecording() {
-        console.log("Start recording...")
-        if (wsClient) {
-            wsClient.sendMessage({ command: "start_record", data: {} })
+        if (wsClient && wsClient.sendMessage({ command: "start_record", data: {} })) {
+            console.log("Start recording...")
+            recordTime = 0
+            isRecording = true
         }
-        recordTime = 0
-        isRecording = true
     }
 
     // Function to stop recording
     function stopRecording() {
-        console.log("Recording finished. Duration:", recordTime, "seconds.")
-        if (wsClient) {
-            wsClient.sendMessage({ command: "stop_record", data: {  } })
+        
+        if (wsClient && wsClient.sendMessage({ command: "stop_record", data: {  } })) {
+            console.log("Recording finished. Duration:", recordTime, "seconds.")
+            isRecording = false
+            recordTime = 0;
         }
-        isRecording = false
-        // Here you would typically save the recording and add it to the list
-
-        recordTime = 0;
     }
 
     // Function to cancel recording
     function cancelRecording() {
-        console.log("Recording cancelled.")
-        if (wsClient) {
-            wsClient.sendMessage({ command: "cancel_record", data: {} })
+        if (wsClient && wsClient.sendMessage({ command: "cancel_record", data: {} })) {
+            console.log("Recording cancelled.")
+            isRecording = false
+            recordTime = 0
         }
-        isRecording = false
-        recordTime = 0
+    }
+
+    // Function to remove a recording by ID
+    function removeRecordingById(recordId) {
+        if (wsClient && recordId && wsClient.sendMessage({ command: "remove_record", data: { id: recordId } })) {
+            console.log("Removing recording with ID:", recordId)
+        }
+    }
+
+    // Function to request all recordings from the server
+    function getAllRecords() {
+        if (wsClient && wsClient.sendMessage({ command: "get_all_record", data: {} })) {
+            console.log("Requesting all records from server.")
+        }
     }
 
     ColumnLayout {
@@ -302,9 +313,7 @@ Item {
                                     var onAccepted = function() {
                                         // Send delete command to server.
                                         // The UI will update only when the server sends back a confirmation.
-                                        if (wsClient && recordId) {
-                                            wsClient.sendMessage({ command: "remove_record", data: { id: recordId } })
-                                        }
+                                        removeRecordingById(recordId)
                                         // Disconnect this function from the signal (one-time signal)
                                         confirmationDialog.accepted.disconnect(onAccepted)
                                     }

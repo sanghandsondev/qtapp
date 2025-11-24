@@ -6,7 +6,7 @@ import QtQuick.Layouts 1.15
 import com.company.style 1.0
 
 // Import các trang con
-import "qrc:/qml/" as Pages
+import "qrc:/qml/PageView/" as Pages
 
 Window {
     width: 1024
@@ -64,11 +64,11 @@ Window {
         id: wsClient
         host: isPiBuild ? "ws://192.168.1.50:9000" : "ws://127.0.0.1:9000" 
 
-        onWsMessage: {
+        onWsMessage: function(message) {
             handleMessageFromServer(message)
         }
 
-        onWsError: {
+        onWsError: function(errorMessage) {
             showNotification(errorMessage, "error")
         }
 
@@ -76,6 +76,8 @@ Window {
             switch(status) {
                 case WebSocket.Open:
                     showNotification("WebSocket Server connected successfully.", "success");
+                    // Khi kết nối thành công, yêu cầu danh sách bản ghi
+                    recordPage.getAllRecords();
                     break;
                 case WebSocket.Connecting:
                     // Có thể không cần thông báo khi đang kết nối, hoặc chỉ là thông báo 'info'
