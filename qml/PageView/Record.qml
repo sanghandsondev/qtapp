@@ -28,12 +28,17 @@ Item {
                     }
                 }
                 break
-
-            case "add_record_noti":
-                // Add a new record to the list
-                if (serverData.data && serverData.data.record) {
-                    recordListView.model.insert(0, serverData.data.record)
-                }
+            case "start_record_noti":
+                recordTime = 0
+                isRecording = true
+                break
+            case "stop_record_noti":
+                isRecording = false
+                recordTime = 0
+                break
+            case "cancel_record_noti":
+                isRecording = false
+                recordTime = 0
                 break
 
             case "remove_record_noti":
@@ -82,8 +87,6 @@ Item {
     function startRecording() {
         if (wsClient && wsClient.sendMessage({ command: "start_record", data: {} })) {
             console.log("Start recording...")
-            recordTime = 0      // TODO noti
-            isRecording = true  // TODO noti
         }
     }
 
@@ -92,8 +95,6 @@ Item {
         
         if (wsClient && wsClient.sendMessage({ command: "stop_record", data: {  } })) {
             console.log("Recording finished. Duration:", recordTime, "seconds.")
-            isRecording = false // TODO noti
-            recordTime = 0;     // TODO noti
         }
     }
 
@@ -101,8 +102,6 @@ Item {
     function cancelRecording() {
         if (wsClient && wsClient.sendMessage({ command: "cancel_record", data: {} })) {
             console.log("Recording cancelled.")
-            isRecording = false // TODO noti
-            recordTime = 0      // TODO noti
         }
     }
 

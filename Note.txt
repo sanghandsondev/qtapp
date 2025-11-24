@@ -1,1 +1,3 @@
-Vẫn chưa xử lý NOTI để hiển thị đúng đâu nhé
+Chưa hiển thị được durationSec 
+
+Chưa remove item

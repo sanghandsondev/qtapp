@@ -23,12 +23,13 @@ ssh "${PI_USER}@${PI_HOST}" "
     echo '>>> Changing directory to ${REMOTE_PROJECT_PATH}'
     cd \"${REMOTE_PROJECT_PATH}\"
 
-    echo '>>> Building project on Pi...'
-    make cross
-
     echo '>>> Installing service...'
     sudo systemctl stop ${SERVICE_FILE} || true
     sudo cp \"${SERVICE_FILE}\" \"${REMOTE_SERVICE_PATH}/${SERVICE_FILE}\"
+    
+    echo '>>> Building project on Pi...'
+    make cross
+
 "
 
 # 3. Tải lại và khởi động lại dịch vụ trên Pi
