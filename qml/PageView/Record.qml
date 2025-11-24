@@ -82,8 +82,8 @@ Item {
     function startRecording() {
         if (wsClient && wsClient.sendMessage({ command: "start_record", data: {} })) {
             console.log("Start recording...")
-            recordTime = 0
-            isRecording = true
+            recordTime = 0      // TODO noti
+            isRecording = true  // TODO noti
         }
     }
 
@@ -92,8 +92,8 @@ Item {
         
         if (wsClient && wsClient.sendMessage({ command: "stop_record", data: {  } })) {
             console.log("Recording finished. Duration:", recordTime, "seconds.")
-            isRecording = false
-            recordTime = 0;
+            isRecording = false // TODO noti
+            recordTime = 0;     // TODO noti
         }
     }
 
@@ -101,8 +101,8 @@ Item {
     function cancelRecording() {
         if (wsClient && wsClient.sendMessage({ command: "cancel_record", data: {} })) {
             console.log("Recording cancelled.")
-            isRecording = false
-            recordTime = 0
+            isRecording = false // TODO noti
+            recordTime = 0      // TODO noti
         }
     }
 
