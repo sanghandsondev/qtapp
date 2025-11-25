@@ -61,6 +61,46 @@ Rectangle {
             color: Theme.secondaryText
             font.pointSize: 20
         }
+
+        // Author Name with Heart
+        RowLayout {
+            Layout.alignment: Qt.AlignHCenter
+            Layout.topMargin: 20 // Add some space above
+            spacing: 8
+
+            Text {
+                text: "Hoang Trung Sang"
+                color: Theme.primaryText
+                font.pointSize: 18
+                font.italic: true
+            }
+
+            Text {
+                text: "favorite" // Material Symbols icon name for heart
+                font.family: materialFontFamily
+                font.pixelSize: 22
+                color: Theme.accent // Use accent color for the heart
+                Layout.alignment: Qt.AlignVCenter
+            }
+
+            Text {
+                text: "Nguyen Hoang Thao Linh"
+                color: Theme.primaryText
+                font.pointSize: 18
+                font.italic: true
+            }
+        }
+    }
+
+    Text {
+        text: "SangAnk"
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.rightMargin: 20
+        anchors.bottomMargin: 20
+        color: Theme.secondaryText
+        font.pointSize: 12
+        font.italic: true
     }
 
     MouseArea {
