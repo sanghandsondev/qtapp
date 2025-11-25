@@ -257,7 +257,7 @@ Window {
                     visible: false
                     z: 20 // Ensure it's on top of sidebar and content
                     currentTime: root.currentTime
-                    onClicked: {
+                    onTouched: {
                         visible = false
                         inactivityTimer.restart()
                     }
@@ -271,14 +271,9 @@ Window {
             hoverEnabled: true // Also reset on mouse move
             propagateComposedEvents: true // Allow events to pass to items below
 
-            onClicked: (mouse) => {
+            onPressed: (mouse) => {
                 inactivityTimer.restart()
                 mouse.accepted = false // Let other MouseAreas handle the click
-            }
-
-            onWheel: (wheel) => {
-                inactivityTimer.restart()
-                wheel.accepted = false
             }
 
             onPositionChanged: (mouse) => {

@@ -9,7 +9,7 @@ Rectangle {
 
     property var currentTime
     
-    signal clicked()
+    signal touched()
 
     ColumnLayout {
         anchors.centerIn: parent
@@ -104,6 +104,6 @@ Rectangle {
 
     MouseArea {
         anchors.fill: parent
-        onClicked: screenSaverRoot.clicked()
+        onPressed: screenSaverRoot.touched()
     }
 }
