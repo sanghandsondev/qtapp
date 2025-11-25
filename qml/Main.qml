@@ -32,7 +32,7 @@ Window {
     // Timer for screen saver
     Timer {
         id: inactivityTimer
-        interval: 300000 // 5 minutes in milliseconds
+        interval: 30000 // 5 minutes in milliseconds
         running: true
         repeat: false // Will trigger once when interval is reached
         onTriggered: {

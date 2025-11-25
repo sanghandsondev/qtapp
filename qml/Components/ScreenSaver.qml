@@ -76,10 +76,9 @@ Rectangle {
             }
 
             Text {
-                text: "favorite" // Material Symbols icon name for heart
-                font.family: materialFontFamily
+                text: "\u2665" // Unicode for solid heart symbol
                 font.pixelSize: 22
-                color: Theme.accent // Use accent color for the heart
+                color: Theme.primaryText // Change color to primary text (white on dark theme)
                 Layout.alignment: Qt.AlignVCenter
             }
 
@@ -99,7 +98,7 @@ Rectangle {
         anchors.rightMargin: 20
         anchors.bottomMargin: 20
         color: Theme.secondaryText
-        font.pointSize: 12
+        font.pointSize: 14
         font.italic: true
     }
 
