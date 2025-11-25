@@ -10,12 +10,35 @@ import "qrc:/qml/PageView/" as Pages
 import "qrc:/qml/Components/" as Components
 
 Window {
+    id: root
     width: 1024
     height: 600
     visible: true
     title: "Qt App"
 
     property string currentPageId: "Home"
+    property var currentTime: new Date()
+
+    // Global timer to update the current time for all components
+    Timer {
+        interval: 1000
+        repeat: true
+        running: true
+        onTriggered: {
+            root.currentTime = new Date()
+        }
+    }
+
+    // Timer for screen saver
+    Timer {
+        id: inactivityTimer
+        interval: 300000 // 5 minutes in milliseconds
+        running: true
+        repeat: false // Will trigger once when interval is reached
+        onTriggered: {
+            screenSaver.visible = true
+        }
+    }
 
     // Hàm để hiển thị thông báo
     function showNotification(text, type) {
@@ -96,130 +119,171 @@ Window {
             // --- Top Header ---
             Components.Header {
                 id: header
-                // The properties fanSpeed and temperature will be updated
+                currentTime: root.currentTime
+                // TODO: The properties fanSpeed and temperature will be updated
                 // by the handleMessageFromServer function.
             }
 
-            RowLayout {
+            // This container holds the sidebar and content area
+            Item {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                spacing: 0
 
-                // Left vertical bar
-                Rectangle {
-                    id: sidebar
-                    Layout.preferredWidth: 120
-                    Layout.fillHeight: true
-                    color: Theme.secondaryBg
+                RowLayout {
+                    anchors.fill: parent
+                    spacing: 0
 
-                    ColumnLayout {
-                        anchors.fill: parent
-                        anchors.topMargin: 4
-                        anchors.bottomMargin: 4
-                        spacing: 4
+                    // Left vertical bar
+                    Rectangle {
+                        id: sidebar
+                        Layout.preferredWidth: 120
+                        Layout.fillHeight: true
+                        color: Theme.secondaryBg
 
-                        Repeater {
-                            model: ListModel {
-                                id: pageModel
-                                ListElement { pageId: "Home"; icon: "home"; }
-                                ListElement { pageId: "Record"; icon: "fiber_manual_record"; }
-                                ListElement { pageId: "Media"; icon: "perm_media"; }
-                                ListElement { pageId: "Camera"; icon: "photo_camera"; }
-                                ListElement { pageId: "Settings"; icon: "settings"; }
-                            }
+                        ColumnLayout {
+                            anchors.fill: parent
+                            anchors.topMargin: 4
+                            anchors.bottomMargin: 4
+                            spacing: 4
 
-                            delegate: Rectangle {
-                                Layout.fillWidth: true
-                                Layout.preferredHeight: 100
-                                color: currentPageId === model.pageId ? Theme.tertiaryBg : "transparent"
-                                radius: 8
-
-                                ColumnLayout {
-                                    anchors.centerIn: parent
-                                    spacing: 4
-
-                                    Text {
-                                        text: model.icon
-                                        font.pixelSize: 36
-                                        font.family: materialFontFamily // Sử dụng font Material Symbols
-                                        color: Theme.icon // Màu icon xám nhạt
-                                        Layout.alignment: Qt.AlignHCenter // Căn giữa theo chiều ngang
-                                    }
-
-                                    Text {
-                                        text: model.pageId
-                                        color: Theme.iconSubtle
-                                        font.pixelSize: 16
-                                        Layout.alignment: Text.AlignHCenter // Căn giữa theo chiều ngang
-                                    }
+                            Repeater {
+                                model: ListModel {
+                                    id: pageModel
+                                    ListElement { pageId: "Home"; icon: "home"; }
+                                    ListElement { pageId: "Record"; icon: "fiber_manual_record"; }
+                                    ListElement { pageId: "Media"; icon: "perm_media"; }
+                                    ListElement { pageId: "Camera"; icon: "photo_camera"; }
+                                    ListElement { pageId: "Settings"; icon: "settings"; }
                                 }
 
-                                MouseArea {
-                                    anchors.fill: parent
-                                    onClicked: {
-                                        currentPageId = model.pageId
+                                delegate: Rectangle {
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: 100
+                                    color: currentPageId === model.pageId ? Theme.tertiaryBg : "transparent"
+                                    radius: 8
+
+                                    ColumnLayout {
+                                        anchors.centerIn: parent
+                                        spacing: 4
+
+                                        Text {
+                                            text: model.icon
+                                            font.pixelSize: 36
+                                            font.family: materialFontFamily // Sử dụng font Material Symbols
+                                            color: Theme.icon // Màu icon xám nhạt
+                                            Layout.alignment: Qt.AlignHCenter // Căn giữa theo chiều ngang
+                                        }
+
+                                        Text {
+                                            text: model.pageId
+                                            color: Theme.iconSubtle
+                                            font.pixelSize: 16
+                                            Layout.alignment: Text.AlignHCenter // Căn giữa theo chiều ngang
+                                        }
+                                    }
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        onClicked: {
+                                            currentPageId = model.pageId
+                                        }
                                     }
                                 }
                             }
                         }
                     }
+
+                    // Right content area
+                    Rectangle {
+                        id: contentArea
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        color: "transparent"
+
+                        // Khởi tạo tất cả các trang và chỉ hiển thị trang hiện tại.
+                        // Điều này giúp giữ trạng thái của các trang khi chuyển đổi.
+                        Pages.Home {
+                            anchors.fill: parent
+                            visible: currentPageId === "Home"
+                        }
+
+                        Pages.Record {
+                            id: recordPage
+                            anchors.fill: parent
+                            visible: currentPageId === "Record"
+                            onNotify: showNotification(message, type)   // slot để hiển thị thông báo
+                            wsClient: wsClient // Truyền wsClient
+                        }
+
+                        Pages.Media {
+                            anchors.fill: parent
+                            visible: currentPageId === "Media"
+                        }
+
+                        Pages.Camera {
+                            anchors.fill: parent
+                            visible: currentPageId === "Camera"
+                        }
+
+                        Pages.Settings {
+                            id: settingsPage
+                            anchors.fill: parent
+                            visible: currentPageId === "Settings"
+                            wsClient: wsClient // Truyền wsClient
+                        }
+
+                        // --- Notification Banner ---
+                        Components.NotificationBanner {
+                            id: notificationBanner
+                            anchors.top: parent.top
+                            // Xóa dòng này để tránh xung đột
+                            topMargin: 8 // Use topMargin for vertical position
+                            width: 640 // Adjust width as needed
+                            radius: 8
+                            z: 10 // Đảm bảo nó hiển thị trên các thành phần khác
+                        }
+
+                        // --- Confirmation Dialog ---
+                        Components.ConfirmationDialog {
+                            id: confirmationDialog
+                        }
+                    }
                 }
 
-                // Right content area
-                Rectangle {
-                    id: contentArea
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    color: "transparent"
-
-                    // Khởi tạo tất cả các trang và chỉ hiển thị trang hiện tại.
-                    // Điều này giúp giữ trạng thái của các trang khi chuyển đổi.
-                    Pages.Home {
-                        anchors.fill: parent
-                        visible: currentPageId === "Home"
-                    }
-
-                    Pages.Record {
-                        id: recordPage
-                        anchors.fill: parent
-                        visible: currentPageId === "Record"
-                        onNotify: showNotification(message, type)   // slot để hiển thị thông báo
-                        wsClient: wsClient // Truyền wsClient
-                    }
-
-                    Pages.Media {
-                        anchors.fill: parent
-                        visible: currentPageId === "Media"
-                    }
-
-                    Pages.Camera {
-                        anchors.fill: parent
-                        visible: currentPageId === "Camera"
-                    }
-
-                    Pages.Settings {
-                        id: settingsPage
-                        anchors.fill: parent
-                        visible: currentPageId === "Settings"
-                        wsClient: wsClient // Truyền wsClient
-                    }
-
-                    // --- Notification Banner ---
-                    Components.NotificationBanner {
-                        id: notificationBanner
-                        anchors.top: parent.top
-                        // Xóa dòng này để tránh xung đột
-                        topMargin: 8 // Use topMargin for vertical position
-                        width: 640 // Adjust width as needed
-                        radius: 8
-                        z: 10 // Đảm bảo nó hiển thị trên các thành phần khác
-                    }
-
-                    // --- Confirmation Dialog ---
-                    Components.ConfirmationDialog {
-                        id: confirmationDialog
+                // --- Screen Saver ---
+                Components.ScreenSaver {
+                    id: screenSaver
+                    anchors.fill: parent
+                    visible: false
+                    z: 20 // Ensure it's on top of sidebar and content
+                    currentTime: root.currentTime
+                    onClicked: {
+                        visible = false
+                        inactivityTimer.restart()
                     }
                 }
+            }
+        }
+
+        // This MouseArea covers the whole window to detect activity
+        MouseArea {
+            anchors.fill: parent
+            hoverEnabled: true // Also reset on mouse move
+            propagateComposedEvents: true // Allow events to pass to items below
+
+            onClicked: (mouse) => {
+                inactivityTimer.restart()
+                mouse.accepted = false // Let other MouseAreas handle the click
+            }
+
+            onWheel: (wheel) => {
+                inactivityTimer.restart()
+                wheel.accepted = false
+            }
+
+            onPositionChanged: (mouse) => {
+                inactivityTimer.restart()
+                mouse.accepted = false
             }
         }
     }

@@ -1,0 +1,3 @@
+Cho time sleep về 5 phút
+Hiển thị lại t hời gian trên ScreenSaver cho chuẩn, đồng bộ thời gian với Header. 
+

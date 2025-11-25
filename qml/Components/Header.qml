@@ -10,19 +10,8 @@ Rectangle {
     border.color: Theme.separator
     border.width: 1
 
-    property int fanSpeed: 0
-    property real temperature: 0.0
-    property var currentTime: new Date()
-
-    // Timer to update the current time every second
-    Timer {
-        interval: 1000
-        repeat: true
-        running: true
-        onTriggered: {
-            headerRoot.currentTime = new Date()
-        }
-    }
+    property int temperature: 0
+    property var currentTime
 
     RowLayout {
         anchors.fill: parent
@@ -43,7 +32,8 @@ Rectangle {
                 // This property can be updated from Main.qml
                 text: headerRoot.temperature.toFixed(1) + " °C"
                 color: Theme.secondaryText
-                font.pointSize: 14
+                font.pointSize: 20
+                font.bold: true
             }
         }
 
