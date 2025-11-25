@@ -8,8 +8,9 @@
     <file>qml/PageView/Camera.qml</file>
     <file>qml/PageView/Settings.qml</file>
     <file>qml/WebSocketClient.qml</file>
-    <file>qml/NotificationBanner.qml</file>
-    <file>qml/ConfirmationDialog.qml</file>
+    <file>qml/Components/NotificationBanner.qml</file>
+    <file>qml/Components/ConfirmationDialog.qml</file>
+    <file>qml/Components/Header.qml</file>
     <file>qml/Theme.qml</file>
 </qresource>
 </RCC>

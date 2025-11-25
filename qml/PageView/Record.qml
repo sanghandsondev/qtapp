@@ -29,8 +29,8 @@ Item {
                 }
                 break
             case "start_record_noti":
-                recordTime = 0
                 isRecording = true
+                recordTime = 0
                 break
             case "stop_record_noti":
                 isRecording = false
@@ -247,11 +247,21 @@ Item {
                 model: ListModel {
                     // Model is now initially empty. It will be populated by the server.
                     // {model.id, model.name, model.duration}
+                    ListElement {
+                        recordId: "fake_id_1"
+                        name: "My First Fake Recording"
+                        duration: 155 // 2:35
+                    }
+                    ListElement {
+                        recordId: "fake_id_2"
+                        name: "A very long recording name to test text eliding feature"
+                        duration: 48 // 0:48
+                    }
                 }
 
                 delegate: Rectangle {
                     width: recordListView.width
-                    height: 56
+                    height: 66
                     color: Theme.secondaryBg
                     radius: 8
 
@@ -261,31 +271,35 @@ Item {
                         anchors.rightMargin: 16
                         spacing: 12 // Add spacing between elements
 
-                        Text {
-                            text: model.name
-                            color: Theme.primaryText
-                            font.pointSize: 14
-                            elide: Text.ElideRight
-                            // Layout.fillWidth: true // Removed to allow duration to be shown
+                        // Column for Name and Duration
+                        ColumnLayout {
                             Layout.alignment: Qt.AlignVCenter
+                            spacing: 2
+
+                            Text {
+                                text: model.name
+                                color: Theme.primaryText
+                                font.pointSize: 16
+                                elide: Text.ElideRight
+                                width: parent.width
+                            }
+
+                            // Duration Text as a sub-line
+                            Text {
+                                // Assumes model has 'duration' in seconds
+                                text: formatTime(model.duration || 0)
+                                color: Theme.secondaryText
+                                font.pointSize: 12
+                                font.family: "monospace"
+                            }
                         }
 
-                        // Spacer to push duration and delete icon to the right
+                        // Spacer to push delete icon to the right
                         Item {
                             Layout.fillWidth: true
                         }
 
-                        // Duration Text
-                        Text {
-                            // Assumes model has 'duration' in seconds
-                            text: formatTime(model.duration || 0)
-                            color: Theme.secondaryText
-                            font.pointSize: 14
-                            font.family: "monospace"
-                            Layout.alignment: Qt.AlignVCenter
-                        }
-
-                        // Delete Icon
+                        // Delete Icon - This now acts as a fixed-size anchor on the right
                         Text {
                             text: "delete" // Material Symbols icon name
                             font.family: materialFontFamily
@@ -306,7 +320,8 @@ Item {
                                     )
 
                                     // Capture context for the callback
-                                    var recordId = model.id // Use the ID for deletion
+                                    // The model can have 'id' (from server) or 'recordId' (from fake ListElement)
+                                    var recordId = model.id || model.recordId // Use the ID for deletion
 
                                     // Define the function to be called on acceptance
                                     var onAccepted = function() {

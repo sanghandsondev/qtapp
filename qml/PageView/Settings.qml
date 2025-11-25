@@ -42,7 +42,7 @@ Item {
 
             ColumnLayout {
                 width: parent.width // Occupy available width inside ScrollView
-                spacing: 20
+                spacing: 16
 
                 // Connection Status Setting - Replaced RowLayout with Item for better control
                 Item {
@@ -86,7 +86,7 @@ Item {
                         anchors.rightMargin: 20 // Add margin to the right
                         anchors.verticalCenter: parent.verticalCenter
                         font.family: materialFontFamily
-                        font.pixelSize: 60
+                        font.pixelSize: 48
 
                         property bool isConnecting: wsClient && wsClient.status === WebSocket.Connecting
                         property bool isConnected: wsClient && wsClient.status === WebSocket.Open
@@ -106,6 +106,54 @@ Item {
                                     wsClient.open()
                                 }
                             }
+                        }
+                    }
+                }
+
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 1
+                    color: Theme.separator
+                }
+
+                // --- Time Format Setting ---
+                Item {
+                    Layout.fillWidth: true
+                    height: Math.max(timeFormatTextColumn.implicitHeight, timeFormatToggle.implicitHeight)
+
+                    ColumnLayout {
+                        id: timeFormatTextColumn
+                        anchors.left: parent.left
+                        anchors.verticalCenter: parent.verticalCenter
+                        spacing: 2
+
+                        Text {
+                            text: "Time Format"
+                            color: Theme.primaryText
+                            font.pointSize: 16
+                        }
+                        Text {
+                            text: Theme.is24HourFormat ? "24-Hour" : "12-Hour (AM/PM)"
+                            color: Theme.secondaryText
+                            font.pointSize: 12
+                        }
+                    }
+
+                    Text {
+                        id: timeFormatToggle
+                        anchors.right: parent.right
+                        anchors.rightMargin: 20
+                        anchors.verticalCenter: parent.verticalCenter
+                        font.family: materialFontFamily
+                        font.pixelSize: 48
+
+                        text: Theme.is24HourFormat ? "toggle_on" : "toggle_off"
+                        color: Theme.is24HourFormat ? Theme.toggleOn : Theme.toggleOff
+
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: Theme.toggleTimeFormat()
                         }
                     }
                 }
@@ -145,7 +193,7 @@ Item {
                         anchors.rightMargin: 20
                         anchors.verticalCenter: parent.verticalCenter
                         font.family: materialFontFamily
-                        font.pixelSize: 60
+                        font.pixelSize: 48
 
                         text: Theme.isDark ? "toggle_on" : "toggle_off"
                         color: Theme.isDark ? Theme.toggleOn : Theme.toggleOff

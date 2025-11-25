@@ -33,6 +33,7 @@ file(GLOB QML_FILES CONFIGURE_DEPENDS RELATIVE
     "${CMAKE_CURRENT_SOURCE_DIR}" 
     "qml/*.qml"
     "qml/PageView/*.qml"
+    "qml/Components/*.qml"
 )
 
 qt_add_resources(QtApp qml_resources

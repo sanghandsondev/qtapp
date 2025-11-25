@@ -2,10 +2,16 @@ pragma Singleton
 import QtQuick 6.4
 
 QtObject {
+    // Dark mode setting
     property bool isDark: true
-
     function toggle() {
         isDark = !isDark
+    }
+
+    // Time format setting
+    property bool is24HourFormat: true
+    function toggleTimeFormat() {
+        is24HourFormat = !is24HourFormat
     }
 
     // Define colors based on the theme
@@ -21,5 +27,5 @@ QtObject {
     readonly property color toggleOn: primaryText
     readonly property color toggleOff: isDark ? "#6b7280" : "#9ca3af"
     readonly property color bannerBg: isDark ? "#374151" : "#e5e7eb"
-    readonly property color accent: isDark ? "#3b82f6" : "#2563eb" // Blue for primary actions
+    readonly property color accent: isDark ? "#ef4444" : "#dc2626" // Red
 }

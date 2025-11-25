@@ -3,16 +3,18 @@ import com.company.style 1.0
 
 Rectangle {
     id: banner
-    width: parent.width
-    height: 80 // Tăng chiều cao
-    y: -height // Ban đầu ẩn phía trên màn hình
+    width: 600 // Sử dụng width cố định thay vì parent.width
+    height: 68
+    // Đặt vị trí ban đầu ở ngoài màn hình bên phải
+    x: parent ? parent.width : width
+    y: topMargin // Y position is now fixed
     opacity: 0 // Ban đầu trong suốt
-    color: Theme.bannerBg // Màu nền xám giống nút được chọn
-    border.width: 4 // Độ dày viền
+    color: Theme.bannerBg
+    border.width: 3
 
     property string notificationText: ""
     property string notificationType: "info" // "success", "warning", "error"
-    property int topMargin: 0 // Thêm thuộc tính topMargin
+    property int topMargin: 0
 
     // Timer để tự động ẩn
     Timer {
@@ -23,7 +25,7 @@ Rectangle {
     }
 
     // Animation để hiển thị và ẩn
-    Behavior on y {
+    Behavior on x {
         NumberAnimation { duration: 300; easing.type: Easing.OutCubic }
     }
     Behavior on opacity {
@@ -52,9 +54,8 @@ Rectangle {
         id: messageText
         anchors.centerIn: parent
         text: banner.notificationText
-        color: Theme.primaryText // Đổi màu chữ thành trắng
+        color: Theme.primaryText
         font.pointSize: 16 // Giảm kích thước font
-        // font.bold: true
     }
 
     MouseArea {
@@ -65,18 +66,25 @@ Rectangle {
 
     // Hàm để hiển thị banner
     function show(text, type) {
-        hideTimer.stop(); // Dừng timer cũ nếu có
+        hideTimer.stop();
+        // Đặt lại vị trí ra ngoài màn hình bên phải
+        banner.x = parent.width;
+        banner.opacity = 0;
+
         banner.notificationText = text;
         banner.notificationType = type;
-        banner.y = topMargin; // Trượt xuống vị trí có margin
-        banner.opacity = 1; // Hiện rõ
-        hideTimer.start(); // Bắt đầu timer mới
+
+        // Trượt vào trong màn hình, cách cạnh phải 8px
+        banner.x = parent.width - banner.width - 8;
+        banner.opacity = 1;
+        hideTimer.start();
     }
 
     // Hàm để ẩn banner
     function hide() {
         hideTimer.stop();
-        banner.y = -(banner.height + topMargin); // Trượt lên hoàn toàn
-        banner.opacity = 0; // Mờ dần
+        // Trượt ra ngoài màn hình bên phải
+        banner.x = parent.width;
+        banner.opacity = 0;
     }
 }

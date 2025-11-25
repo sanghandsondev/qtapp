@@ -7,6 +7,7 @@ import com.company.style 1.0
 
 // Import các trang con
 import "qrc:/qml/PageView/" as Pages
+import "qrc:/qml/Components/" as Components
 
 Window {
     width: 1024
@@ -41,6 +42,16 @@ Window {
                         break;
                     case "Record":
                         recordPage.processServerMessage(message.data)
+                        break;
+                    case "SystemInfo":
+                        if (header) {
+                            if (message.data.hasOwnProperty('fan_speed')) {
+                                header.fanSpeed = message.data.fan_speed;
+                            }
+                            if (message.data.hasOwnProperty('temperature')) {
+                                header.temperature = message.data.temperature;
+                            }
+                        }
                         break;
                     // case "Home":
                         // homePage.processServerMessage(message.data)
@@ -97,122 +108,136 @@ Window {
         anchors.fill: parent
         color: Theme.primaryBg // Nền chính màu xám đậm
 
-        RowLayout {
+        ColumnLayout {
             anchors.fill: parent
             spacing: 0
 
-            // Left vertical bar
-            Rectangle {
-                id: sidebar
-                Layout.preferredWidth: 120
+            // --- Top Header ---
+            Components.Header {
+                id: header
+                // The properties fanSpeed and temperature will be updated
+                // by the handleMessageFromServer function.
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
                 Layout.fillHeight: true
-                color: Theme.secondaryBg
+                spacing: 0
 
-                ColumnLayout {
-                    anchors.fill: parent
-                    anchors.topMargin: 4
-                    anchors.bottomMargin: 4
-                    spacing: 4
+                // Left vertical bar
+                Rectangle {
+                    id: sidebar
+                    Layout.preferredWidth: 120
+                    Layout.fillHeight: true
+                    color: Theme.secondaryBg
 
-                    Repeater {
-                        model: ListModel {
-                            id: pageModel
-                            ListElement { pageId: "Home"; icon: "home"; }
-                            ListElement { pageId: "Record"; icon: "fiber_manual_record"; }
-                            ListElement { pageId: "Media"; icon: "perm_media"; }
-                            ListElement { pageId: "Camera"; icon: "photo_camera"; }
-                            ListElement { pageId: "Settings"; icon: "settings"; }
-                        }
+                    ColumnLayout {
+                        anchors.fill: parent
+                        anchors.topMargin: 4
+                        anchors.bottomMargin: 4
+                        spacing: 4
 
-                        delegate: Rectangle {
-                            Layout.fillWidth: true
-                            Layout.preferredHeight: 100
-                            color: currentPageId === model.pageId ? Theme.tertiaryBg : "transparent"
-                            radius: 8
-
-                            ColumnLayout {
-                                anchors.centerIn: parent
-                                spacing: 4
-
-                                Text {
-                                    text: model.icon
-                                    font.pixelSize: 36
-                                    font.family: materialFontFamily // Sử dụng font Material Symbols
-                                    color: Theme.icon // Màu icon xám nhạt
-                                    Layout.alignment: Qt.AlignHCenter // Căn giữa theo chiều ngang
-                                }
-
-                                Text {
-                                    text: model.pageId
-                                    color: Theme.iconSubtle
-                                    font.pixelSize: 16
-                                    Layout.alignment: Text.AlignHCenter // Căn giữa theo chiều ngang
-                                }
+                        Repeater {
+                            model: ListModel {
+                                id: pageModel
+                                ListElement { pageId: "Home"; icon: "home"; }
+                                ListElement { pageId: "Record"; icon: "fiber_manual_record"; }
+                                ListElement { pageId: "Media"; icon: "perm_media"; }
+                                ListElement { pageId: "Camera"; icon: "photo_camera"; }
+                                ListElement { pageId: "Settings"; icon: "settings"; }
                             }
 
-                            MouseArea {
-                                anchors.fill: parent
-                                onClicked: {
-                                    currentPageId = model.pageId
+                            delegate: Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 100
+                                color: currentPageId === model.pageId ? Theme.tertiaryBg : "transparent"
+                                radius: 8
+
+                                ColumnLayout {
+                                    anchors.centerIn: parent
+                                    spacing: 4
+
+                                    Text {
+                                        text: model.icon
+                                        font.pixelSize: 36
+                                        font.family: materialFontFamily // Sử dụng font Material Symbols
+                                        color: Theme.icon // Màu icon xám nhạt
+                                        Layout.alignment: Qt.AlignHCenter // Căn giữa theo chiều ngang
+                                    }
+
+                                    Text {
+                                        text: model.pageId
+                                        color: Theme.iconSubtle
+                                        font.pixelSize: 16
+                                        Layout.alignment: Text.AlignHCenter // Căn giữa theo chiều ngang
+                                    }
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    onClicked: {
+                                        currentPageId = model.pageId
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
 
-            // Right content area
-            Rectangle {
-                id: contentArea
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                color: "transparent"
+                // Right content area
+                Rectangle {
+                    id: contentArea
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    color: "transparent"
 
-                // Khởi tạo tất cả các trang và chỉ hiển thị trang hiện tại.
-                // Điều này giúp giữ trạng thái của các trang khi chuyển đổi.
-                Pages.Home {
-                    anchors.fill: parent
-                    visible: currentPageId === "Home"
-                }
+                    // Khởi tạo tất cả các trang và chỉ hiển thị trang hiện tại.
+                    // Điều này giúp giữ trạng thái của các trang khi chuyển đổi.
+                    Pages.Home {
+                        anchors.fill: parent
+                        visible: currentPageId === "Home"
+                    }
 
-                Pages.Record {
-                    id: recordPage
-                    anchors.fill: parent
-                    visible: currentPageId === "Record"
-                    onNotify: showNotification(message, type)   // slot để hiển thị thông báo
-                    wsClient: wsClient // Truyền wsClient
-                }
+                    Pages.Record {
+                        id: recordPage
+                        anchors.fill: parent
+                        visible: currentPageId === "Record"
+                        onNotify: showNotification(message, type)   // slot để hiển thị thông báo
+                        wsClient: wsClient // Truyền wsClient
+                    }
 
-                Pages.Media {
-                    anchors.fill: parent
-                    visible: currentPageId === "Media"
-                }
+                    Pages.Media {
+                        anchors.fill: parent
+                        visible: currentPageId === "Media"
+                    }
 
-                Pages.Camera {
-                    anchors.fill: parent
-                    visible: currentPageId === "Camera"
-                }
+                    Pages.Camera {
+                        anchors.fill: parent
+                        visible: currentPageId === "Camera"
+                    }
 
-                Pages.Settings {
-                    id: settingsPage
-                    anchors.fill: parent
-                    visible: currentPageId === "Settings"
-                    wsClient: wsClient // Truyền wsClient
-                }
+                    Pages.Settings {
+                        id: settingsPage
+                        anchors.fill: parent
+                        visible: currentPageId === "Settings"
+                        wsClient: wsClient // Truyền wsClient
+                    }
 
-                // --- Notification Banner ---
-                NotificationBanner {
-                    id: notificationBanner
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    topMargin: 16 // Sử dụng thuộc tính topMargin thay cho anchors
-                    width: 640 // Chiều rộng của banner
-                    radius: 8
-                    z: 10 // Đảm bảo nó hiển thị trên các thành phần khác
-                }
+                    // --- Notification Banner ---
+                    Components.NotificationBanner {
+                        id: notificationBanner
+                        anchors.top: parent.top
+                        // Xóa dòng này để tránh xung đột
+                        topMargin: 8 // Use topMargin for vertical position
+                        width: 640 // Adjust width as needed
+                        radius: 8
+                        z: 10 // Đảm bảo nó hiển thị trên các thành phần khác
+                    }
 
-                // --- Confirmation Dialog ---
-                ConfirmationDialog {
-                    id: confirmationDialog
+                    // --- Confirmation Dialog ---
+                    Components.ConfirmationDialog {
+                        id: confirmationDialog
+                    }
                 }
             }
         }
