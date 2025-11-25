@@ -1,6 +1,7 @@
 import QtQuick 6.4
 import QtQuick.Layouts 1.15
 import com.company.style 1.0
+import com.company.utils 1.0
 import QtQuick.Controls 2.15
 
 Item {
@@ -16,46 +17,91 @@ Item {
     property int recordTime: 0 // in seconds
 
     // Function to handle messages from the server routed by Main.qml
-    function processServerMessage(serverData) {
-        console.log("RecordPage processing message:", JSON.stringify(serverData))
-        switch (serverData.msg) {
-            case "update_list_record":
-                // Replace the entire list with new data from the server
-                recordListView.model.clear()
-                if (serverData.data && serverData.data.records) {
-                    for (var i = 0; i < serverData.data.records.length; i++) {
-                        recordListView.model.append(serverData.data.records[i])
-                    }
-                }
-                break
+    function processServerMessage(message) {
+        console.log("RecordPage processing message:", JSON.stringify(message))
+        var msgStatus = message.status === "success" ? true : false
+        var msgType = message.data.msg
+        var serverData = message.data.data
+
+        switch (msgType) {
             case "start_record_noti":
-                isRecording = true
+                if(msgStatus){
+                    isRecording = true
+                } else {
+                    isRecording = false;
+                }
                 recordTime = 0
                 break
             case "stop_record_noti":
-                isRecording = false
+                if(msgStatus){
+                    isRecording = false
+                } else {
+                    isRecording = false;
+                }
                 recordTime = 0
                 break
             case "cancel_record_noti":
-                isRecording = false
+                if(msgStatus){
+                    isRecording = false
+                } else {
+                    isRecording = false;
+                }
                 recordTime = 0
                 break
-
-            case "remove_record_noti":
-                // Find and remove a specific record by its ID
-                if (serverData.data && serverData.data.id) {
-                    for (var j = 0; j < recordListView.model.count; j++) {
-                        if (recordListView.model.get(j).id === serverData.data.id) {
-                            recordRoot.notify("Recording '" + recordListView.model.get(j).name + "' has been deleted.", "success")
-                            recordListView.model.remove(j)
-                            break
+            case "get_all_record_noti":
+                if (msgStatus) {
+                    // Replace the entire list with new data from the server
+                    // TODO: Chưa cắt file path -> chỉ lấy tên file
+                    recordListView.model.clear()
+                    if (serverData && serverData.records) {
+                        for (var i = 0; i < serverData.records.length; i++) {
+                            var record = serverData.records[i]
+                            recordListView.model.append({
+                                recordId: record.id,
+                                name: Utils.getFileName(record.file_path),
+                                duration: record.duration_sec,
+                                filepath: record.file_path
+                            })
                         }
                     }
+                
+                } else {
+                    console.warn("Failed to get all records from server.", msgType)
                 }
                 break
+            case "insert_record_noti":
+                if (msgStatus) {
+                    // Insert the new record at the top of the list
+                    if (serverData && serverData.record) {
+                        recordListView.model.insert(0, {
+                            recordId: serverData.record.id,
+                            name: Utils.getFileName(serverData.record.file_path),
+                            duration: serverData.record.duration_sec,
+                            filepath: serverData.record.file_path
+                        })
+                    }
+                } else {
+                    console.warn("Failed to insert new record from server.", msgType)
+                }
+                break
+            case "remove_record_noti":
+                if(msgStatus) {
+                    // Find and remove a specific record by its ID
+                    if (serverData && serverData.id) {
+                        for (var j = 0; j < recordListView.model.count; j++) {
+                            if (recordListView.model.get(j).recordId === serverData.id) {
+                                recordRoot.notify("Recording '" + recordListView.model.get(j).name + "' has been deleted.", "success")
+                                recordListView.model.remove(j)
+                                break
+                            }
+                        }
+                    }
+                } else {
+                    console.warn("Failed to remove record from server.", msgType)
+                }
 
             default:
-                console.warn("RecordPage received unhandled message:", serverData.msg)
+                console.warn("RecordPage received unhandled message:", )
                 break
         }
     }
@@ -246,16 +292,18 @@ Item {
                 spacing: 8
                 model: ListModel {
                     // Model is now initially empty. It will be populated by the server.
-                    // {model.id, model.name, model.duration}
+                    // {model.recordId, model.name, model.duration, model.filepath}
                     ListElement {
                         recordId: "fake_id_1"
                         name: "My First Fake Recording"
                         duration: 155 // 2:35
+                        filepath: "/path/to/recording1.mp3"
                     }
                     ListElement {
                         recordId: "fake_id_2"
                         name: "A very long recording name to test text eliding feature"
                         duration: 48 // 0:48
+                        filepath: "/path/to/recording2.mp3"
                     }
                 }
 

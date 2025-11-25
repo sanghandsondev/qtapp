@@ -30,44 +30,25 @@ Window {
             if (message.msg) {
                 showNotification(message.msg, "error")
             }
-            return
         }
 
-        if (message.status === "success") {
-            if (message.data) {
-                // Lấy ra message.data.component để xử lý tùy theo component
-                switch (message.data.component) {
-                    case "Settings":
-                        settingsPage.processServerMessage(message.data)
-                        break;
-                    case "Record":
-                        recordPage.processServerMessage(message.data)
-                        break;
-                    case "SystemInfo":
-                        if (header) {
-                            if (message.data.hasOwnProperty('fan_speed')) {
-                                header.fanSpeed = message.data.fan_speed;
-                            }
-                            if (message.data.hasOwnProperty('temperature')) {
-                                header.temperature = message.data.temperature;
-                            }
-                        }
-                        break;
-                    // case "Home":
-                        // homePage.processServerMessage(message.data)
-                        // break;
-                    // case "Media":
-                        // mediaPage.processServerMessage(message.data)
-                        // break;
-                    // case "Camera":
-                        // cameraPage.processServerMessage(message.data)
-                        // break;
-                    default:
-                        console.warn("Unknown component in server message:", message.data.component)
-                        break;
+        if (message) {
+            // Lấy ra message.data.component để xử lý tùy theo component
+            switch (message.data.component) {
+                case "Settings":
+                    settingsPage.processServerMessage(message)
+                    break;
+                case "Record":
+                    recordPage.processServerMessage(message)
+                    break;
+                case "Header":
+                    // TODO
+                    break;
+                default:
+                    console.warn("Unknown component in server message:", message.data.component)
+                    break;
                 }
             }
-        }
     }
 
     // Instantiate WebSocket client

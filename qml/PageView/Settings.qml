@@ -133,7 +133,7 @@ Item {
                             font.pointSize: 16
                         }
                         Text {
-                            text: Theme.is24HourFormat ? "24-Hour" : "12-Hour (AM/PM)"
+                            text: Theme.is24HourFormat ? "24:00" : "12:00 AM/PM"
                             color: Theme.secondaryText
                             font.pointSize: 12
                         }

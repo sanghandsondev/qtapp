@@ -12,22 +12,15 @@ Rectangle {
 
     property int fanSpeed: 0
     property real temperature: 0.0
+    property var currentTime: new Date()
 
-    // Timer to update the clock every second
+    // Timer to update the current time every second
     Timer {
-        id: clockTimer
         interval: 1000
         repeat: true
         running: true
         onTriggered: {
-            var now = new Date()
-            if (Theme.is24HourFormat) {
-                timeText.text = Qt.formatDateTime(now, "HH:mm")
-                ampmText.text = ""
-            } else {
-                timeText.text = Qt.formatDateTime(now, "hh:mm")
-                ampmText.text = Qt.formatDateTime(now, "AP")
-            }
+            headerRoot.currentTime = new Date()
         }
     }
 
@@ -66,7 +59,19 @@ Rectangle {
 
             Text {
                 id: timeText
-                text: Qt.formatDateTime(new Date(), Theme.is24HourFormat ? "HH:mm" : "hh:mm")
+                // Bind text directly to currentTime and the format setting
+                text: {
+                    if (Theme.is24HourFormat) {
+                        return Qt.formatDateTime(headerRoot.currentTime, "HH:mm");
+                    } else {
+                        // Manual 12-hour format
+                        var hours = headerRoot.currentTime.getHours();
+                        var minutes = headerRoot.currentTime.getMinutes();
+                        var displayHours = hours % 12;
+                        if (displayHours === 0) displayHours = 12; // 0 o'clock is 12 AM/PM
+                        return (displayHours < 10 ? "0" : "") + displayHours + ":" + (minutes < 10 ? "0" : "") + minutes;
+                    }
+                }
                 color: Theme.primaryText
                 font.pointSize: 20
                 font.bold: true
@@ -74,7 +79,14 @@ Rectangle {
             }
             Text {
                 id: ampmText
-                text: Theme.is24HourFormat ? "" : Qt.formatDateTime(new Date(), "AP")
+                // Bind text directly to currentTime and the format setting
+                text: {
+                    if (Theme.is24HourFormat) {
+                        return "";
+                    } else {
+                        return headerRoot.currentTime.getHours() >= 12 ? "PM" : "AM";
+                    }
+                }
                 color: Theme.primaryText
                 font.pointSize: 12 // Smaller font for AM/PM
                 font.bold: true

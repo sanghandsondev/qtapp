@@ -9,7 +9,7 @@ QtObject {
     }
 
     // Time format setting
-    property bool is24HourFormat: true
+    property bool is24HourFormat: false
     function toggleTimeFormat() {
         is24HourFormat = !is24HourFormat
     }
