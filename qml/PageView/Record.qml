@@ -9,7 +9,8 @@ Item {
     width: parent.width
     height: parent.height
 
-    property var wsClient // Property to receive the WebSocket client
+    property var wsClient // Property to receive the WebSocket client instance from Main.qml
+    property var confirmationDialog // Property to receive the ConfirmationDialog instance
 
     signal notify(string message, string type)
 
@@ -68,8 +69,7 @@ Item {
                 } else {
                     console.warn("Failed to get all records from server.", msgType)
                 }
-                break
-            case "insert_record_noti":
+                case "insert_record_noti":         case "insert_record_noti":
                 if (msgStatus) {
                     // Insert the new record at the top of the list
                     if (serverData && serverData.record) {
@@ -290,98 +290,168 @@ Item {
                 id: recordListView
                 width: parent.width
                 spacing: 8
+                currentIndex: -1 // No item is selected initially
+
                 model: ListModel {
-                    // Model is now initially empty. It will be populated by the server.
-                    // {model.recordId, model.name, model.duration, model.filepath}
                     ListElement {
-                        recordId: "fake_id_1"
+                        recordId: 14132423
                         name: "My First Fake Recording"
                         duration: 155 // 2:35
                         filepath: "/path/to/recording1.mp3"
                     }
                     ListElement {
-                        recordId: "fake_id_2"
-                        name: "A very long recording name to test text eliding feature"
+                        recordId: 43124515135
+                        name: "A HandSome Man's Recording Example"
+                        duration: 48 // 0:48
+                        filepath: "/path/to/recording2.mp3"
+                    }
+                    ListElement {
+                        recordId: 1234566
+                        name: "A HandSome Man's Recording Example Anathor Level 2"
                         duration: 48 // 0:48
                         filepath: "/path/to/recording2.mp3"
                     }
                 }
 
                 delegate: Rectangle {
+                    id: delegateRoot
                     width: recordListView.width
-                    height: 66
-                    color: Theme.secondaryBg
+                    // Animate height change when expanding/collapsing
+                    height: isExpanded ? 128 : 66
+                    color: isExpanded ? Qt.darker(Theme.secondaryBg, 1.2) : Theme.secondaryBg
                     radius: 8
 
-                    RowLayout {
-                        anchors.fill: parent
-                        anchors.leftMargin: 16
-                        anchors.rightMargin: 16
-                        spacing: 12 // Add spacing between elements
+                    property bool isExpanded: recordListView.currentIndex === index
 
-                        // Column for Name and Duration
-                        ColumnLayout {
-                            Layout.alignment: Qt.AlignVCenter
-                            spacing: 2
+                    Behavior on height { NumberAnimation { duration: 200; easing.type: Easing.InOutQuad } }
+                    Behavior on color { ColorAnimation { duration: 200 } }
+
+                    // This MouseArea handles expand/collapse. It's placed behind the controls.
+                    MouseArea {
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+
+                        onClicked: {
+                            if (recordListView.currentIndex !== index) {
+                                recordListView.currentIndex = index // Expand
+                            }
+                            // If already expanded, do nothing to prevent collapse
+                        }
+                    }
+
+                    // The main content of the delegate is now in a ColumnLayout
+                    ColumnLayout {
+                        anchors.fill: parent
+                        spacing: 0 // No space between main row and expanded panel
+
+                        // --- Collapsed View (Always Visible) ---
+                        RowLayout {
+                            id: mainInfoRow
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 66 // Fixed height for the main row
+                            Layout.leftMargin: 16
+                            Layout.rightMargin: 16
+                            spacing: 12
 
                             Text {
+                                Layout.fillWidth: true
+                                Layout.alignment: Qt.AlignVCenter
                                 text: model.name
                                 color: Theme.primaryText
                                 font.pointSize: 16
                                 elide: Text.ElideRight
-                                width: parent.width
                             }
 
-                            // Duration Text as a sub-line
+                            // Delete Icon (moved here)
                             Text {
-                                // Assumes model has 'duration' in seconds
-                                text: formatTime(model.duration || 0)
+                                text: "delete"
+                                font.family: materialFontFamily
+                                Layout.topMargin: 4
+                                font.pixelSize: 32
                                 color: Theme.secondaryText
-                                font.pointSize: 12
-                                font.family: "monospace"
+                                visible: isExpanded // Only visible when item is expanded
+                                opacity: visible ? 1 : 0
+                                Behavior on opacity { NumberAnimation { duration: 150 } }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    anchors.margins: -8 // Larger click area
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: (mouse) => {
+                                        mouse.accepted = true // Prevent expand/collapse
+                                        recordRoot.confirmationDialog.open(
+                                            "Delete Recording",
+                                            "Are you sure you want to permanently delete '" + model.name + "'?",
+                                            "Delete"
+                                        )
+                                        var recordId = model.id || model.recordId
+                                        var onAccepted = function() {
+                                            removeRecordingById(recordId)
+                                            confirmationDialog.accepted.disconnect(onAccepted)
+                                        }
+                                        confirmationDialog.accepted.connect(onAccepted)
+                                    }
+                                }
                             }
                         }
 
-                        // Spacer to push delete icon to the right
+                        // --- Expanded Playback View (Conditionally Visible) ---
                         Item {
                             Layout.fillWidth: true
-                        }
+                            Layout.fillHeight: true
+                            visible: isExpanded
+                            opacity: isExpanded ? 1 : 0
+                            Behavior on opacity { NumberAnimation { duration: 150 } }
 
-                        // Delete Icon - This now acts as a fixed-size anchor on the right
-                        Text {
-                            text: "delete" // Material Symbols icon name
-                            font.family: materialFontFamily
-                            font.pixelSize: 24
-                            color: Theme.secondaryText
-                            Layout.alignment: Qt.AlignVCenter
-
-                            MouseArea {
+                            // The playback controls are now in a single RowLayout
+                            RowLayout {
                                 anchors.fill: parent
-                                anchors.margins: -10    // Increase clickable area
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: {
-                                    // Open confirmation dialog
-                                    confirmationDialog.open(
-                                        "Delete Recording",
-                                        "Are you sure you want to permanently delete '" + model.name + "'?",
-                                        "Delete"
-                                    )
+                                anchors.leftMargin: 16
+                                anchors.rightMargin: 16
+                                spacing: 12
+                                Layout.alignment: Qt.AlignVCenter
 
-                                    // Capture context for the callback
-                                    // The model can have 'id' (from server) or 'recordId' (from fake ListElement)
-                                    var recordId = model.id || model.recordId // Use the ID for deletion
-
-                                    // Define the function to be called on acceptance
-                                    var onAccepted = function() {
-                                        // Send delete command to server.
-                                        // The UI will update only when the server sends back a confirmation.
-                                        removeRecordingById(recordId)
-                                        // Disconnect this function from the signal (one-time signal)
-                                        confirmationDialog.accepted.disconnect(onAccepted)
+                                // Play/Pause Button
+                                Text {
+                                    text: "play_circle" // 'play_circle' or 'pause_circle'
+                                    font.family: materialFontFamily
+                                    font.pixelSize: 44 // Bigger icon
+                                    color: Theme.icon
+                                    Layout.alignment: Qt.AlignVCenter
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: (mouse) => {
+                                            mouse.accepted = true // Prevent expand/collapse
+                                            // TODO: handle play/pause
+                                            console.log("Play/Pause clicked for:", model.name)
+                                        }
                                     }
+                                }
 
-                                    // Connect the signal to our function
-                                    confirmationDialog.accepted.connect(onAccepted)
+                                Text {
+                                    text: "00:00" // Placeholder for current playback time
+                                    color: Theme.secondaryText
+                                    font.pointSize: 12
+                                    font.family: "monospace"
+                                    Layout.alignment: Qt.AlignVCenter
+                                }
+
+                                Slider {
+                                    Layout.fillWidth: true
+                                    from: 0
+                                    to: 100
+                                    value: 0 // Placeholder value
+                                    // Clicks on slider are automatically handled and won't propagate
+                                }
+
+                                Text {
+                                    text: formatTime(model.duration || 0)
+                                    color: Theme.secondaryText
+                                    font.pointSize: 12
+                                    font.family: "monospace"
+                                    Layout.alignment: Qt.AlignVCenter
                                 }
                             }
                         }

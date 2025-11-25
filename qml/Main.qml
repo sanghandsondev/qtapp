@@ -32,7 +32,7 @@ Window {
     // Timer for screen saver
     Timer {
         id: inactivityTimer
-        interval: 30000 // 5 minutes in milliseconds
+        interval: 60000 // 5 minutes in milliseconds
         running: true
         repeat: false // Will trigger once when interval is reached
         onTriggered: {
@@ -213,6 +213,7 @@ Window {
                             visible: currentPageId === "Record"
                             onNotify: showNotification(message, type)   // slot để hiển thị thông báo
                             wsClient: wsClient // Truyền wsClient
+                            confirmationDialog: confirmationDialog // Pass the dialog instance
                         }
 
                         Pages.Media {
