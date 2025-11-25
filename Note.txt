@@ -1,2 +1,16 @@
+Khi bấm vào item khác thì sẽ ngừng chơi luôn và thoát ra (reset trạng thái slider, time)
+Khi bắt đầu record thì cũng vậy
+Và khi start chơi một item thì lại CANCEL cái đang record
 
-AudioPlayer
+Xài thư viện của QT mà chơi nhạc, control slider 
+Có thể là GStreamer ? một multimedia framework chuyên để xây dựng pipeline xử lý video/audio streaming, playback, encode/decode.
+Hoặc xài mẹ QtMultimedia
+
+OpenCV là một computer vision library tập trung vào xử lý ảnh, AI, nhận diện đối tượng. → Nếu bạn muốn truyền/stream video/audio 
+thì GStreamer mạnh hơn; nếu bạn muốn phân tích nội dung hình ảnh thì OpenCV phù hợp hơn.
+
+QtMultimedia không tự viết lại toàn bộ multimedia stack, mà nó dựa trên backend khác nhau tùy hệ điều hành:
+Trên Linux (như Raspberry Pi) → QtMultimedia thường dùng GStreamer làm backend.
+
+-> Khả năng sẽ xài GStreamer + OpenCV
+Xài QtMultimedia tức là đang xài GStreamer rồi
