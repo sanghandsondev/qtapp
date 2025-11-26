@@ -206,15 +206,21 @@ Item {
     MediaPlayer {
         id: mediaPlayer
         audioOutput: audioOutput // Set the audio output
-        onPlaybackStateChanged: {
+        onPlaybackStateChanged: function(playbackState) {
             recordRoot.playbackStatus = playbackState
             if (playbackState === MediaPlayer.StoppedState) {
                 // When playback finishes or is stopped, reset position
                 recordRoot.playbackPosition = 0
             }
         }
-        onPositionChanged: recordRoot.playbackPosition = position
-        onDurationChanged: recordRoot.playbackDuration = duration
+        // onPositionChanged: recordRoot.playbackPosition = position
+        // onDurationChanged: recordRoot.playbackDuration = duration
+        onPositionChanged: function(position) {
+            recordRoot.playbackPosition = position
+        }
+        onDurationChanged: function(duration) {
+            recordRoot.playbackDuration = duration
+        }
         onErrorChanged: handleMediaError()
     }
 

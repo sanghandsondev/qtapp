@@ -1,5 +1,4 @@
 #include "SettingsManager.hpp"
-#include <QDebug>
 
 SettingsManager::SettingsManager(QObject *parent)
     : QObject(parent), m_settings("MyCompany", "QtApp") // Tên tổ chức và tên ứng dụng

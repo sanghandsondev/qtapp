@@ -1,3 +1,15 @@
+1. Thông báo dài chữ sẽ bị tràn ra ngoài
+Ngoài ra chữ thông báo nên để bé hơn chút
+
+2. Khi chơi hết bài nó quay về position 0, nhưng ko thể chơi lại tiếp được. 
+Có vẻ là trạng thái chưa chuyển đúng, cần cho nhạc chơi ms biết được
+
+3. Ko detect đc Audio Device 
+QAudioDeviceInfo::availableDevices(QAudio::AudioOutput)
+
+4. Nút nhấm méo kêu
+
+
 Khi bấm vào item khác thì sẽ ngừng chơi luôn và thoát ra (reset trạng thái slider, time)
 Khi bắt đầu record thì cũng vậy
 Và khi start chơi một item thì lại CANCEL cái đang record

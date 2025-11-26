@@ -6,6 +6,10 @@ Wants=network-online.target
 [Service]
 ExecStart=/usr/local/bin/QtApp --platform eglfs
 Environment="LD_LIBRARY_PATH=/home/pi/Qt/6.10.1/gcc_arm64/lib"
+Environment="QT_AUDIOSINK=alsa"
+Environment="QT_MEDIA_BACKEND=gstreamer"
+Environment="GST_AUDIO_BASE_SINK=alsasink"
+
 User=pi
 Group=pi
 Restart=always
