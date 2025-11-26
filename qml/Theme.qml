@@ -20,6 +20,15 @@ QtObject {
         soundTouchEnabled = !soundTouchEnabled
     }
 
+    // Volume setting (0-5 levels)
+    property int volumeLevel: 5
+    function setVolumeLevel(level) {
+        if (level >= 0 && level <= 5) {
+            volumeLevel = level
+        }
+    }
+    readonly property real volume: volumeLevel / 5.0
+
     // Define colors based on the theme
     readonly property color primaryBg: isDark ? "#111827" : "#f9fafb"      // Main background
     readonly property color secondaryBg: isDark ? "#1f2937" : "#f3f4f6"    // Sidebar, etc.

@@ -25,7 +25,7 @@ Rectangle {
             Text {
                 text: "thermostat" // Material icon for temperature
                 font.family: materialFontFamily
-                font.pixelSize: 22
+                font.pixelSize: 26
                 color: Theme.icon
             }
             Text {
@@ -34,6 +34,40 @@ Rectangle {
                 color: Theme.primaryText
                 font.pointSize: 20
                 font.bold: true
+            }
+        }
+
+        // Spacer to push time to the right
+        Item {
+            Layout.fillWidth: true
+        }
+
+        // Volume indicator in the center
+        RowLayout {
+            Layout.alignment: Qt.AlignVCenter
+            spacing: 6
+
+            // Icon changes based on volume level
+            Text {
+                font.family: materialFontFamily
+                font.pixelSize: 26
+                color: Theme.icon
+                text: {
+                    if (Theme.volumeLevel === 0) return "volume_off";
+                    if (Theme.volumeLevel <= 2) return "volume_down";
+                    return "volume_up";
+                }
+            }
+
+            // Volume level bars
+            Repeater {
+                model: 5
+                delegate: Rectangle {
+                    width: 4
+                    height: 8 + (index * 3) // Bars get taller
+                    radius: 2
+                    color: index < Theme.volumeLevel ? Theme.icon : Theme.tertiaryBg
+                }
             }
         }
 

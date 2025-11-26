@@ -196,9 +196,16 @@ Item {
         }
     }
 
+    // --- Audio Output for Media Player ---
+    AudioOutput {
+        id: audioOutput
+        volume: Theme.volume
+    }
+
     // --- Central Media Player ---
     MediaPlayer {
         id: mediaPlayer
+        audioOutput: audioOutput // Set the audio output
         onPlaybackStateChanged: {
             recordRoot.playbackStatus = playbackState
             if (playbackState === MediaPlayer.StoppedState) {

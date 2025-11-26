@@ -9,6 +9,7 @@ QtObject {
     property SoundEffect touchSound: SoundEffect {
         source: "qrc:/assets/sounds/touch_2.mp3"
         muted: !Theme.soundTouchEnabled // Mute if the setting is disabled
+        volume: Theme.volume
     }
 
     // Play sound effect for touch interactions
