@@ -3,13 +3,14 @@ import QtQuick 6.4
 import QtMultimedia 6.4
 import com.company.style 1.0
 
+// https://doc.qt.io/qt-6/qsoundeffect.html
+
 QtObject {
     id: soundManager
-
-    // https://doc.qt.io/qt-6/qsoundeffect.html
+    
     property SoundEffect touchSound: SoundEffect {
         source: "qrc:/assets/sounds/touch_2.mp3"
-        // muted: !Theme.soundTouchEnabled // Mute if the setting is disabled
+        muted: !Theme.soundTouchEnabled // Mute if the setting is disabled
         volume: Theme.volume
     }
 
@@ -18,6 +19,7 @@ QtObject {
         if (!Theme.soundTouchEnabled) {
             return
         }
+        console.log(touchSound.audioDevice)
 
         if (touchSound.status === SoundEffect.Error) {
             console.error("SoundEffect Warning:", touchSound.errorString)

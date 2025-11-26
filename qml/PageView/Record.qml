@@ -21,7 +21,7 @@ Item {
 
     // --- Playback State ---
     property int nowPlayingIndex: -1 // Index of the item currently playing in the ListView
-    property int playbackStatus: MediaPlayer.NoMedia
+    property int playbackStatus: MediaPlayer.StoppedState
     property real playbackPosition: 0
     property real playbackDuration: 1
 
@@ -38,7 +38,7 @@ Item {
     function resetPlaybackState() {
         mediaPlayer.stop()
         nowPlayingIndex = -1
-        playbackStatus = MediaPlayer.NoMedia
+        playbackStatus = MediaPlayer.StoppedState
         playbackPosition = 0
         playbackDuration = 1
     }
@@ -197,12 +197,18 @@ Item {
     }
 
     // --- Audio Output for Media Player ---
+    MediaDevices {
+        id: mediaDevices
+    }
+
     AudioOutput {
         id: audioOutput
         volume: Theme.volume
+        // device: 
     }
 
     // --- Central Media Player ---
+    // https://doc.qt.io/qt-6/qml-qtmultimedia-mediaplayer.html#stop-method
     MediaPlayer {
         id: mediaPlayer
         audioOutput: audioOutput // Set the audio output
@@ -500,10 +506,19 @@ Item {
                                                 return // Exit to wait for cancel confirmation, make sure no playback starts during recording
                                             }
 
+                                            console.log("isPlaying:", isPlaying)
+                                            console.log("isPause:", isPaused)
+                                            console.log(recordRoot.nowPlayingIndex, index)
+                                            console.log(recordRoot.playbackStatus)
+                                            console.log(MediaPlayer.PlayingState)
+                                            console.log(mediaPlayer.audioOutput.device)
+                                            // console.log(PlayingState)
+
                                             if (isPlaying) {
                                                 mediaPlayer.pause()
                                             } else {
                                                 // If another track is selected or paused, or no track is selected
+                                                // TODO: Xử lý logic sai, khi mà chơi xong mà bấm play thì nó ko vào if này nữa
                                                 if (recordRoot.nowPlayingIndex !== index || isPaused) {
                                                     if (recordRoot.nowPlayingIndex !== index) {
                                                         mediaPlayer.source = "file://" + model.filepath
@@ -515,7 +530,7 @@ Item {
                                                         handleMediaError()
                                                         return
                                                     }
-
+                                                    console.log("tryToPlay()")
                                                     mediaPlayer.play()
                                                 }
                                             }
