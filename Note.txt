@@ -18,7 +18,9 @@ Xài QtMultimedia tức là đang xài GStreamer rồi
 Đúng rồi 👍. Trong Qt 6, QAudioOutput là lớp chuyên để phát luồng âm thanh thô (PCM) ra loa, còn QAudioSource là lớp để thu âm từ micro.
 
 Nếu bạn muốn làm ứng dụng kiểu “call” (thu từ mic rồi phát trực tiếp ra loa hoặc gửi qua mạng), thì cặp đôi QAudioSource + QAudioOutput là lựa chọn chuẩn:
-
 QAudioSource: lấy dữ liệu từ micro, trả về QIODevice để bạn đọc dữ liệu PCM.
-
 QAudioOutput: nhận dữ liệu PCM và phát ra loa, cũng thông qua QIODevice để bạn ghi dữ liệu vào.
+
+Call/mic → QAudioSource + QAudioOutput
+Nhạc/video → QMediaPlayer (+ QAudioOutput)
+Hiệu ứng ngắn → QSoundEffect

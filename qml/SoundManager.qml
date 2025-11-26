@@ -8,23 +8,22 @@ QtObject {
 
     property SoundEffect touchSound: SoundEffect {
         source: "qrc:/assets/sounds/touch_2.mp3"
-        muted: !Theme.soundTouchEnabled // Tắt tiếng nếu setting bị vô hiệu hóa
+        muted: !Theme.soundTouchEnabled // Mute if the setting is disabled
     }
 
-    // Hàm để phát âm thanh khi chạm
+    // Play sound effect for touch interactions
     function playTouch() {
-        // 1. Check if sound is enabled in the theme settings first
         if (!Theme.soundTouchEnabled) {
-            return // Do nothing if sounds are disabled
+            return
         }
 
-        // 2. Proceed with playing the sound if enabled
         if (touchSound.status === SoundEffect.Error) {
-            console.error("SoundEffect Error:", touchSound.errorString)
-        } else if (touchSound.status === SoundEffect.Ready) {
+            console.error("SoundEffect Warning:", touchSound.errorString)
+        } 
+        else if (touchSound.status === SoundEffect.Ready) {
             touchSound.play()
-        } else {
-            // Optional: Log if the sound is not ready (e.g., still loading)
+        } 
+        else {
             console.warn("Touch sound is not ready to play. Status:", touchSound.status)
         }
     }

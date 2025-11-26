@@ -6,7 +6,7 @@ import QtQuick.Layouts 1.15
 import com.company.style 1.0
 import com.company.sound 1.0
 
-// Import các trang con
+// Import child components
 import "qrc:/qml/PageView/" as Pages
 import "qrc:/qml/Components/" as Components
 
@@ -20,7 +20,7 @@ Window {
     property string currentPageId: "Home"
     property var currentTime: new Date()
 
-    // Global timer to update the current time for all components
+    // Global timer to update the current time for all components (e.g., Header, ScreenSaver)
     Timer {
         interval: 1000
         repeat: true
@@ -30,7 +30,7 @@ Window {
         }
     }
 
-    // Timer for screen saver
+    // Timer for ScreenSaver activation
     Timer {
         id: inactivityTimer
         interval: 300000 // 5 minutes in milliseconds
@@ -203,7 +203,7 @@ Window {
                         color: "transparent"
 
                         // Khởi tạo tất cả các trang và chỉ hiển thị trang hiện tại.
-                        // Điều này giúp giữ trạng thái của các trang khi chuyển đổi.
+                        // Điều này giúp giữ lại trạng thái của các trang trước đó khi chuyển đổi.
                         Pages.Home {
                             anchors.fill: parent
                             visible: currentPageId === "Home"
@@ -213,9 +213,9 @@ Window {
                             id: recordPage
                             anchors.fill: parent
                             visible: currentPageId === "Record"
-                            onNotify: (message, type) => showNotification(message, type)   // slot để hiển thị thông báo
-                            wsClient: wsClient // Truyền wsClient
-                            confirmationDialog: confirmationDialog // Pass the dialog instance
+                            onNotify: (message, type) => showNotification(message, type)    // slot hiển thị thông báo từ Record page
+                            wsClient: wsClient                      // Pass the wsClient instance
+                            confirmationDialog: confirmationDialog  // Pass the dialog instance
                         }
 
                         Pages.Media {
@@ -232,18 +232,17 @@ Window {
                             id: settingsPage
                             anchors.fill: parent
                             visible: currentPageId === "Settings"
-                            wsClient: wsClient // Truyền wsClient
+                            wsClient: wsClient          // Pass the wsClient instance
                         }
 
                         // --- Notification Banner ---
                         Components.NotificationBanner {
                             id: notificationBanner
                             anchors.top: parent.top
-                            // Xóa dòng này để tránh xung đột
-                            topMargin: 8 // Use topMargin for vertical position
-                            width: 640 // Adjust width as needed
+                            topMargin: 8
+                            width: 640
                             radius: 8
-                            z: 10 // Đảm bảo nó hiển thị trên các thành phần khác
+                            z: 10     // Ensure it's on top of sidebar and content
                         }
 
                         // --- Confirmation Dialog ---
@@ -258,7 +257,7 @@ Window {
                     id: screenSaver
                     anchors.fill: parent
                     visible: false
-                    z: 20 // Ensure it's on top of sidebar and content
+                    z: 21       // Ensure it's on top of all content (including Banner and Dialog)
                     currentTime: root.currentTime
                     onTouched: {
                         visible = false

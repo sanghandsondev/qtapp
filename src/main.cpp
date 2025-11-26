@@ -26,13 +26,13 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("isPiBuild", false);
 #endif
 
-    // Đăng ký Theme singleton
+    // Đăng ký Theme singleton (QObject-based)
     qmlRegisterSingletonType(QUrl("qrc:/qml/Theme.qml"), "com.company.style", 1, 0, "Theme");
 
-    // Đăng ký Utils singleton
+    // Đăng ký Utils singleton (QObject-based)
     qmlRegisterSingletonType(QUrl("qrc:/qml/Utils.qml"), "com.company.utils", 1, 0, "Utils");
 
-    // Đăng ký SoundManager singleton
+    // Đăng ký SoundManager singleton (QObject-based)
     qmlRegisterSingletonType(QUrl("qrc:/qml/SoundManager.qml"), "com.company.sound", 1, 0, "SoundManager");
 
     // Đăng ký WebSocketClient.qml để có thể sử dụng trong QML

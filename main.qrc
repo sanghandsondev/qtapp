@@ -18,7 +18,8 @@
     <file>qml/Components/Header.qml</file>
     <file>qml/Components/ScreenSaver.qml</file>
 
-    <file>assets/sounds/touch.wav</file>
+    <file>assets/sounds/touch_1.mp3</file>
+    <file>assets/sounds/touch_2.mp3</file>
     <file>assets/fonts/ttf/material-symbols-rounded-latin-500-normal.ttf</file>
 </qresource>
 </RCC>
