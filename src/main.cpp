@@ -4,7 +4,8 @@
 #include <QFontDatabase>
 #include <QQuickWindow>
 #include <QMediaPlayer>
-#include "SettingsManager.h"
+
+#include "SettingsManager.hpp"
 
 int main(int argc, char *argv[])
 {
@@ -12,27 +13,31 @@ int main(int argc, char *argv[])
     app.setOrganizationName("MyCompany");
     app.setApplicationName("QtApp");
 
+    QQmlApplicationEngine engine;
+
+    // Đăng ký font Material Symbols -> QML
     int fontId = QFontDatabase::addApplicationFont(":/assets/fonts/ttf/material-symbols-rounded-latin-500-normal.ttf");
     if (fontId == -1) {
         qWarning() << "Failed to load Material Symbols font.";
     }
     QString materialFontFamily = QFontDatabase::applicationFontFamilies(fontId).at(0);
-
-    QQmlApplicationEngine engine;
-
-    // Cung cấp tên font cho QML thông qua context property
+    
     engine.rootContext()->setContextProperty("materialFontFamily", materialFontFamily);
 
+    // Đăng ký biến "isPiBuild" -> QML
 #ifdef RASPBERRYPI_BUILD
     engine.rootContext()->setContextProperty("isPiBuild", true);
 #else
     engine.rootContext()->setContextProperty("isPiBuild", false);
 #endif
 
-    // Đăng ký SettingsManager (C++-based)
+    // Đăng ký SettingsManager (C++-based) -> QML
     qmlRegisterType<SettingsManager>("com.company.settings", 1, 0, "SettingsManager");
 
-    // Đăng ký Theme singleton (QObject-based)
+    // Đăng ký WebSocketClient type (QObject-based)
+    qmlRegisterType(QUrl("qrc:/qml/WebSocketClient.qml"), "com.company.ws", 1, 0, "WebSocketClient");
+
+    // Đăng ký Theme singleton (QObject-based) -> QML
     qmlRegisterSingletonType(QUrl("qrc:/qml/Theme.qml"), "com.company.style", 1, 0, "Theme");
 
     // Đăng ký Utils singleton (QObject-based)
@@ -41,11 +46,7 @@ int main(int argc, char *argv[])
     // Đăng ký SoundManager singleton (QObject-based)
     qmlRegisterSingletonType(QUrl("qrc:/qml/SoundManager.qml"), "com.company.sound", 1, 0, "SoundManager");
 
-    // Đăng ký WebSocketClient.qml để có thể sử dụng trong QML
-    // với tên "WebSocketClient" trong module "com.company.ws" phiên bản 1.0
-    qmlRegisterType(QUrl("qrc:/qml/WebSocketClient.qml"), "com.company.ws", 1, 0, "WebSocketClient");
-
-    // Tải tệp QML ()
+    // Load main QML file
     const QUrl url(QStringLiteral("qrc:/qml/Main.qml"));
 
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,

@@ -1,4 +1,4 @@
-#include "SettingsManager.h"
+#include "SettingsManager.hpp"
 #include <QDebug>
 
 SettingsManager::SettingsManager(QObject *parent)
@@ -7,71 +7,73 @@ SettingsManager::SettingsManager(QObject *parent)
     qDebug() << "SettingsManager initialized. Settings file:" << m_settings.fileName();
 }
 
-QVariant SettingsManager::value(const QString &key, const QVariant &defaultValue) const
-{
-    QVariant val = m_settings.value(key, defaultValue);
-    qDebug() << "SettingsManager READ:" << key << "- Value:" << val;
-    return val;
-}
+// QVariant SettingsManager::value(const QString &key, const QVariant &defaultValue) const
+// {
+//     QVariant val = m_settings.value(key, defaultValue);
+//     qDebug() << "SettingsManager READ:" << key << "- Value:" << val;
+//     return val;
+// }
 
-void SettingsManager::setValue(const QString &key, const QVariant &value)
-{
-    if (m_settings.value(key) != value) {
-        m_settings.setValue(key, value);
-        qDebug() << "SettingsManager WRITE:" << key << "=" << value;
-    }
-}
+// void SettingsManager::setValue(const QString &key, const QVariant &value)
+// {
+//     if (m_settings.value(key) != value) {
+//         m_settings.setValue(key, value);
+//         qDebug() << "SettingsManager WRITE:" << key << "=" << value;
+//     }
+// }
 
-// --- Implementation for new properties ---
+// -- Specific getters for properties --
 
-bool SettingsManager::isDark() const
+bool SettingsManager::getIsDark() const
 {
     return m_settings.value("theme/isDark", true).toBool();
 }
 
-void SettingsManager::setIsDark(bool isDark)
+bool SettingsManager::getIs24HourFormat() const
 {
-    if (this->isDark() != isDark) {
-        m_settings.setValue("theme/isDark", isDark);
-        emit isDarkChanged();
-    }
+    return m_settings.value("theme/is24HourFormat", true).toBool();
 }
 
-bool SettingsManager::is24HourFormat() const
-{
-    return m_settings.value("theme/is24HourFormat", false).toBool();
-}
-
-void SettingsManager::setIs24HourFormat(bool is24HourFormat)
-{
-    if (this->is24HourFormat() != is24HourFormat) {
-        m_settings.setValue("theme/is24HourFormat", is24HourFormat);
-        emit is24HourFormatChanged();
-    }
-}
-
-bool SettingsManager::soundTouchEnabled() const
+bool SettingsManager::getSoundTouchEnabled() const
 {
     return m_settings.value("theme/soundTouchEnabled", true).toBool();
 }
 
-void SettingsManager::setSoundTouchEnabled(bool soundTouchEnabled)
+int SettingsManager::getVolumeLevel() const
 {
-    if (this->soundTouchEnabled() != soundTouchEnabled) {
-        m_settings.setValue("theme/soundTouchEnabled", soundTouchEnabled);
-        emit soundTouchEnabledChanged();
+    return m_settings.value("theme/volumeLevel", 4).toInt();
+}
+
+// -- Specific setters for properties --
+
+void SettingsManager::setIsDark(bool isDark)
+{
+    if (this->getIsDark() != isDark) {
+        m_settings.setValue("theme/isDark", isDark);
+        emit onIsDarkChanged();       
     }
 }
 
-int SettingsManager::volumeLevel() const
+void SettingsManager::setIs24HourFormat(bool is24HourFormat)
 {
-    return m_settings.value("theme/volumeLevel", 5).toInt();
+    if (this->getIs24HourFormat() != is24HourFormat) {
+        m_settings.setValue("theme/is24HourFormat", is24HourFormat);
+        emit onIs24HourFormatChanged();
+    }
+}
+
+void SettingsManager::setSoundTouchEnabled(bool soundTouchEnabled)
+{
+    if (this->getSoundTouchEnabled() != soundTouchEnabled) {
+        m_settings.setValue("theme/soundTouchEnabled", soundTouchEnabled);
+        emit onSoundTouchEnabledChanged();
+    }
 }
 
 void SettingsManager::setVolumeLevel(int volumeLevel)
 {
-    if (volumeLevel >= 0 && volumeLevel <= 5 && this->volumeLevel() != volumeLevel) {
+    if (volumeLevel >= 0 && volumeLevel <= 5 && this->getVolumeLevel() != volumeLevel) {
         m_settings.setValue("theme/volumeLevel", volumeLevel);
-        emit volumeLevelChanged();
+        emit onVolumeLevelChanged();
     }
 }
