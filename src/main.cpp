@@ -4,10 +4,13 @@
 #include <QFontDatabase>
 #include <QQuickWindow>
 #include <QMediaPlayer>
+#include "SettingsManager.h"
 
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
+    app.setOrganizationName("MyCompany");
+    app.setApplicationName("QtApp");
 
     int fontId = QFontDatabase::addApplicationFont(":/assets/fonts/ttf/material-symbols-rounded-latin-500-normal.ttf");
     if (fontId == -1) {
@@ -25,6 +28,9 @@ int main(int argc, char *argv[])
 #else
     engine.rootContext()->setContextProperty("isPiBuild", false);
 #endif
+
+    // Đăng ký SettingsManager (C++-based)
+    qmlRegisterType<SettingsManager>("com.company.settings", 1, 0, "SettingsManager");
 
     // Đăng ký Theme singleton (QObject-based)
     qmlRegisterSingletonType(QUrl("qrc:/qml/Theme.qml"), "com.company.style", 1, 0, "Theme");

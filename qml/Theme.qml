@@ -1,33 +1,36 @@
 pragma Singleton
 import QtQuick 6.4
+import com.company.settings 1.0
 
 QtObject {
+    readonly property SettingsManager settingsManager: SettingsManager { id: _settingsManager }
+
     // Dark mode setting
-    property bool isDark: true
+    property alias isDark: _settingsManager.isDark
     function toggle() {
-        isDark = !isDark
+        _settingsManager.isDark = !_settingsManager.isDark
     }
 
     // Time format setting
-    property bool is24HourFormat: false
+    property alias is24HourFormat: _settingsManager.is24HourFormat
     function toggleTimeFormat() {
-        is24HourFormat = !is24HourFormat
+        _settingsManager.is24HourFormat = !_settingsManager.is24HourFormat
     }
 
     // Sound Touch setting
-    property bool soundTouchEnabled: true
+    property alias soundTouchEnabled: _settingsManager.soundTouchEnabled
     function toggleSoundTouch() {
-        soundTouchEnabled = !soundTouchEnabled
+        _settingsManager.soundTouchEnabled = !_settingsManager.soundTouchEnabled
     }
 
     // Volume setting (0-5 levels)
-    property int volumeLevel: 5
+    property alias volumeLevel: _settingsManager.volumeLevel
     function setVolumeLevel(level) {
         if (level >= 0 && level <= 5) {
-            volumeLevel = level
+            _settingsManager.volumeLevel = level
         }
     }
-    readonly property real volume: volumeLevel / 5.0
+    readonly property real volume: _settingsManager.volumeLevel / 5.0
 
     // Define colors based on the theme
     readonly property color primaryBg: isDark ? "#111827" : "#f9fafb"      // Main background

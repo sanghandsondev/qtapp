@@ -17,7 +17,10 @@ qt_policy(SET QTP0001 NEW)
 
 # --- Project Sources ---
 # Automatically find all .cpp files in the src directory
-file(GLOB_RECURSE SOURCES "src/*.cpp")
+file(GLOB_RECURSE SOURCES 
+    "src/*.cpp"
+    "src/*.h"
+)
 
 # --- Target Definition ---
 qt_add_executable(QtApp ${SOURCES})
