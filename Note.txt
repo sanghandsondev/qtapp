@@ -7,8 +7,9 @@ Có vẻ là trạng thái chưa chuyển đúng, cần cho nhạc chơi m
 3. Ko detect đc Audio Device 
 QAudioDeviceInfo::availableDevices(QAudio::AudioOutput)
 
-4. Nút nhấm méo kêu
+4. Nút nhấn méo kêu, có vẻ thiếu AudioOutput gì đó cho thằng đó rồi
 
+/////////////////////////////////////////////////////////////////////////////
 
 Khi bấm vào item khác thì sẽ ngừng chơi luôn và thoát ra (reset trạng thái slider, time)
 Khi bắt đầu record thì cũng vậy
