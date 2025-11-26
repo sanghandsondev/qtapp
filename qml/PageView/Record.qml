@@ -3,6 +3,7 @@ import QtQuick.Layouts 1.15
 import com.company.style 1.0
 import com.company.utils 1.0
 import QtQuick.Controls 2.15
+import QtMultimedia 6.4
 
 Item {
     id: recordRoot
@@ -17,6 +18,30 @@ Item {
     property bool isRecording: false
     property int recordTime: 0 // in seconds
 
+    // --- Playback State ---
+    property int nowPlayingIndex: -1 // Index of the item currently playing in the ListView
+    property int playbackStatus: MediaPlayer.NoMedia
+    property real playbackPosition: 0
+    property real playbackDuration: 1
+
+    // Function to handle media player errors
+    function handleMediaError() {
+        if (mediaPlayer.error !== MediaPlayer.NoError) {
+            console.error("MediaPlayer Error:", mediaPlayer.errorString)
+            recordRoot.notify("Error playing audio: " + mediaPlayer.errorString, "error")
+            resetPlaybackState()
+        }
+    }
+
+    // Function to reset playback state, typically for the item that was playing
+    function resetPlaybackState() {
+        mediaPlayer.stop()
+        nowPlayingIndex = -1
+        playbackStatus = MediaPlayer.NoMedia
+        playbackPosition = 0
+        playbackDuration = 1
+    }
+
     // Function to handle messages from the server routed by Main.qml
     function processServerMessage(message) {
         console.log("RecordPage processing message:", JSON.stringify(message))
@@ -28,6 +53,7 @@ Item {
             case "start_record_noti":
                 if(msgStatus){
                     isRecording = true
+                    resetPlaybackState() // Stop playback when recording starts
                 } else {
                     isRecording = false;
                 }
@@ -133,6 +159,8 @@ Item {
     function startRecording() {
         if (wsClient && wsClient.sendMessage({ command: "start_record", data: {} })) {
             console.log("Start recording...")
+            // Stop any ongoing playback when starting a new recording
+            resetPlaybackState()
         }
     }
 
@@ -163,6 +191,21 @@ Item {
         if (wsClient && wsClient.sendMessage({ command: "get_all_record", data: {} })) {
             console.log("Requesting all records from server.")
         }
+    }
+
+    // --- Central Media Player ---
+    MediaPlayer {
+        id: mediaPlayer
+        onPlaybackStateChanged: {
+            recordRoot.playbackStatus = playbackState
+            if (playbackState === MediaPlayer.StoppedState) {
+                // When playback finishes or is stopped, reset position
+                recordRoot.playbackPosition = 0
+            }
+        }
+        onPositionChanged: recordRoot.playbackPosition = position
+        onDurationChanged: recordRoot.playbackDuration = duration
+        onErrorChanged: handleMediaError()
     }
 
     ColumnLayout {
@@ -322,6 +365,8 @@ Item {
                     radius: 8
 
                     property bool isExpanded: recordListView.currentIndex === index
+                    property bool isPlaying: recordRoot.nowPlayingIndex === index && recordRoot.playbackStatus === MediaPlayer.PlayingState
+                    property bool isPaused: recordRoot.nowPlayingIndex === index && recordRoot.playbackStatus === MediaPlayer.PausedState
 
                     Behavior on height { NumberAnimation { duration: 200; easing.type: Easing.InOutQuad } }
                     Behavior on color { ColorAnimation { duration: 200 } }
@@ -334,7 +379,11 @@ Item {
 
                         onClicked: {
                             if (recordListView.currentIndex !== index) {
-                                recordListView.currentIndex = index // Expand
+                                // If another item was playing, stop it and reset its state
+                                if (recordRoot.nowPlayingIndex !== -1 && recordRoot.nowPlayingIndex !== index) {
+                                    recordRoot.resetPlaybackState()
+                                }
+                                recordListView.currentIndex = index // Expand new item
                             }
                             // If already expanded, do nothing to prevent collapse
                         }
@@ -414,7 +463,7 @@ Item {
 
                                 // Play/Pause Button
                                 Text {
-                                    text: "play_circle" // 'play_circle' or 'pause_circle'
+                                    text: isPlaying ? "pause_circle" : "play_circle"
                                     font.family: materialFontFamily
                                     font.pixelSize: 44 // Bigger icon
                                     color: Theme.icon
@@ -424,14 +473,39 @@ Item {
                                         cursorShape: Qt.PointingHandCursor
                                         onClicked: (mouse) => {
                                             mouse.accepted = true // Prevent expand/collapse
-                                            // TODO: handle play/pause
-                                            console.log("Play/Pause clicked for:", model.name)
+
+                                            // If recording, cancel it first
+                                            if (isRecording) {
+                                                cancelRecording()
+                                                return // Exit to wait for cancel confirmation, make sure no playback starts during recording
+                                            }
+
+                                            if (isPlaying) {
+                                                mediaPlayer.pause()
+                                            } else {
+                                                // If another track is selected or paused, or no track is selected
+                                                if (recordRoot.nowPlayingIndex !== index || isPaused) {
+                                                    if (recordRoot.nowPlayingIndex !== index) {
+                                                        mediaPlayer.source = "file://" + model.filepath
+                                                        recordRoot.nowPlayingIndex = index
+                                                    }
+
+                                                    // Re-check for error before playing, in case the source was already bad
+                                                    if (mediaPlayer.error !== MediaPlayer.NoError) {
+                                                        handleMediaError()
+                                                        return
+                                                    }
+
+                                                    mediaPlayer.play()
+                                                }
+                                            }
                                         }
                                     }
                                 }
 
                                 Text {
-                                    text: "00:00" // Placeholder for current playback time
+                                    // Show current position if playing/paused, otherwise "00:00"
+                                    text: (isPlaying || isPaused) ? formatTime(Math.floor(recordRoot.playbackPosition / 1000)) : "00:00"
                                     color: Theme.secondaryText
                                     font.pointSize: 12
                                     font.family: "monospace"
@@ -441,9 +515,13 @@ Item {
                                 Slider {
                                     Layout.fillWidth: true
                                     from: 0
-                                    to: 100
-                                    value: 0 // Placeholder value
-                                    // Clicks on slider are automatically handled and won't propagate
+                                    to: (isPlaying || isPaused) ? recordRoot.playbackDuration : 1
+                                    value: (isPlaying || isPaused) ? recordRoot.playbackPosition : 0
+                                    enabled: (isPlaying || isPaused)
+
+                                    onMoved: (value) => {
+                                        mediaPlayer.seek(value)
+                                    }
                                 }
 
                                 Text {

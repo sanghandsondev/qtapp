@@ -28,4 +28,5 @@ QtObject {
     readonly property color toggleOff: isDark ? "#6b7280" : "#9ca3af"
     readonly property color bannerBg: isDark ? "#374151" : "#e5e7eb"
     readonly property color accent: isDark ? "#ef4444" : "#dc2626" // Red
+    readonly property color success: isDark ? "#22c55e" : "#16a34a" // Green for success states
 }

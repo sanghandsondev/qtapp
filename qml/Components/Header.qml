@@ -31,7 +31,7 @@ Rectangle {
             Text {
                 // This property can be updated from Main.qml
                 text: headerRoot.temperature.toFixed(1) + " °C"
-                color: Theme.secondaryText
+                color: Theme.primaryText
                 font.pointSize: 20
                 font.bold: true
             }

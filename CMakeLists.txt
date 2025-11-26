@@ -11,7 +11,7 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
 # --- Find Qt Packages ---
-find_package(Qt6 REQUIRED COMPONENTS Gui Quick Qml WebSockets)
+find_package(Qt6 REQUIRED COMPONENTS Gui Quick Qml WebSockets Multimedia)
 
 qt_policy(SET QTP0001 NEW)
 
@@ -47,6 +47,7 @@ target_link_libraries(QtApp PRIVATE
     Qt6::Quick
     Qt6::Qml
     Qt6::WebSockets
+    Qt6::Multimedia
 )
 
 # --- Installation ---

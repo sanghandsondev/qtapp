@@ -3,6 +3,7 @@
 #include <QQmlContext>
 #include <QFontDatabase>
 #include <QQuickWindow>
+#include <QMediaPlayer>
 
 int main(int argc, char *argv[])
 {

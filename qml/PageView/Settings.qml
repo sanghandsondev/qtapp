@@ -93,7 +93,11 @@ Item {
                         property bool canConnect: wsClient ? (wsClient.status === WebSocket.Closed || wsClient.status === WebSocket.Error) : false
 
                         text: isConnected || isConnecting ? "toggle_on" : "toggle_off"
-                        color: isConnected ? Theme.toggleOn : Theme.toggleOff // Green when connected, gray otherwise
+                        color: {
+                            if (isConnected) return Theme.success; // Green when connected
+                            if (isConnecting) return Theme.toggleOn; // Default "on" color when connecting
+                            return Theme.toggleOff; // Gray otherwise
+                        }
 
                         opacity: isConnecting ? 0.2 : 1.0
 
