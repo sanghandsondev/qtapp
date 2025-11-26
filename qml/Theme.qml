@@ -14,6 +14,12 @@ QtObject {
         is24HourFormat = !is24HourFormat
     }
 
+    // Sound Touch setting
+    property bool soundTouchEnabled: true
+    function toggleSoundTouch() {
+        soundTouchEnabled = !soundTouchEnabled
+    }
+
     // Define colors based on the theme
     readonly property color primaryBg: isDark ? "#111827" : "#f9fafb"      // Main background
     readonly property color secondaryBg: isDark ? "#1f2937" : "#f3f4f6"    // Sidebar, etc.
@@ -28,5 +34,6 @@ QtObject {
     readonly property color toggleOff: isDark ? "#6b7280" : "#9ca3af"
     readonly property color bannerBg: isDark ? "#374151" : "#e5e7eb"
     readonly property color accent: isDark ? "#ef4444" : "#dc2626" // Red
+    readonly property color accentSubtle: isDark ? "#991b1b" : "#fca5a5" // Lighter/darker red for borders
     readonly property color success: isDark ? "#22c55e" : "#16a34a" // Green for success states
 }

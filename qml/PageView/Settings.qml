@@ -4,6 +4,7 @@ import QtQuick.Layouts 1.15
 import QtQuick.Controls 2.15
 import QtWebSockets 1.0
 import com.company.style 1.0
+import com.company.sound 1.0
 
 Item {
     id: settingsRoot
@@ -106,6 +107,7 @@ Item {
                             enabled: connectionToggle.canConnect
                             cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                             onClicked: {
+                                SoundManager.playTouch()
                                 if (wsClient) {
                                     wsClient.open()
                                 }
@@ -157,7 +159,10 @@ Item {
                         MouseArea {
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
-                            onClicked: Theme.toggleTimeFormat()
+                            onClicked: {
+                                SoundManager.playTouch()
+                                Theme.toggleTimeFormat()
+                            }
                         }
                     }
                 }
@@ -205,7 +210,61 @@ Item {
                         MouseArea {
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
-                            onClicked: Theme.toggle()
+                            onClicked: {
+                                SoundManager.playTouch()
+                                Theme.toggle()
+                            }
+                        }
+                    }
+                }
+
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 1
+                    color: Theme.separator
+                }
+
+                // --- Sound Touch Setting ---
+                Item {
+                    Layout.fillWidth: true
+                    height: Math.max(soundTouchTextColumn.implicitHeight, soundTouchToggle.implicitHeight)
+
+                    ColumnLayout {
+                        id: soundTouchTextColumn
+                        anchors.left: parent.left
+                        anchors.verticalCenter: parent.verticalCenter
+                        spacing: 2
+
+                        Text {
+                            text: "Sound Touch"
+                            color: Theme.primaryText
+                            font.pointSize: 16
+                        }
+                        Text {
+                            text: Theme.soundTouchEnabled ? "Enabled" : "Disabled"
+                            color: Theme.secondaryText
+                            font.pointSize: 12
+                        }
+                    }
+
+                    Text {
+                        id: soundTouchToggle
+                        anchors.right: parent.right
+                        anchors.rightMargin: 20
+                        anchors.verticalCenter: parent.verticalCenter
+                        font.family: materialFontFamily
+                        font.pixelSize: 48
+
+                        text: Theme.soundTouchEnabled ? "toggle_on" : "toggle_off"
+                        color: Theme.soundTouchEnabled ? Theme.toggleOn : Theme.toggleOff
+
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                SoundManager.playTouch()
+                                Theme.toggleSoundTouch()
+                            }
                         }
                     }
                 }

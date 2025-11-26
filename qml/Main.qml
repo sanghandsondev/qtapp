@@ -4,6 +4,7 @@ import QtWebSockets 1.0
 import com.company.ws 1.0
 import QtQuick.Layouts 1.15
 import com.company.style 1.0
+import com.company.sound 1.0
 
 // Import các trang con
 import "qrc:/qml/PageView/" as Pages
@@ -185,6 +186,7 @@ Window {
                                     MouseArea {
                                         anchors.fill: parent
                                         onClicked: {
+                                            SoundManager.playTouch()
                                             currentPageId = model.pageId
                                         }
                                     }

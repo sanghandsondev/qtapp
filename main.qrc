@@ -3,9 +3,11 @@
 <qresource prefix="/">
     <file>qml/Main.qml</file>
     <file>qml/WebSocketClient.qml</file>
-    <file>qml/PageView/Home.qml</file>
     <file>qml/Theme.qml</file>
+    <file>qml/Utils.qml</file>
+    <file>qml/SoundManager.qml</file>
 
+    <file>qml/PageView/Home.qml</file>
     <file>qml/PageView/Record.qml</file>
     <file>qml/PageView/Media.qml</file>
     <file>qml/PageView/Camera.qml</file>
@@ -15,5 +17,8 @@
     <file>qml/Components/ConfirmationDialog.qml</file>
     <file>qml/Components/Header.qml</file>
     <file>qml/Components/ScreenSaver.qml</file>
+
+    <file>assets/sounds/touch.wav</file>
+    <file>assets/fonts/ttf/material-symbols-rounded-latin-500-normal.ttf</file>
 </qresource>
 </RCC>

@@ -4,6 +4,7 @@ import com.company.style 1.0
 import com.company.utils 1.0
 import QtQuick.Controls 2.15
 import QtMultimedia 6.4
+import com.company.sound 1.0
 
 Item {
     id: recordRoot
@@ -95,7 +96,8 @@ Item {
                 } else {
                     console.warn("Failed to get all records from server.", msgType)
                 }
-                case "insert_record_noti":         case "insert_record_noti":
+                break
+            case "insert_record_noti":
                 if (msgStatus) {
                     // Insert the new record at the top of the list
                     if (serverData && serverData.record) {
@@ -125,9 +127,10 @@ Item {
                 } else {
                     console.warn("Failed to remove record from server.", msgType)
                 }
+                break
 
             default:
-                console.warn("RecordPage received unhandled message:", )
+                console.warn("RecordPage received unhandled message:", msgType)
                 break
         }
     }
@@ -265,6 +268,7 @@ Item {
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
+                        SoundManager.playTouch()
                         if (isRecording) {
                             stopRecording()
                         } else {
@@ -304,7 +308,10 @@ Item {
                 MouseArea {
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: cancelRecording()
+                    onClicked: {
+                        SoundManager.playTouch()
+                        cancelRecording()
+                    }
                 }
             }
         }

@@ -32,6 +32,9 @@ int main(int argc, char *argv[])
     // Đăng ký Utils singleton
     qmlRegisterSingletonType(QUrl("qrc:/qml/Utils.qml"), "com.company.utils", 1, 0, "Utils");
 
+    // Đăng ký SoundManager singleton
+    qmlRegisterSingletonType(QUrl("qrc:/qml/SoundManager.qml"), "com.company.sound", 1, 0, "SoundManager");
+
     // Đăng ký WebSocketClient.qml để có thể sử dụng trong QML
     // với tên "WebSocketClient" trong module "com.company.ws" phiên bản 1.0
     qmlRegisterType(QUrl("qrc:/qml/WebSocketClient.qml"), "com.company.ws", 1, 0, "WebSocketClient");
