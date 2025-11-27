@@ -10,7 +10,7 @@ Rectangle {
     border.color: Theme.separator
     border.width: 1
 
-    readonly property real temperature: 0.0
+    readonly property int temperature: 0
     property var currentTime
 
     // Function to process messages from the server
