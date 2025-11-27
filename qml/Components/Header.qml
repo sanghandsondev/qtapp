@@ -10,7 +10,7 @@ Rectangle {
     border.color: Theme.separator
     border.width: 1
 
-    readonly property int temperature: 0
+    property int temperature: 0
     property var currentTime
 
     // Function to process messages from the server
@@ -23,7 +23,12 @@ Rectangle {
 
         if (msgType === "update_temperature_noti") {
             if (msgStatus) {
-                headerRoot.temperature = serverData.temperature
+                headerRoot.temperature = serverData.temperature     
+                //  qrc:/qml/Components/Header.qml:26: Error: Cannot assign [undefined] to int
+                // console.log("Received temperature from server:", serverData.temperature)
+                // console.log("Type of received temperature:", typeof serverData.temperature)
+                // headerRoot.temperature = parseInt(serverData.temperature)
+
                 console.log("Updated temperature to:", headerRoot.temperature)
             }
         } else {

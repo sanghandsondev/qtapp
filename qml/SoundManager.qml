@@ -7,11 +7,20 @@ import com.company.style 1.0
 
 QtObject {
     id: soundManager
-    
-    property SoundEffect touchSound: SoundEffect {
-        source: "qrc:/assets/sounds/touch_2.mp3"
-        muted: !Theme.soundTouchEnabled // Mute if the setting is disabled
+
+    property var mediaDevices: MediaDevices {}
+
+    property var audioOutput: AudioOutput {
         volume: Theme.volume
+        device: soundManager.mediaDevices.defaultAudioOutput
+    }
+    
+    property var mediaPlayer: MediaPlayer {
+        source: "file:///home/pi/sangank/QtApp/assets/sounds/touch_2.mp3"
+        audioOutput: soundManager.audioOutput
+        onErrorChanged: {
+            console.error("MediaPlayer Error:", mediaPlayer.errorString)
+        }
     }
 
     // Play sound effect for touch interactions
@@ -19,16 +28,9 @@ QtObject {
         if (!Theme.soundTouchEnabled) {
             return
         }
-        console.log(touchSound.audioDevice)
 
-        if (touchSound.status === SoundEffect.Error) {
-            console.error("SoundEffect Warning:", touchSound.errorString)
-        } 
-        else if (touchSound.status === SoundEffect.Ready) {
-            touchSound.play()
-        } 
-        else {
-            console.warn("Touch sound is not ready to play. Status:", touchSound.status)
-        }
+        console.log("mediaPlayer.source: ", mediaPlayer.source)
+        console.log("mediaPlayer.mediaStatus: ", mediaPlayer.mediaStatus)
+        mediaPlayer.play()
     }
 }

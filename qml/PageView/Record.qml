@@ -203,7 +203,7 @@ Item {
     AudioOutput {
         id: audioOutput
         volume: Theme.volume
-        // device: 
+        device: mediaDevices.defaultAudioOutput
     }
 
     // --- Central Media Player ---

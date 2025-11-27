@@ -1,15 +1,4 @@
 
-2. Khi chơi hết bài nó quay về position 0, nhưng ko thể chơi lại tiếp được. 
-Có vẻ là trạng thái chưa chuyển đúng, cần cho nhạc chơi ms biết được            // ĐÃ FIX, CHECK Ở NHÀ SAU
-
-Nov 27 01:39:05 raspberrypi QtApp[40465]: qrc:/qml/PageView/Record.qml:557: TypeError: Property 'seek' of object QQuickMediaPlayer(0x55b1e9f9a0) is not a function
-Nov 27 01:39:10 raspberrypi QtApp[40465]: qrc:/qml/PageView/Record.qml:557: TypeError: Property 'seek' of object QQuickMediaPlayer(0x55b1e9f9a0) is not a function
-// ĐÃ FIX, CHECK Ở NHÀ SAU
-
-3. Ko detect đc Audio Device 
-export GST_AUDIOSINK=alsasink
-export GST_AUDIOSINK=pulsesink
-
 // PipeWire (dc QT uu tien)
 sudo apt install pipewire \
                  pipewire-audio-client-libraries \
@@ -19,40 +8,10 @@ sudo apt install pipewire \
 wpctl status
 wpctl set-default <node_id>
 
-systemctl --user status pipewire
-systemctl --user status wireplumber
-systemctl --user status pipewire-pulse
+1/ Thực sự thì cần lọc nhiễu hơn nữa. Nhưng thôi
 
-systemctl --user restart pipewire pipewire-pulse
-systemctl --user status pipewire-pulse
-
-
-// PulseAudio (Chi cai dat va start khi ma Pipewire ko hoat dong)
-sudo apt install gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-pulseaudio gstreamer1.0-pipewire gstreamer1.0-alsa
-
-sudo apt install pulseaudio \
-                 pulseaudio-utils \
-                 pulseaudio-module-bluetooth \
-
-
-systemctl status pulseaudio
-systemctl start pulseaudio
-systemctl enable pulseaudio
-
-// Nếu thấy dòng pulseaudio --daemonize=yes hoặc tương tự thì nó đang chạy.
-ps -ef | grep pulseaudio
-pactl info
-
-pactl list short sinks
-pactl set-default-sink <sink_name>
-
-4. SoundEffect
-sudo apt install ffmpeg
-ffmpeg -i touch_2.mp3 -ar 44100 -ac 2 -f wav touch_2.wav
-ffmpeg -i touch_2.mp3 -ar 44100 -ac 2 -c:a pcm_s16le touch_3.wav
-
-Lỗi device fix xong -> Cái SoundEffect vẫn ko xài được thì -> Chuyển sang MediaPlayer mà Xài
-
+2/ Hiển thị sẵn time duration của record, ở cuối tên. Khi colap thì ẩn mất đi thôi.
+Cả enabled và visible
 
 /////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
