@@ -53,9 +53,12 @@ Rectangle {
     Text {
         id: messageText
         anchors.centerIn: parent
+        width: parent.width - 24 // Thêm padding
         text: banner.notificationText
         color: Theme.primaryText
-        font.pointSize: 16 // Giảm kích thước font
+        font.pointSize: 12 // Giảm kích thước font
+        elide: Text.ElideRight // Thêm dấu "..." cho văn bản dài
+        horizontalAlignment: Text.AlignHCenter // Căn giữa văn bản ngắn
     }
 
     MouseArea {

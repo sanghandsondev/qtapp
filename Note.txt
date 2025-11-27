@@ -1,12 +1,10 @@
-1. Thông báo dài chữ sẽ bị tràn ra ngoài
-Ngoài ra chữ thông báo nên để bé hơn chút
 
 2. Khi chơi hết bài nó quay về position 0, nhưng ko thể chơi lại tiếp được. 
-Có vẻ là trạng thái chưa chuyển đúng, cần cho nhạc chơi ms biết được
+Có vẻ là trạng thái chưa chuyển đúng, cần cho nhạc chơi ms biết được            // ĐÃ FIX, CHECK Ở NHÀ SAU
 
 Nov 27 01:39:05 raspberrypi QtApp[40465]: qrc:/qml/PageView/Record.qml:557: TypeError: Property 'seek' of object QQuickMediaPlayer(0x55b1e9f9a0) is not a function
 Nov 27 01:39:10 raspberrypi QtApp[40465]: qrc:/qml/PageView/Record.qml:557: TypeError: Property 'seek' of object QQuickMediaPlayer(0x55b1e9f9a0) is not a function
-
+// ĐÃ FIX, CHECK Ở NHÀ SAU
 
 3. Ko detect đc Audio Device 
 QAudioDeviceInfo::availableDevices(QAudio::AudioOutput)

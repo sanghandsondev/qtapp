@@ -93,7 +93,7 @@ Item {
             return true
         } else {
             console.warn("Cannot send message, WebSocket is not open. Current status:", socket.status)
-            root.wsError("Not connected to the Server.")
+            root.wsError("Not connected to the Server. Go Settings for trying reconnect.")
             return false
         }
     }

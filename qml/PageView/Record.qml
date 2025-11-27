@@ -393,6 +393,7 @@ Item {
                     property bool isExpanded: recordListView.currentIndex === index
                     property bool isPlaying: recordRoot.nowPlayingIndex === index && recordRoot.playbackStatus === MediaPlayer.PlayingState
                     property bool isPaused: recordRoot.nowPlayingIndex === index && recordRoot.playbackStatus === MediaPlayer.PausedState
+                    property bool wasPlayingBeforeSeek: false // To store playback state before seeking
 
                     Behavior on height { NumberAnimation { duration: 200; easing.type: Easing.InOutQuad } }
                     Behavior on color { ColorAnimation { duration: 200 } }
@@ -410,8 +411,10 @@ Item {
                                     recordRoot.resetPlaybackState()
                                 }
                                 recordListView.currentIndex = index // Expand new item
+                            } else {
+                                recordListView.currentIndex = -1 // Collapse if already expanded
+                                recordRoot.resetPlaybackState()
                             }
-                            // If already expanded, do nothing to prevent collapse
                         }
                     }
 
@@ -479,6 +482,15 @@ Item {
                             opacity: isExpanded ? 1 : 0
                             Behavior on opacity { NumberAnimation { duration: 150 } }
 
+                            // This MouseArea prevents clicks from propagating to the delegate's main MouseArea,
+                            // allowing interaction with the controls inside (Slider, buttons).
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: (mouse) => {
+                                    mouse.accepted = true
+                                }
+                            }
+
                             // The playback controls are now in a single RowLayout
                             RowLayout {
                                 anchors.fill: parent
@@ -517,9 +529,8 @@ Item {
                                             if (isPlaying) {
                                                 mediaPlayer.pause()
                                             } else {
-                                                // If another track is selected or paused, or no track is selected
-                                                // TODO: Xử lý logic sai, khi mà chơi xong mà bấm play thì nó ko vào if này nữa
-                                                if (recordRoot.nowPlayingIndex !== index || isPaused) {
+                                                // If another track is selected, or the current one is paused, or the current one has stopped (finished playing)
+                                                if (recordRoot.nowPlayingIndex !== index || isPaused || recordRoot.playbackStatus === MediaPlayer.StoppedState) {
                                                     if (recordRoot.nowPlayingIndex !== index) {
                                                         mediaPlayer.source = "file://" + model.filepath
                                                         recordRoot.nowPlayingIndex = index
@@ -548,14 +559,50 @@ Item {
                                 }
 
                                 Slider {
+                                    id: playbackSlider
                                     Layout.fillWidth: true
                                     from: 0
                                     to: (isPlaying || isPaused) ? recordRoot.playbackDuration : 1
                                     value: (isPlaying || isPaused) ? recordRoot.playbackPosition : 0
-                                    enabled: (isPlaying || isPaused)
+                                    // enabled: (isPlaying || isPaused)
+                                    enabled: true       // TODO
+                                    opacity: enabled ? 1.0 : 0.4 // Make it more visually distinct when disabled
 
-                                    onMoved: (value) => {
-                                        mediaPlayer.seek(value)
+                                    Behavior on opacity { NumberAnimation { duration: 200 } }
+
+                                    handle: Rectangle {
+                                        x: playbackSlider.leftPadding + playbackSlider.visualPosition * (playbackSlider.availableWidth - width)
+                                        y: playbackSlider.topPadding + playbackSlider.availableHeight / 2 - height / 2
+                                        width: 16
+                                        height: 16
+                                        radius: 8
+                                        color: Theme.secondaryText
+                                        visible: playbackSlider.pressed || playbackSlider.hovered
+                                    }
+
+                                    // When the slider handle is moved, update the media position
+                                    onMoved: {
+                                        mediaPlayer.position = playbackSlider.value
+                                        console.log("Slider moved to:", playbackSlider.value)
+                                    }
+
+                                    // Handle both press and release of the slider
+                                    onPressedChanged: {
+                                        if (pressed) {
+                                            // User pressed the handle: pause playback
+                                            console.log("Slider pressed")
+                                            if (isPlaying) {
+                                                delegateRoot.wasPlayingBeforeSeek = true
+                                                mediaPlayer.pause()
+                                            } else {
+                                                delegateRoot.wasPlayingBeforeSeek = false
+                                            }
+                                        } else {
+                                            // User released the handle: resume if it was playing before
+                                            if (delegateRoot.wasPlayingBeforeSeek) {
+                                                mediaPlayer.play()
+                                            }
+                                        }
                                     }
                                 }
 
