@@ -66,7 +66,7 @@ Window {
                     recordPage.processServerMessage(message)
                     break;
                 case "Header":
-                    // TODO
+                    header.processServerMessage(message)
                     break;
                 default:
                     console.warn("Unknown component in server message:", message.data.component)
@@ -121,7 +121,7 @@ Window {
             Components.Header {
                 id: header
                 currentTime: root.currentTime
-                // TODO: The properties fanSpeed and temperature will be updated
+                // The properties fanSpeed and temperature will be updated
                 // by the handleMessageFromServer function.
             }
 

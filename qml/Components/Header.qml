@@ -10,8 +10,26 @@ Rectangle {
     border.color: Theme.separator
     border.width: 1
 
-    property int temperature: 0
+    readonly property int temperature: 0
     property var currentTime
+
+    // Function to process messages from the server
+    function processServerMessage(message) {
+        var msgStatus = message.status
+        var msgType = message.data.msg
+        var serverData = message.data.data
+
+        console.log("Header Component processing message:", msgType)
+
+        if (msgType === "update_temperature_noti") {
+            if (msgStatus) {
+                headerRoot.temperature = serverData.temperature
+                console.log("Updated temperature to:", headerRoot.temperature)
+            }
+        } else {
+            console.warn("Header Component received unknown message type:", msgType)
+        }
+    }
 
     RowLayout {
         anchors.fill: parent
@@ -26,7 +44,11 @@ Rectangle {
                 text: "thermostat" // Material icon for temperature
                 font.family: materialFontFamily
                 font.pixelSize: 26
-                color: Theme.icon
+                color: {
+                    if (headerRoot.temperature < 20) return "#3b82f6"; // Blue for cold
+                    if (headerRoot.temperature > 26) return Theme.accent; // Red for hot
+                    return Theme.icon; // Default color for normal
+                }
             }
             Text {
                 // This property can be updated from Main.qml

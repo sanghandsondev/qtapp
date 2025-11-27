@@ -45,11 +45,11 @@ Item {
 
     // Function to handle messages from the server routed by Main.qml
     function processServerMessage(message) {
-        console.log("RecordPage processing message:", JSON.stringify(message))
         var msgStatus = message.status === "success" ? true : false
         var msgType = message.data.msg
         var serverData = message.data.data
 
+        console.log("RecordPage processing message:", msgType, "Status:", message.status)
         switch (msgType) {
             case "start_record_noti":
                 if(msgStatus){
@@ -79,7 +79,6 @@ Item {
             case "get_all_record_noti":
                 if (msgStatus) {
                     // Replace the entire list with new data from the server
-                    // TODO: Chưa cắt file path -> chỉ lấy tên file
                     recordListView.model.clear()
                     if (serverData && serverData.records) {
                         for (var i = 0; i < serverData.records.length; i++) {
