@@ -7,22 +7,55 @@ Nov 27 01:39:10 raspberrypi QtApp[40465]: qrc:/qml/PageView/Record.qml:557: Type
 // ĐÃ FIX, CHECK Ở NHÀ SAU
 
 3. Ko detect đc Audio Device 
-QAudioDeviceInfo::availableDevices(QAudio::AudioOutput)
-Nov 27 02:04:40 raspberrypi QtApp[10983]: Failed to connect to pipewire instance "Host is down"
-Nov 27 02:04:40 raspberrypi QtApp[10983]: PulseAudioService: pa_context_connect() failed
+export GST_AUDIOSINK=alsasink
+export GST_AUDIOSINK=pulsesink
+
+// PipeWire (dc QT uu tien)
+sudo apt install pipewire \
+                 pipewire-audio-client-libraries \
+                 wireplumber \
+                 pipewire-pulse
+
+wpctl status
+wpctl set-default <node_id>
+
+systemctl --user status pipewire
+systemctl --user status wireplumber
+systemctl --user status pipewire-pulse
+
+systemctl --user restart pipewire pipewire-pulse
+systemctl --user status pipewire-pulse
 
 
-4. Nút nhấn méo kêu, có vẻ thiếu AudioOutput gì đó cho thằng đó rồi
-./configure \
-    -prefix $QT_INSTALL \
-    -release \
-    -skip qtwebengine \
-    -DQT_FEATURE_gstreamer=ON \
-    -DQT_FEATURE_alsa=ON \
-    -DQT_FEATURE_pulseaudio=ON \
-    -DQT_FEATURE_pipewire=ON
+// PulseAudio (Chi cai dat va start khi ma Pipewire ko hoat dong)
+sudo apt install gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-pulseaudio gstreamer1.0-pipewire gstreamer1.0-alsa
+
+sudo apt install pulseaudio \
+                 pulseaudio-utils \
+                 pulseaudio-module-bluetooth \
+
+
+systemctl status pulseaudio
+systemctl start pulseaudio
+systemctl enable pulseaudio
+
+// Nếu thấy dòng pulseaudio --daemonize=yes hoặc tương tự thì nó đang chạy.
+ps -ef | grep pulseaudio
+pactl info
+
+pactl list short sinks
+pactl set-default-sink <sink_name>
+
+4. SoundEffect
+sudo apt install ffmpeg
+ffmpeg -i touch_2.mp3 -ar 44100 -ac 2 -f wav touch_2.wav
+ffmpeg -i touch_2.mp3 -ar 44100 -ac 2 -c:a pcm_s16le touch_3.wav
+
+Lỗi device fix xong -> Cái SoundEffect vẫn ko xài được thì -> Chuyển sang MediaPlayer mà Xài
+
 
 /////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 
 Khi bấm vào item khác thì sẽ ngừng chơi luôn và thoát ra (reset trạng thái slider, time)
 Khi bắt đầu record thì cũng vậy

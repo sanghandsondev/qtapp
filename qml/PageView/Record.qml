@@ -606,12 +606,13 @@ Item {
                                     }
                                 }
 
+                                // Duration Text
                                 Text {
-                                    text: formatTime(model.duration || 0)
-                                    color: Theme.secondaryText
-                                    font.pointSize: 12
-                                    font.family: "monospace"
-                                    Layout.alignment: Qt.AlignVCenter
+                                        text: formatTime(model.duration || 0)
+                                        color: Theme.secondaryText
+                                        font.pointSize: 12
+                                        font.family: "monospace"
+                                        Layout.alignment: Qt.AlignVCenter
                                 }
                             }
                         }
