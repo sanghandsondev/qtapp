@@ -130,6 +130,7 @@ Item {
                 if (currentSubPage === "") return 0;
                 if (currentSubPage === "bluetooth") return 1;
                 if (currentSubPage === "display") return 2;
+                if (currentSubPage === "sound") return 3;
                 return 0; // Default to main list
             }
 
@@ -365,47 +366,53 @@ Item {
                         color: Theme.separator
                     }
 
-                    // --- Sound Touch Setting ---
+                    // --- Sound Setting ---
                     Item {
                         Layout.fillWidth: true
-                        height: Math.max(soundTouchTextColumn.implicitHeight, soundTouchToggle.implicitHeight)
+                        height: Math.max(soundTextColumn.implicitHeight, 48) // Use fixed height for consistency
+
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                SoundManager.playTouch()
+                                currentSubPage = "sound"
+                                subPageTitle = "Sound"
+                            }
+                        }
 
                         ColumnLayout {
-                            id: soundTouchTextColumn
+                            id: soundTextColumn
                             anchors.left: parent.left
                             anchors.verticalCenter: parent.verticalCenter
                             spacing: 2
 
                             Text {
-                                text: "Sound Touch"
+                                text: "Sound"
                                 color: Theme.primaryText
                                 font.pointSize: 16
                             }
                             Text {
-                                text: Theme.soundTouchEnabled ? "Enabled" : "Disabled"
+                                text: "Touch sounds, volume"
                                 color: Theme.secondaryText
                                 font.pointSize: 12
                             }
                         }
 
-                        Text {
-                            id: soundTouchToggle
+                        // Right side: Navigation arrow
+                        RowLayout {
                             anchors.right: parent.right
                             anchors.rightMargin: 20
                             anchors.verticalCenter: parent.verticalCenter
-                            font.family: materialFontFamily
-                            font.pixelSize: 48
+                            spacing: 8
 
-                            text: Theme.soundTouchEnabled ? "toggle_on" : "toggle_off"
-                            color: Theme.soundTouchEnabled ? Theme.toggleOn : Theme.toggleOff
-
-                            MouseArea {
-                                anchors.fill: parent
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: {
-                                    SoundManager.playTouch()
-                                    Theme.toggleSoundTouch()
-                                }
+                            // Navigation Arrow
+                            Text {
+                                text: "chevron_right" // > icon
+                                font.family: materialFontFamily
+                                font.pixelSize: 32
+                                color: Theme.secondaryText
+                                Layout.alignment: Qt.AlignVCenter
                             }
                         }
                     }
@@ -414,90 +421,6 @@ Item {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 1
                         color: Theme.separator
-                    }
-
-                    // --- Volume Setting ---
-                    Item {
-                        Layout.fillWidth: true
-                        height: Math.max(volumeTextColumn.implicitHeight, volumeControl.implicitHeight)
-
-                        ColumnLayout {
-                            id: volumeTextColumn
-                            anchors.left: parent.left
-                            anchors.verticalCenter: parent.verticalCenter
-                            spacing: 2
-
-                            Text {
-                                text: "System Volume"
-                                color: Theme.primaryText
-                                font.pointSize: 16
-                            }
-                            Text {
-                                text: "Volume: " + Theme.volumeLevel*20 + " %"
-                                color: Theme.secondaryText
-                                font.pointSize: 12
-                            }
-                        }
-
-                        RowLayout {
-                            id: volumeControl
-                            anchors.right: parent.right
-                            anchors.rightMargin: 20
-                            anchors.verticalCenter: parent.verticalCenter
-                            spacing: 16 // Khoảng cách lớn giữa các nút và cụm volume
-
-                            // Decrease Volume Button
-                            Text {
-                                text: "remove"
-                                font.family: materialFontFamily
-                                font.pixelSize: 32
-                                color: Theme.volumeLevel > 0 ? Theme.icon : Theme.tertiaryBg
-                                MouseArea {
-                                    anchors.fill: parent
-                                    anchors.margins: -10        // Increase clickable area
-                                    cursorShape: Qt.PointingHandCursor
-                                    enabled: Theme.volumeLevel > 0
-                                    onClicked: {
-                                        SoundManager.playTouch()
-                                        Theme.setVolumeLevel(Theme.volumeLevel - 1)
-                                    }
-                                }
-                            }
-
-                            // Volume level indicator (grouped in its own layout)
-                            RowLayout {
-                                spacing: 4 // Khoảng cách nhỏ giữa các thanh volume
-                                Repeater {
-                                    model: 5
-                                    delegate: Rectangle {
-                                        width: 24
-                                        height: 14
-                                        radius: 2
-                                        color: index < Theme.volumeLevel ? Theme.toggleOn : Theme.tertiaryBg
-                                        border.color: Theme.separator
-                                        border.width: 1
-                                    }
-                                }
-                            }
-
-                            // Increase Volume Button
-                            Text {
-                                text: "add"
-                                font.family: materialFontFamily
-                                font.pixelSize: 32
-                                color: Theme.volumeLevel < 5 ? Theme.icon : Theme.tertiaryBg
-                                MouseArea {
-                                    anchors.fill: parent
-                                    anchors.margins: -10        // Increase clickable area
-                                    cursorShape: Qt.PointingHandCursor
-                                    enabled: Theme.volumeLevel < 5
-                                    onClicked: {
-                                        SoundManager.playTouch()
-                                        Theme.setVolumeLevel(Theme.volumeLevel + 1)
-                                    }
-                                }
-                            }
-                        }
                     }
                 }
             }
@@ -509,6 +432,11 @@ Item {
 
             // --- Display Sub-Page ---
             SettingsPages.Display {
+                onBackRequested: settingsRoot.goBack()
+            }
+
+            // --- Sound Sub-Page ---
+            SettingsPages.Sound {
                 onBackRequested: settingsRoot.goBack()
             }
 
