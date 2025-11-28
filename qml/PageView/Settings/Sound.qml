@@ -5,8 +5,6 @@ import com.company.style 1.0
 import com.company.sound 1.0
 
 Item {
-    anchors.fill: parent
-
     // Signal to notify the parent (Settings.qml) to go back
     signal backRequested()
 
@@ -204,171 +202,198 @@ Item {
             }
 
             // --- Output Device Setting ---
-            ColumnLayout {
-                id: outputDeviceLayout // Give an id to the layout
+            Item {
                 Layout.fillWidth: true
-                spacing: 8
+                // The height will be just the button's height. The dropdown will appear on top of other elements.
+                height: 64
+                z: outputDeviceLayout.expanded ? 1 : 0 // Bring to front when expanded
 
-                property bool expanded: false
+                ColumnLayout {
+                    id: outputDeviceLayout
+                    width: parent.width
 
-                // --- Main Row for Output Device ---
-                RowLayout {
-                    Layout.fillWidth: true
-                    height: 64
+                    property bool expanded: false
 
-                    // Left side: Icon and text
-                    RowLayout {
-                        Layout.alignment: Qt.AlignVCenter
-                        Layout.rightMargin: 10
-                        spacing: 12
-
-                        Text {
-                            text: "speaker" // Speaker icon
-                            font.family: materialFontFamily
-                            font.pixelSize: 28
-                            color: Theme.icon
-                            Layout.alignment: Qt.AlignVCenter
-                        }
-
-                        ColumnLayout {
-                            spacing: 2
-                            Layout.alignment: Qt.AlignVCenter
-
-                            Text {
-                                text: "Output Device"
-                                color: Theme.primaryText
-                                font.pointSize: 16
-                            }
-                            Text {
-                                text: "Choose where to play sound"
-                                color: Theme.secondaryText
-                                font.pointSize: 12
-                            }
+                    onExpandedChanged: {
+                        if (expanded) {
+                            deviceList.forceLayout()
                         }
                     }
 
-                    Item { Layout.fillWidth: true } // Spacer
+                    // --- Main Row for Output Device ---
+                    RowLayout {
+                        width: parent.width
+                        height: 64
 
-                    // Right side: Dropdown-like button
-                    Rectangle {
-                        id: deviceButton
-                        width: 250
-                        height: 40
-                        Layout.alignment: Qt.AlignVCenter
-                        Layout.rightMargin: 20
-                        color: Theme.tertiaryBg
-                        border.color: Theme.buttonBorder
-                        border.width: 1
-                        radius: 6
-
+                        // Left side: Icon and text
                         RowLayout {
-                            anchors.fill: parent
-                            anchors.leftMargin: 12
-                            anchors.rightMargin: 8
+                            Layout.alignment: Qt.AlignVCenter
+                            Layout.rightMargin: 10
+                            spacing: 12
 
                             Text {
-                                Layout.fillWidth: true
-                                Layout.alignment: Qt.AlignVCenter
-                                text: SoundManager.audioOutput.device.description
-                                color: Theme.primaryText
-                                font.pointSize: 14
-                                elide: Text.ElideRight
-                            }
-
-                            Text {
-                                text: "arrow_drop_down"
+                                text: "speaker" // Speaker icon
                                 font.family: materialFontFamily
                                 font.pixelSize: 28
                                 color: Theme.icon
-                                rotation: parent.parent.parent.expanded ? 180 : 0
-                                Behavior on rotation { RotationAnimation { duration: 200 } }
+                                Layout.alignment: Qt.AlignVCenter
+                            }
+
+                            ColumnLayout {
+                                spacing: 2
+                                Layout.alignment: Qt.AlignVCenter
+
+                                Text {
+                                    text: "Output Device"
+                                    color: Theme.primaryText
+                                    font.pointSize: 16
+                                }
+                                Text {
+                                    text: "Choose where to play sound"
+                                    color: Theme.secondaryText
+                                    font.pointSize: 12
+                                }
                             }
                         }
 
-                        MouseArea {
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: {
-                                SoundManager.playTouch()
-                                parent.parent.expanded = !parent.parent.expanded
-                            }
-                        }
-                    }
-                }
+                        Item { Layout.fillWidth: true } // Spacer
 
-                // --- Expanded List of Devices ---
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.rightMargin: 20
-                    Layout.leftMargin: deviceButton.x
-                    height: expanded ? Math.min(deviceList.contentHeight, 170) : 0 // Limit max height
-                    clip: true
-                    color: Theme.tertiaryBg
-                    border.color: Theme.buttonBorder
-                    border.width: 1
-                    radius: 6
+                        // Right side: Dropdown-like button and the dropdown list itself
+                        Item {
+                            id: dropdownContainer
+                            width: 250
+                            height: 40
+                            Layout.alignment: Qt.AlignVCenter
+                            Layout.rightMargin: 20
 
-                    Behavior on height { NumberAnimation { duration: 200; easing.type: Easing.InOutQuad } }
-
-                    ScrollView {
-                        anchors.fill: parent
-                        clip: true
-                        ScrollBar.vertical.policy: ScrollBar.AsNeeded
-
-                        ListView {
-                            id: deviceList
-                            width: parent.width
-                            spacing: 2
-                            model: SoundManager.mediaDevices.audioOutputs.length > 0 ? SoundManager.mediaDevices.audioOutputs : ["No output devices found"]
-
-                            delegate: Rectangle {
-                                width: parent.width
+                            Rectangle {
+                                id: deviceButton
+                                anchors.left: parent.left
+                                anchors.right: parent.right
+                                anchors.top: parent.top
                                 height: 40
-                                radius: 4
-                                color: "transparent"
-                                property bool isDevice: typeof modelData !== "string"
-                                property bool isCurrent: isDevice && modelData.description === SoundManager.audioOutput.device.description
+                                color: Theme.tertiaryBg
+                                border.color: Theme.buttonBorder
+                                border.width: 1
 
+                                // Cover the bottom border when expanded
                                 Rectangle {
-                                    anchors.fill: parent
-                                    color: Theme.accent
-                                    radius: 4
-                                    opacity: isCurrent ? 0.2 : (deviceMouseArea.hovered ? 0.1 : 0)
-                                    Behavior on opacity { NumberAnimation { duration: 150 } }
+                                    width: parent.width - (2 * parent.border.width)
+                                    height: parent.border.width
+                                    anchors.horizontalCenter: parent.horizontalCenter
+                                    anchors.bottom: parent.bottom
+                                    color: parent.color
+                                    visible: outputDeviceLayout.expanded
                                 }
 
                                 RowLayout {
                                     anchors.fill: parent
-                                    anchors.leftMargin: 8
+                                    anchors.leftMargin: 12
                                     anchors.rightMargin: 8
 
                                     Text {
                                         Layout.fillWidth: true
                                         Layout.alignment: Qt.AlignVCenter
-                                        text: isDevice ? modelData.description : modelData
-                                        color: isDevice ? Theme.primaryText : Theme.secondaryText
+                                        text: SoundManager.audioOutput.device.description
+                                        color: Theme.primaryText
                                         font.pointSize: 14
                                         elide: Text.ElideRight
                                     }
+
                                     Text {
-                                        text: "check"
+                                        text: "arrow_drop_down"
                                         font.family: materialFontFamily
-                                        font.pixelSize: 24
-                                        color: Theme.accent
-                                        visible: isCurrent
+                                        font.pixelSize: 28
+                                        color: Theme.icon
+                                        rotation: outputDeviceLayout.expanded ? 180 : 0
+                                        Behavior on rotation { RotationAnimation { duration: 200 } }
                                     }
                                 }
 
                                 MouseArea {
-                                    id: deviceMouseArea
                                     anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: isDevice ? Qt.PointingHandCursor : Qt.ArrowCursor
-                                    enabled: isDevice
+                                    cursorShape: Qt.PointingHandCursor
                                     onClicked: {
                                         SoundManager.playTouch()
-                                        Theme.setAudioOutputDevice(modelData.description)
-                                        outputDeviceLayout.expanded = false // Use the id to access expanded property
+                                        outputDeviceLayout.expanded = !outputDeviceLayout.expanded
+                                    }
+                                }
+                            }
+
+                            // --- Expanded List of Devices ---
+                            Rectangle {
+                                width: deviceButton.width
+                                height: outputDeviceLayout.expanded ? Math.min(deviceList.contentHeight, 170) : 0
+                                clip: true
+                                color: Theme.tertiaryBg
+                                border.color: Theme.buttonBorder
+                                border.width: 1
+                                // Hide top border by moving it up by 1 pixel when expanded
+                                y: deviceButton.height - (outputDeviceLayout.expanded ? 1 : 0)
+
+                                Behavior on height { NumberAnimation { duration: 100; easing.type: Easing.InOutQuad } }
+                                Behavior on y { NumberAnimation { duration: 100; easing.type: Easing.InOutQuad } }
+
+                                ScrollView {
+                                    anchors.fill: parent
+                                    clip: true
+                                    ScrollBar.vertical.policy: ScrollBar.AsNeeded
+
+                                    ListView {
+                                        id: deviceList
+                                        width: parent.width
+                                        spacing: 2
+                                        model: SoundManager.mediaDevices.audioOutputs.length > 0 ? SoundManager.mediaDevices.audioOutputs : ["No output devices found"]
+
+                                        delegate: Rectangle {
+                                            width: parent.width
+                                            height: 40
+                                            color: "transparent"
+                                            property bool isDevice: typeof modelData !== "string"
+                                            property bool isCurrent: isDevice && modelData.description === SoundManager.audioOutput.device.description
+
+                                            Rectangle {
+                                                anchors.fill: parent
+                                                color: Theme.accent
+                                                opacity: isCurrent ? 0.2 : (deviceMouseArea.hovered ? 0.1 : 0)
+                                                Behavior on opacity { NumberAnimation { duration: 100 } }
+                                            }
+
+                                            RowLayout {
+                                                anchors.fill: parent
+                                                anchors.leftMargin: 8
+                                                anchors.rightMargin: 8
+
+                                                Text {
+                                                    Layout.fillWidth: true
+                                                    Layout.alignment: Qt.AlignVCenter
+                                                    text: isDevice ? modelData.description : modelData
+                                                    color: isDevice ? Theme.primaryText : Theme.secondaryText
+                                                    font.pointSize: 14
+                                                    elide: Text.ElideRight
+                                                }
+                                                Text {
+                                                    text: "check"
+                                                    font.family: materialFontFamily
+                                                    font.pixelSize: 24
+                                                    color: Theme.accent
+                                                    visible: isCurrent
+                                                }
+                                            }
+
+                                            MouseArea {
+                                                id: deviceMouseArea
+                                                anchors.fill: parent
+                                                hoverEnabled: true
+                                                cursorShape: isDevice ? Qt.PointingHandCursor : Qt.ArrowCursor
+                                                enabled: isDevice
+                                                onClicked: {
+                                                    SoundManager.playTouch()
+                                                    Theme.setAudioOutputDevice(modelData.description)
+                                                    outputDeviceLayout.expanded = false // Use the id to access expanded property
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -381,6 +406,13 @@ Item {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 1
                 color: Theme.separator
+            }
+
+            // Add some padding at the bottom of the scroll view
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 20
+                color: "transparent"
             }
         }
     }

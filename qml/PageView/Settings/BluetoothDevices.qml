@@ -5,7 +5,7 @@ import com.company.style 1.0
 import com.company.sound 1.0
 
 Item {
-    anchors.fill: parent // This is needed again to fill the space provided by StackLayout
+    // anchors.fill: parent // This is needed again to fill the space provided by StackLayout
 
     // Signal to notify the parent (Settings.qml) to go back
     signal backRequested()

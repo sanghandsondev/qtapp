@@ -21,6 +21,7 @@ QtObject {
             }
         }
         // If not found, return the default device
+        console.warn("Audio output device not found:", description, "Falling back to default.")
         return mediaDevices.defaultAudioOutput
     }
 
