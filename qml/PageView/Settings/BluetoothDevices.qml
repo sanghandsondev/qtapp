@@ -29,6 +29,7 @@ Item {
                 RowLayout {
                     id: bluetoothTextColumn
                     Layout.alignment: Qt.AlignVCenter
+                    Layout.rightMargin: 10 // Add margin
                     spacing: 12
 
                     Text {

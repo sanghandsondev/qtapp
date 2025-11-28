@@ -8,34 +8,9 @@ sudo apt install pipewire \
 wpctl status
 wpctl set-default <node_id>
 
-1/ Thực sự thì cần lọc nhiễu hơn nữa. Nhưng thôi
 
-/////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////
+1. Dưới item bluetooth sẽ là 
+Add Device. Sau đó hiển thị model để tìm kiếm device bluetooth mới
 
-Khi bấm vào item khác thì sẽ ngừng chơi luôn và thoát ra (reset trạng thái slider, time)
-Khi bắt đầu record thì cũng vậy
-Và khi start chơi một item thì lại CANCEL cái đang record
-
-Xài thư viện của QT mà chơi nhạc, control slider 
-Có thể là GStreamer ? một multimedia framework chuyên để xây dựng pipeline xử lý video/audio streaming, playback, encode/decode.
-Hoặc xài mẹ QtMultimedia
-
-OpenCV là một computer vision library tập trung vào xử lý ảnh, AI, nhận diện đối tượng. → Nếu bạn muốn truyền/stream video/audio 
-thì GStreamer mạnh hơn; nếu bạn muốn phân tích nội dung hình ảnh thì OpenCV phù hợp hơn.
-
-QtMultimedia không tự viết lại toàn bộ multimedia stack, mà nó dựa trên backend khác nhau tùy hệ điều hành:
-Trên Linux (như Raspberry Pi) → QtMultimedia thường dùng GStreamer làm backend.
-
--> Khả năng sẽ xài GStreamer + OpenCV
-Xài QtMultimedia tức là đang xài GStreamer rồi
-
-Đúng rồi 👍. Trong Qt 6, QAudioOutput là lớp chuyên để phát luồng âm thanh thô (PCM) ra loa, còn QAudioSource là lớp để thu âm từ micro.
-
-Nếu bạn muốn làm ứng dụng kiểu “call” (thu từ mic rồi phát trực tiếp ra loa hoặc gửi qua mạng), thì cặp đôi QAudioSource + QAudioOutput là lựa chọn chuẩn:
-QAudioSource: lấy dữ liệu từ micro, trả về QIODevice để bạn đọc dữ liệu PCM.
-QAudioOutput: nhận dữ liệu PCM và phát ra loa, cũng thông qua QIODevice để bạn ghi dữ liệu vào.
-
-Call/mic → QAudioSource + QAudioOutput
-Nhạc/video → QMediaPlayer (+ QAudioOutput)
-Hiệu ứng ngắn → QSoundEffect
+Danh sách các device đã từng kết nối -> pair hay không, chọn thằng để pair
+(thằng pair mà là Sink tức Audio phát thì cho nó hiển thị bên danh sách chọn Audio device và ưu tiên nó luôn)

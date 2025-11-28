@@ -54,6 +54,17 @@ Item {
                     color: Theme.primaryText
                     font.pointSize: 20
                     font.bold: true
+
+                    // Allow clicking "Settings" to go back when on a sub-page
+                    MouseArea {
+                        anchors.fill: parent
+                        enabled: currentSubPage !== ""
+                        cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                        onClicked: {
+                            SoundManager.playTouch()
+                            settingsRoot.goBack()
+                        }
+                    }
                 }
 
                 // Show "> Sub-page" only when on a sub-page
@@ -207,25 +218,73 @@ Item {
                     // --- Bluetooth & Devices Setting ---
                     Item {
                         Layout.fillWidth: true
-                        height: 48 // Fixed height for simplicity
+                        height: Math.max(bluetoothTextColumn.implicitHeight, bluetoothToggle.implicitHeight)
 
-                        RowLayout {
+                        // This MouseArea will handle navigation. It's placed here
+                        // so it acts as a background click handler for the row,
+                        // but other MouseAreas on top (like the toggle's) will
+                        // catch the click first.
+                        MouseArea {
                             anchors.fill: parent
-                            anchors.leftMargin: 4 // Align with text in other items
-                            spacing: 12
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                SoundManager.playTouch()
+                                currentSubPage = "bluetooth"
+                                subPageTitle = "Bluetooth & devices"
+                            }
+                        }
 
-                            ColumnLayout {
+                        ColumnLayout {
+                            id: bluetoothTextColumn
+                            anchors.left: parent.left
+                            anchors.verticalCenter: parent.verticalCenter
+                            spacing: 2
+
+                            Text {
+                                text: "Bluetooth & devices"
+                                color: Theme.primaryText
+                                font.pointSize: 16
+                            }
+                            Text {
+                                text: Theme.bluetoothEnabled ? "Discoverable as \"RaspberryPi\"" : "Bluetooth is turned off"
+                                color: Theme.secondaryText
+                                font.pointSize: 12
+                            }
+                        }
+
+                        // Right side: On/Off text, toggle, and navigation arrow
+                        RowLayout {
+                            anchors.right: parent.right
+                            anchors.rightMargin: 20
+                            anchors.verticalCenter: parent.verticalCenter
+                            spacing: 8
+
+                            Text {
+                                text: Theme.bluetoothEnabled ? "On" : "Off"
+                                color: Theme.secondaryText
+                                font.pointSize: 14
                                 Layout.alignment: Qt.AlignVCenter
-                                spacing: 2
-
-                                Text {
-                                    text: "Bluetooth & devices"
-                                    color: Theme.primaryText
-                                    font.pointSize: 16
-                                }
                             }
 
-                            Item { Layout.fillWidth: true } // Spacer
+                            Text {
+                                id: bluetoothToggle
+                                font.family: materialFontFamily
+                                font.pixelSize: 48
+                                Layout.alignment: Qt.AlignVCenter
+
+                                text: Theme.bluetoothEnabled ? "toggle_on" : "toggle_off"
+                                color: Theme.bluetoothEnabled ? Theme.toggleOn : Theme.toggleOff
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: {
+                                        // This click is handled here and won't pass to the parent MouseArea
+                                        SoundManager.playTouch()
+                                        Theme.toggleBluetooth()
+                                    }
+                                }
+                            }
 
                             // Navigation Arrow
                             Text {
@@ -234,17 +293,6 @@ Item {
                                 font.pixelSize: 32
                                 color: Theme.secondaryText
                                 Layout.alignment: Qt.AlignVCenter
-                                Layout.rightMargin: 20
-                            }
-                        }
-
-                        MouseArea {
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: {
-                                SoundManager.playTouch()
-                                currentSubPage = "bluetooth"
-                                subPageTitle = "Bluetooth & devices"
                             }
                         }
                     }

@@ -29,8 +29,8 @@ QtObject {
             return
         }
 
-        console.log("mediaPlayer.source: ", mediaPlayer.source)
-        console.log("mediaPlayer.mediaStatus: ", mediaPlayer.mediaStatus)
+        // console.log("mediaPlayer.source: ", mediaPlayer.source)
+        // console.log("mediaPlayer.mediaStatus: ", mediaPlayer.mediaStatus)
         mediaPlayer.play()
     }
 }
