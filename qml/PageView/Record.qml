@@ -51,6 +51,14 @@ Item {
 
         console.log("RecordPage processing message:", msgType, "Status:", message.status)
         switch (msgType) {
+            case "initial_state":
+                if(msgStatus){
+                    isRecording = serverData.is_recording
+                } else {
+                    console.warn("Failed to get initial recording state from server.", msgType)
+                }
+                recordTime = 0
+                break
             case "start_record_noti":
                 if(msgStatus){
                     isRecording = true

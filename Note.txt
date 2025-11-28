@@ -10,9 +10,6 @@ wpctl set-default <node_id>
 
 1/ Thực sự thì cần lọc nhiễu hơn nữa. Nhưng thôi
 
-2/ Hiển thị sẵn time duration của record, ở cuối tên. Khi colap thì ẩn mất đi thôi.
-Cả enabled và visible
-
 /////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 
