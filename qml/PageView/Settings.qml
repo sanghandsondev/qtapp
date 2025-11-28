@@ -26,7 +26,7 @@ Item {
     property var wsClient
 
     // --- State Management for Sub-Pages ---
-    property string currentSubPage: "" // e.g., "bluetooth"
+    property string currentSubPage: "" // e.g., "bluetooth", "display"
     property string subPageTitle: ""   // e.g., "Bluetooth & devices"
 
     function goBack() {
@@ -126,7 +126,12 @@ Item {
         StackLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            currentIndex: currentSubPage === "" ? 0 : 1 // Switch between children
+            currentIndex: {
+                if (currentSubPage === "") return 0;
+                if (currentSubPage === "bluetooth") return 1;
+                if (currentSubPage === "display") return 2;
+                return 0; // Default to main list
+            }
 
             // --- Settings List (Scrollable) ---
             ScrollView {
@@ -303,98 +308,53 @@ Item {
                         color: Theme.separator
                     }
 
-                    // --- Time Format Setting ---
+                    // --- Display Setting ---
                     Item {
                         Layout.fillWidth: true
-                        height: Math.max(timeFormatTextColumn.implicitHeight, timeFormatToggle.implicitHeight)
+                        height: Math.max(displayTextColumn.implicitHeight, 48) // Use fixed height for consistency
+
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                SoundManager.playTouch()
+                                currentSubPage = "display"
+                                subPageTitle = "Display"
+                            }
+                        }
 
                         ColumnLayout {
-                            id: timeFormatTextColumn
+                            id: displayTextColumn
                             anchors.left: parent.left
                             anchors.verticalCenter: parent.verticalCenter
                             spacing: 2
 
                             Text {
-                                text: "Time Format"
+                                text: "Display"
                                 color: Theme.primaryText
                                 font.pointSize: 16
                             }
                             Text {
-                                text: Theme.is24HourFormat ? "24:00" : "12:00 AM/PM"
+                                text: "Time format, dark theme, brightness"
                                 color: Theme.secondaryText
                                 font.pointSize: 12
                             }
                         }
 
-                        Text {
-                            id: timeFormatToggle
+                        // Right side: Navigation arrow
+                        RowLayout {
                             anchors.right: parent.right
                             anchors.rightMargin: 20
                             anchors.verticalCenter: parent.verticalCenter
-                            font.family: materialFontFamily
-                            font.pixelSize: 48
+                            spacing: 8
 
-                            text: Theme.is24HourFormat ? "toggle_on" : "toggle_off"
-                            color: Theme.is24HourFormat ? Theme.toggleOn : Theme.toggleOff
-
-                            MouseArea {
-                                anchors.fill: parent
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: {
-                                    SoundManager.playTouch()
-                                    Theme.toggleTimeFormat()
-                                }
-                            }
-                        }
-                    }
-
-                    Rectangle {
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: 1
-                        color: Theme.separator
-                    }
-
-                    // --- Dark Mode Setting ---
-                    Item {
-                        Layout.fillWidth: true
-                        height: Math.max(themeTextColumn.implicitHeight, themeToggle.implicitHeight)
-
-                        ColumnLayout {
-                            id: themeTextColumn
-                            anchors.left: parent.left
-                            anchors.verticalCenter: parent.verticalCenter
-                            spacing: 2
-
+                            // Navigation Arrow
                             Text {
-                                text: "Graphical Dark Mode"
-                                color: Theme.primaryText
-                                font.pointSize: 16
-                            }
-                            Text {
-                                text: Theme.isDark ? "Dark Theme" : "Light Theme"
+                                text: "chevron_right" // > icon
+                                font.family: materialFontFamily
+                                font.pixelSize: 32
                                 color: Theme.secondaryText
-                                font.pointSize: 12
-                            }
-                        }
-
-                        Text {
-                            id: themeToggle
-                            anchors.right: parent.right
-                            anchors.rightMargin: 20
-                            anchors.verticalCenter: parent.verticalCenter
-                            font.family: materialFontFamily
-                            font.pixelSize: 48
-
-                            text: Theme.isDark ? "toggle_on" : "toggle_off"
-                            color: Theme.isDark ? Theme.toggleOn : Theme.toggleOff
-
-                            MouseArea {
-                                anchors.fill: parent
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: {
-                                    SoundManager.playTouch()
-                                    Theme.toggle()
-                                }
+                                Layout.alignment: Qt.AlignVCenter
                             }
                         }
                     }
@@ -544,6 +504,11 @@ Item {
 
             // --- Sub-Page Content Area ---
             SettingsPages.BluetoothDevices {
+                onBackRequested: settingsRoot.goBack()
+            }
+
+            // --- Display Sub-Page ---
+            SettingsPages.Display {
                 onBackRequested: settingsRoot.goBack()
             }
 
