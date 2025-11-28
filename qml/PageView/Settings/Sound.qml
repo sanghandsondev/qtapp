@@ -196,6 +196,192 @@ Item {
                     }
                 }
             }
+
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 1
+                color: Theme.separator
+            }
+
+            // --- Output Device Setting ---
+            ColumnLayout {
+                id: outputDeviceLayout // Give an id to the layout
+                Layout.fillWidth: true
+                spacing: 8
+
+                property bool expanded: false
+
+                // --- Main Row for Output Device ---
+                RowLayout {
+                    Layout.fillWidth: true
+                    height: 64
+
+                    // Left side: Icon and text
+                    RowLayout {
+                        Layout.alignment: Qt.AlignVCenter
+                        Layout.rightMargin: 10
+                        spacing: 12
+
+                        Text {
+                            text: "speaker" // Speaker icon
+                            font.family: materialFontFamily
+                            font.pixelSize: 28
+                            color: Theme.icon
+                            Layout.alignment: Qt.AlignVCenter
+                        }
+
+                        ColumnLayout {
+                            spacing: 2
+                            Layout.alignment: Qt.AlignVCenter
+
+                            Text {
+                                text: "Output Device"
+                                color: Theme.primaryText
+                                font.pointSize: 16
+                            }
+                            Text {
+                                text: "Choose where to play sound"
+                                color: Theme.secondaryText
+                                font.pointSize: 12
+                            }
+                        }
+                    }
+
+                    Item { Layout.fillWidth: true } // Spacer
+
+                    // Right side: Dropdown-like button
+                    Rectangle {
+                        id: deviceButton
+                        width: 250
+                        height: 40
+                        Layout.alignment: Qt.AlignVCenter
+                        Layout.rightMargin: 20
+                        color: Theme.tertiaryBg
+                        border.color: Theme.buttonBorder
+                        border.width: 1
+                        radius: 6
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.leftMargin: 12
+                            anchors.rightMargin: 8
+
+                            Text {
+                                Layout.fillWidth: true
+                                Layout.alignment: Qt.AlignVCenter
+                                text: SoundManager.audioOutput.device.description
+                                color: Theme.primaryText
+                                font.pointSize: 14
+                                elide: Text.ElideRight
+                            }
+
+                            Text {
+                                text: "arrow_drop_down"
+                                font.family: materialFontFamily
+                                font.pixelSize: 28
+                                color: Theme.icon
+                                rotation: parent.parent.parent.expanded ? 180 : 0
+                                Behavior on rotation { RotationAnimation { duration: 200 } }
+                            }
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                SoundManager.playTouch()
+                                parent.parent.expanded = !parent.parent.expanded
+                            }
+                        }
+                    }
+                }
+
+                // --- Expanded List of Devices ---
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.rightMargin: 20
+                    Layout.leftMargin: deviceButton.x
+                    height: expanded ? Math.min(deviceList.contentHeight, 170) : 0 // Limit max height
+                    clip: true
+                    color: Theme.tertiaryBg
+                    border.color: Theme.buttonBorder
+                    border.width: 1
+                    radius: 6
+
+                    Behavior on height { NumberAnimation { duration: 200; easing.type: Easing.InOutQuad } }
+
+                    ScrollView {
+                        anchors.fill: parent
+                        clip: true
+                        ScrollBar.vertical.policy: ScrollBar.AsNeeded
+
+                        ListView {
+                            id: deviceList
+                            width: parent.width
+                            spacing: 2
+                            model: SoundManager.mediaDevices.audioOutputs.length > 0 ? SoundManager.mediaDevices.audioOutputs : ["No output devices found"]
+
+                            delegate: Rectangle {
+                                width: parent.width
+                                height: 40
+                                radius: 4
+                                color: "transparent"
+                                property bool isDevice: typeof modelData !== "string"
+                                property bool isCurrent: isDevice && modelData.description === SoundManager.audioOutput.device.description
+
+                                Rectangle {
+                                    anchors.fill: parent
+                                    color: Theme.accent
+                                    radius: 4
+                                    opacity: isCurrent ? 0.2 : (deviceMouseArea.hovered ? 0.1 : 0)
+                                    Behavior on opacity { NumberAnimation { duration: 150 } }
+                                }
+
+                                RowLayout {
+                                    anchors.fill: parent
+                                    anchors.leftMargin: 8
+                                    anchors.rightMargin: 8
+
+                                    Text {
+                                        Layout.fillWidth: true
+                                        Layout.alignment: Qt.AlignVCenter
+                                        text: isDevice ? modelData.description : modelData
+                                        color: isDevice ? Theme.primaryText : Theme.secondaryText
+                                        font.pointSize: 14
+                                        elide: Text.ElideRight
+                                    }
+                                    Text {
+                                        text: "check"
+                                        font.family: materialFontFamily
+                                        font.pixelSize: 24
+                                        color: Theme.accent
+                                        visible: isCurrent
+                                    }
+                                }
+
+                                MouseArea {
+                                    id: deviceMouseArea
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: isDevice ? Qt.PointingHandCursor : Qt.ArrowCursor
+                                    enabled: isDevice
+                                    onClicked: {
+                                        SoundManager.playTouch()
+                                        Theme.setAudioOutputDevice(modelData.description)
+                                        outputDeviceLayout.expanded = false // Use the id to access expanded property
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 1
+                color: Theme.separator
+            }
         }
     }
 }

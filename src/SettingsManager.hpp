@@ -18,6 +18,7 @@ class SettingsManager : public QObject
     Q_PROPERTY(bool soundTouchEnabled READ getSoundTouchEnabled WRITE setSoundTouchEnabled NOTIFY onSoundTouchEnabledChanged)
     Q_PROPERTY(int volumeLevel READ getVolumeLevel WRITE setVolumeLevel NOTIFY onVolumeLevelChanged)
     Q_PROPERTY(bool bluetoothEnabled READ getBluetoothEnabled WRITE setBluetoothEnabled NOTIFY onBluetoothEnabledChanged)
+    Q_PROPERTY(QString audioOutputDevice READ getAudioOutputDevice WRITE setAudioOutputDevice NOTIFY onAudioOutputDeviceChanged)
 
 public:
     explicit SettingsManager(QObject *parent = nullptr);
@@ -32,6 +33,7 @@ public:
     bool getSoundTouchEnabled() const;
     int getVolumeLevel() const;
     bool getBluetoothEnabled() const;
+    QString getAudioOutputDevice() const;
 
 public slots:
     // Specific setters for properties
@@ -40,6 +42,7 @@ public slots:
     void setSoundTouchEnabled(bool soundTouchEnabled);
     void setVolumeLevel(int volumeLevel);
     void setBluetoothEnabled(bool bluetoothEnabled);
+    void setAudioOutputDevice(const QString &audioOutputDevice);
 
 signals:
     // Phát tín hiệu thay đổi, QML sẽ nhận biết và cập nhật giao diện
@@ -48,6 +51,7 @@ signals:
     void onSoundTouchEnabledChanged();
     void onVolumeLevelChanged();
     void onBluetoothEnabledChanged();
+    void onAudioOutputDeviceChanged();
 
 private:
     QSettings m_settings;
@@ -58,6 +62,7 @@ private:
     static const QString KEY_SOUND_TOUCH_ENABLED;
     static const QString KEY_VOLUME_LEVEL;
     static const QString KEY_BLUETOOTH_ENABLED;
+    static const QString KEY_AUDIO_OUTPUT_DEVICE;
 };
 
 #endif // SETTINGS_MANAGER_HPP

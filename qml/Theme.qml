@@ -29,6 +29,12 @@ QtObject {
         _settingsManager.bluetoothEnabled = !_settingsManager.bluetoothEnabled
     }
 
+    // Audio Output Device setting
+    property alias audioOutputDevice: _settingsManager.audioOutputDevice
+    function setAudioOutputDevice(deviceDescription) {
+        _settingsManager.audioOutputDevice = deviceDescription
+    }
+
     // Volume setting (0-5 levels)
     property alias volumeLevel: _settingsManager.volumeLevel
     function setVolumeLevel(level) {

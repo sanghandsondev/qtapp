@@ -10,9 +10,33 @@ QtObject {
 
     property var mediaDevices: MediaDevices {}
 
+    // Find the audio device based on the description stored in settings
+    function findAudioDevice(description) {
+        if (!description) {
+            return mediaDevices.defaultAudioOutput
+        }
+        for (var i = 0; i < mediaDevices.audioOutputs.length; i++) {
+            if (mediaDevices.audioOutputs[i].description === description) {
+                return mediaDevices.audioOutputs[i]
+            }
+        }
+        // If not found, return the default device
+        return mediaDevices.defaultAudioOutput
+    }
+
     property var audioOutput: AudioOutput {
         volume: Theme.volume
-        device: soundManager.mediaDevices.defaultAudioOutput
+        // Set initial device from settings
+        device: findAudioDevice(Theme.audioOutputDevice)
+    }
+
+    // When the setting changes, update the device on the AudioOutput
+    property var connections: Connections {
+        target: Theme
+        function onAudioOutputDeviceChanged() {
+            soundManager.audioOutput.device = findAudioDevice(Theme.audioOutputDevice)
+            console.log("Global audio output device changed to:", soundManager.audioOutput.device.description)
+        }
     }
     
     property var mediaPlayer: MediaPlayer {

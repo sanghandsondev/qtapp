@@ -58,6 +58,7 @@ Item {
                     // Allow clicking "Settings" to go back when on a sub-page
                     MouseArea {
                         anchors.fill: parent
+                        anchors.margins: -10
                         enabled: currentSubPage !== ""
                         cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                         onClicked: {

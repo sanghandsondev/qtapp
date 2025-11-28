@@ -6,6 +6,7 @@ const QString SettingsManager::KEY_IS_24_HOUR_FORMAT = "theme/is24HourFormat";
 const QString SettingsManager::KEY_SOUND_TOUCH_ENABLED = "theme/soundTouchEnabled";
 const QString SettingsManager::KEY_VOLUME_LEVEL = "theme/volumeLevel";
 const QString SettingsManager::KEY_BLUETOOTH_ENABLED = "system/bluetoothEnabled";
+const QString SettingsManager::KEY_AUDIO_OUTPUT_DEVICE = "sound/audioOutputDevice";
 
 SettingsManager::SettingsManager(QObject *parent)
     : QObject(parent), m_settings("MyCompany", "QtApp") // Tên tổ chức và tên ứng dụng
@@ -39,6 +40,12 @@ bool SettingsManager::getBluetoothEnabled() const
 {
     // Default to false for Bluetooth
     return m_settings.value(KEY_BLUETOOTH_ENABLED, false).toBool();
+}
+
+QString SettingsManager::getAudioOutputDevice() const
+{
+    // Default to an empty string, SoundManager will use the system default
+    return m_settings.value(KEY_AUDIO_OUTPUT_DEVICE, "").toString();
 }
 
 // -- Specific setters for properties --
@@ -80,5 +87,13 @@ void SettingsManager::setBluetoothEnabled(bool bluetoothEnabled)
     if (getBluetoothEnabled() != bluetoothEnabled) {
         m_settings.setValue(KEY_BLUETOOTH_ENABLED, bluetoothEnabled);
         emit onBluetoothEnabledChanged();
+    }
+}
+
+void SettingsManager::setAudioOutputDevice(const QString &audioOutputDevice)
+{
+    if (getAudioOutputDevice() != audioOutputDevice) {
+        m_settings.setValue(KEY_AUDIO_OUTPUT_DEVICE, audioOutputDevice);
+        emit onAudioOutputDeviceChanged();
     }
 }
