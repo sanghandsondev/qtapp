@@ -36,6 +36,7 @@ file(GLOB QML_FILES CONFIGURE_DEPENDS RELATIVE
     "${CMAKE_CURRENT_SOURCE_DIR}" 
     "qml/*.qml"
     "qml/PageView/*.qml"
+    "qml/PageView/Settings/*.qml"
     "qml/Components/*.qml"
 )
 

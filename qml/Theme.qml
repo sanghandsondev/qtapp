@@ -23,6 +23,12 @@ QtObject {
         _settingsManager.soundTouchEnabled = !_settingsManager.soundTouchEnabled
     }
 
+    // Bluetooth setting
+    property alias bluetoothEnabled: _settingsManager.bluetoothEnabled
+    function toggleBluetooth() {
+        _settingsManager.bluetoothEnabled = !_settingsManager.bluetoothEnabled
+    }
+
     // Volume setting (0-5 levels)
     property alias volumeLevel: _settingsManager.volumeLevel
     function setVolumeLevel(level) {

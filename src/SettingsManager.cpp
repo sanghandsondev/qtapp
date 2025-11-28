@@ -5,6 +5,7 @@ const QString SettingsManager::KEY_IS_DARK = "theme/isDark";
 const QString SettingsManager::KEY_IS_24_HOUR_FORMAT = "theme/is24HourFormat";
 const QString SettingsManager::KEY_SOUND_TOUCH_ENABLED = "theme/soundTouchEnabled";
 const QString SettingsManager::KEY_VOLUME_LEVEL = "theme/volumeLevel";
+const QString SettingsManager::KEY_BLUETOOTH_ENABLED = "system/bluetoothEnabled";
 
 SettingsManager::SettingsManager(QObject *parent)
     : QObject(parent), m_settings("MyCompany", "QtApp") // Tên tổ chức và tên ứng dụng
@@ -32,6 +33,12 @@ bool SettingsManager::getSoundTouchEnabled() const
 int SettingsManager::getVolumeLevel() const
 {
     return m_settings.value(KEY_VOLUME_LEVEL, 4).toInt();
+}
+
+bool SettingsManager::getBluetoothEnabled() const
+{
+    // Default to false for Bluetooth
+    return m_settings.value(KEY_BLUETOOTH_ENABLED, false).toBool();
 }
 
 // -- Specific setters for properties --
@@ -65,5 +72,13 @@ void SettingsManager::setVolumeLevel(int volumeLevel)
     if (volumeLevel >= 0 && volumeLevel <= 5 && getVolumeLevel() != volumeLevel) {
         m_settings.setValue(KEY_VOLUME_LEVEL, volumeLevel);
         emit onVolumeLevelChanged();
+    }
+}
+
+void SettingsManager::setBluetoothEnabled(bool bluetoothEnabled)
+{
+    if (getBluetoothEnabled() != bluetoothEnabled) {
+        m_settings.setValue(KEY_BLUETOOTH_ENABLED, bluetoothEnabled);
+        emit onBluetoothEnabledChanged();
     }
 }

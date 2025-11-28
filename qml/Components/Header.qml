@@ -36,71 +36,82 @@ Rectangle {
         }
     }
 
+    // Temperature on the left
     RowLayout {
-        anchors.fill: parent
+        id: temperatureLayout
+        anchors.left: parent.left
         anchors.leftMargin: 20
+        anchors.verticalCenter: parent.verticalCenter
+        spacing: 8
+
+        Text {
+            text: "thermostat" // Material icon for temperature
+            font.family: materialFontFamily
+            font.pixelSize: 26
+            color: {
+                if (headerRoot.temperature < 20) return "#3b82f6"; // Blue for cold
+                if (headerRoot.temperature > 26) return Theme.accent; // Red for hot
+                return Theme.icon; // Default color for normal
+            }
+        }
+        Text {
+            // This property can be updated from Main.qml
+            text: headerRoot.temperature + "°C"
+            color: Theme.primaryText
+            font.pointSize: 20
+            font.bold: true
+        }
+    }
+
+    // Volume indicator in the center
+    RowLayout {
+        id: volumeLayout
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.verticalCenter: parent.verticalCenter
+        spacing: 6
+
+        // Icon changes based on volume level
+        Text {
+            font.family: materialFontFamily
+            font.pixelSize: 26
+            color: Theme.icon
+            text: {
+                if (Theme.volumeLevel === 0) return "volume_off";
+                if (Theme.volumeLevel <= 2) return "volume_down";
+                return "volume_up";
+            }
+        }
+
+        // Volume level bars
+        Repeater {
+            model: 5
+            delegate: Rectangle {
+                width: 4
+                height: 8 + (index * 3) // Bars get taller
+                radius: 2
+                color: index < Theme.volumeLevel ? Theme.icon : Theme.tertiaryBg
+            }
+        }
+    }
+
+    // Right-aligned items (Bluetooth and Time)
+    RowLayout {
+        id: rightAlignedLayout
+        anchors.right: parent.right
         anchors.rightMargin: 20
+        anchors.verticalCenter: parent.verticalCenter
+        spacing: 16 // Space between Bluetooth icon and time
 
-        // Temperature on the left
-        RowLayout {
-            spacing: 8
+        // Bluetooth Icon (visible when enabled)
+        Text {
+            text: "bluetooth"
+            font.family: materialFontFamily
+            font.pixelSize: 28
+            color: Theme.primaryText
+            opacity: Theme.bluetoothEnabled ? 1.0 : 0.0 // Control opacity instead of visibility
+            visible: opacity > 0 // Keep it invisible when fully transparent to prevent interaction
             Layout.alignment: Qt.AlignVCenter
-            Text {
-                text: "thermostat" // Material icon for temperature
-                font.family: materialFontFamily
-                font.pixelSize: 26
-                color: {
-                    if (headerRoot.temperature < 20) return "#3b82f6"; // Blue for cold
-                    if (headerRoot.temperature > 26) return Theme.accent; // Red for hot
-                    return Theme.icon; // Default color for normal
-                }
-            }
-            Text {
-                // This property can be updated from Main.qml
-                text: headerRoot.temperature + "°C"
-                color: Theme.primaryText
-                font.pointSize: 20
-                font.bold: true
-            }
-        }
-
-        // Spacer to push time to the right
-        Item {
-            Layout.fillWidth: true
-        }
-
-        // Volume indicator in the center
-        RowLayout {
-            Layout.alignment: Qt.AlignVCenter
-            spacing: 6
-
-            // Icon changes based on volume level
-            Text {
-                font.family: materialFontFamily
-                font.pixelSize: 26
-                color: Theme.icon
-                text: {
-                    if (Theme.volumeLevel === 0) return "volume_off";
-                    if (Theme.volumeLevel <= 2) return "volume_down";
-                    return "volume_up";
-                }
-            }
-
-            // Volume level bars
-            Repeater {
-                model: 5
-                delegate: Rectangle {
-                    width: 4
-                    height: 8 + (index * 3) // Bars get taller
-                    radius: 2
-                    color: index < Theme.volumeLevel ? Theme.icon : Theme.tertiaryBg
-                }
-            }
-        }
-
-        // Spacer to push time to the right
-        Item {
-            Layout.fillWidth: true
+            Behavior on opacity { NumberAnimation { duration: 50 } } // Animate the opacity property
         }
 
         // Time display on the right

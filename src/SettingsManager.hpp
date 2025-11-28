@@ -17,6 +17,7 @@ class SettingsManager : public QObject
     Q_PROPERTY(bool is24HourFormat READ getIs24HourFormat WRITE setIs24HourFormat NOTIFY onIs24HourFormatChanged)
     Q_PROPERTY(bool soundTouchEnabled READ getSoundTouchEnabled WRITE setSoundTouchEnabled NOTIFY onSoundTouchEnabledChanged)
     Q_PROPERTY(int volumeLevel READ getVolumeLevel WRITE setVolumeLevel NOTIFY onVolumeLevelChanged)
+    Q_PROPERTY(bool bluetoothEnabled READ getBluetoothEnabled WRITE setBluetoothEnabled NOTIFY onBluetoothEnabledChanged)
 
 public:
     explicit SettingsManager(QObject *parent = nullptr);
@@ -30,6 +31,7 @@ public:
     bool getIs24HourFormat() const;
     bool getSoundTouchEnabled() const;
     int getVolumeLevel() const;
+    bool getBluetoothEnabled() const;
 
 public slots:
     // Specific setters for properties
@@ -37,6 +39,7 @@ public slots:
     void setIs24HourFormat(bool is24HourFormat);
     void setSoundTouchEnabled(bool soundTouchEnabled);
     void setVolumeLevel(int volumeLevel);
+    void setBluetoothEnabled(bool bluetoothEnabled);
 
 signals:
     // Phát tín hiệu thay đổi, QML sẽ nhận biết và cập nhật giao diện
@@ -44,6 +47,7 @@ signals:
     void onIs24HourFormatChanged();
     void onSoundTouchEnabledChanged();
     void onVolumeLevelChanged();
+    void onBluetoothEnabledChanged();
 
 private:
     QSettings m_settings;
@@ -53,6 +57,7 @@ private:
     static const QString KEY_IS_24_HOUR_FORMAT;
     static const QString KEY_SOUND_TOUCH_ENABLED;
     static const QString KEY_VOLUME_LEVEL;
+    static const QString KEY_BLUETOOTH_ENABLED;
 };
 
 #endif // SETTINGS_MANAGER_HPP
