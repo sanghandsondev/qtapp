@@ -3,7 +3,7 @@ all: install
 install: clean
 	mkdir -p build
 	cd build && cmake \
-		-DCMAKE_PREFIX_PATH="/home/sang/Qt/6.10.0/gcc_64" ..
+		-DCMAKE_PREFIX_PATH="/home/sang/Qt/6.10.1/gcc_64" ..
 	cd build && make && make install
 
 # No cross-compiler

@@ -47,6 +47,12 @@ signals:
 
 private:
     QSettings m_settings;
+
+    // Define keys as constants to avoid typos and for easier management
+    static const QString KEY_IS_DARK;
+    static const QString KEY_IS_24_HOUR_FORMAT;
+    static const QString KEY_SOUND_TOUCH_ENABLED;
+    static const QString KEY_VOLUME_LEVEL;
 };
 
 #endif // SETTINGS_MANAGER_HPP

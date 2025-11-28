@@ -440,6 +440,17 @@ Item {
                                 elide: Text.ElideRight
                             }
 
+                            // Duration Text (visible when collapsed)
+                            Text {
+                                text: formatTime(model.duration || 0)
+                                font.family: "monospace"
+                                font.pointSize: 12
+                                color: Theme.secondaryText
+                                visible: !isExpanded
+                                opacity: visible ? 1 : 0
+                                Behavior on opacity { NumberAnimation { duration: 150 } }
+                            }
+
                             // Delete Icon (moved here)
                             Text {
                                 text: "delete"
@@ -560,6 +571,9 @@ Item {
                                 Slider {
                                     id: playbackSlider
                                     Layout.fillWidth: true
+                                    Layout.alignment: Qt.AlignVCenter // Căn giữa Slider trong RowLayout
+                                    topPadding: 20
+                                    bottomPadding: 20
                                     from: 0
                                     to: (isPlaying || isPaused) ? recordRoot.playbackDuration : 1
                                     value: (isPlaying || isPaused) ? recordRoot.playbackPosition : 0
@@ -568,6 +582,24 @@ Item {
                                     opacity: enabled ? 1.0 : 0.4 // Make it more visually distinct when disabled
 
                                     Behavior on opacity { NumberAnimation { duration: 200 } }
+
+                                    background: Rectangle {
+                                        x: playbackSlider.leftPadding
+                                        // Căn giữa thanh trượt trong vùng đã được thêm padding
+                                        y: playbackSlider.topPadding + playbackSlider.availableHeight / 2 - height / 2
+                                        width: playbackSlider.availableWidth
+                                        height: 4 // Chiều cao của thanh trượt
+                                        radius: 2
+                                        color: Theme.tertiaryBg // Màu của phần nền thanh trượt
+
+                                        // Phần đã được tô màu của thanh trượt
+                                        Rectangle {
+                                            width: playbackSlider.visualPosition * parent.width
+                                            height: parent.height
+                                            radius: 2
+                                            color: Theme.secondaryText
+                                        }
+                                    }
 
                                     handle: Rectangle {
                                         x: playbackSlider.leftPadding + playbackSlider.visualPosition * (playbackSlider.availableWidth - width)

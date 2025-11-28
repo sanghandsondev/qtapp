@@ -26,10 +26,10 @@ Rectangle {
 
     // Animation để hiển thị và ẩn
     Behavior on x {
-        NumberAnimation { duration: 300; easing.type: Easing.OutCubic }
+        NumberAnimation { duration: 1000; easing.type: Easing.OutCubic }
     }
     Behavior on opacity {
-        NumberAnimation { duration: 300 }
+        NumberAnimation { duration: 500 }
     }
 
     // Cập nhật màu sắc dựa trên loại thông báo
