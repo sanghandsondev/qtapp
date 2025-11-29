@@ -41,7 +41,7 @@ QtObject {
     }
     
     property var mediaPlayer: MediaPlayer {
-        source: "qrc:/assets/sounds/touch_2.mp3"
+        source: "file:///home/pi/sangank/QtApp/assets/sounds/touch_2.mp3"
         audioOutput: soundManager.audioOutput
         onErrorChanged: {
             console.error("MediaPlayer Error:", mediaPlayer.errorString)
