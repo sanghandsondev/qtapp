@@ -234,6 +234,7 @@ Window {
                             visible: currentPageId === "Settings"
                             wsClient: wsClient          // Pass the wsClient instance
                             onOpenPairingDialog: bluetoothPairingDialog.open()
+                            confirmationDialog: confirmationDialog // Pass the dialog instance
                         }
 
                         // --- Notification Banner ---

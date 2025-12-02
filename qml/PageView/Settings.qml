@@ -24,6 +24,7 @@ Item {
 
     // Property to hold the WebSocket client instance from Main.qml
     property var wsClient
+    property var confirmationDialog // Add property for the dialog
 
     // Signal to forward to Main.qml
     signal openPairingDialog()
@@ -438,6 +439,7 @@ Item {
                 onBackRequested: settingsRoot.goBack()
                 // Forward the signal from the child to the parent (this file)
                 onOpenPairingDialog: settingsRoot.openPairingDialog()
+                confirmationDialog: settingsRoot.confirmationDialog // Pass dialog to sub-page
             }
 
             // --- Display Sub-Page ---
