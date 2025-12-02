@@ -11,6 +11,8 @@ Rectangle {
     visible: false
     z: 20 // Đảm bảo nó ở trên cùng
 
+    property int dotCount: 1
+
     signal deviceSelected(string deviceName)
     signal rejected()
 
@@ -22,6 +24,18 @@ Rectangle {
 
     function close() {
         dialogRoot.opacity = 0
+        // Reset state when closing
+    }
+
+    // --- Timers ---
+    Timer {
+        id: dotAnimationTimer
+        interval: 800
+        repeat: true
+        running: true
+        onTriggered: {
+            dotCount = (dotCount % 3) + 1
+        }
     }
 
     // --- Animations ---
@@ -62,7 +76,17 @@ Rectangle {
                 font.pointSize: 16
                 font.bold: true
                 Layout.fillWidth: true
-                horizontalAlignment: Text.AlignHCenter
+                horizontalAlignment: Text.AlignLeft
+            }
+
+            // --- Scanning Text ---
+            Text {
+                text: "Scanning for devices " + ".".repeat(dotCount)
+                color: Theme.secondaryText
+                font.pointSize: 14
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignLeft
+                Layout.topMargin: 8
             }
 
             // --- Device List ---

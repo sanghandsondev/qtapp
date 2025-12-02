@@ -176,9 +176,10 @@ Item {
                 width: parent.width
                 spacing: 8
                 model: ListModel {
-                    ListElement { name: "WH-1000XM4"; icon: "headphones" }
-                    ListElement { name: "Pixel 7 Pro"; icon: "smartphone" }
-                    ListElement { name: "JBL Charge 5"; icon: "speaker" }
+                    id: pairedDevicesModel
+                    ListElement { name: "WH-1000XM4"; icon: "headphones"; connected: true }
+                    ListElement { name: "Pixel 7 Pro"; icon: "smartphone"; connected: false }
+                    ListElement { name: "JBL Charge 5"; icon: "speaker"; connected: false }
                 }
 
                 delegate: Item {
@@ -211,7 +212,7 @@ Item {
                                     font.pointSize: 16
                                 }
                                 Text {
-                                    text: "Paired"
+                                    text: model.connected ? "Connected" : "Paired"
                                     color: Theme.secondaryText
                                     font.pointSize: 12
                                 }
@@ -227,19 +228,21 @@ Item {
 
                             // Connect Button
                             Rectangle {
-                                width: 100
+                                id: connectButton
+                                width: 120
                                 height: 36
                                 color: "transparent"
                                 radius: 6
                                 border.color: Theme.buttonBorder
                                 border.width: 1
+                                Behavior on border.color { ColorAnimation { duration: 50 } }
 
                                 opacity: Theme.bluetoothEnabled ? 1.0 : 0.4
                                 Behavior on opacity { NumberAnimation { duration: 50 } }
 
                                 Text {
                                     anchors.centerIn: parent
-                                    text: "Connect"
+                                    text: model.connected ? "Disconnect" : "Connect"
                                     color: Theme.primaryText
                                     font.pointSize: 14
                                 }
@@ -249,7 +252,10 @@ Item {
                                     enabled: Theme.bluetoothEnabled
                                     onClicked: {
                                         SoundManager.playTouch()
-                                        // TODO: Add connect logic
+                                        // Toggle connected state for this device
+                                        // In a real app, you would also handle logic to ensure only one audio device is connected at a time.
+                                        pairedDevicesModel.setProperty(model.index, "connected", !model.connected)
+                                        // TODO: Add actual connect/disconnect logic
                                     }
                                 }
                             }
