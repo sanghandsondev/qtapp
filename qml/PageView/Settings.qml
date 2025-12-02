@@ -25,6 +25,9 @@ Item {
     // Property to hold the WebSocket client instance from Main.qml
     property var wsClient
 
+    // Signal to forward to Main.qml
+    signal openPairingDialog()
+
     // --- State Management for Sub-Pages ---
     property string currentSubPage: "" // e.g., "bluetooth", "display"
     property string subPageTitle: ""   // e.g., "Bluetooth & devices"
@@ -138,9 +141,11 @@ Item {
             // --- Settings List (Scrollable) ---
             ScrollView {
                 id: settingsScrollView // Add an id to the ScrollView
+                Layout.fillWidth: true
+                Layout.fillHeight: true
                 clip: true
                 ScrollBar.vertical.policy: ScrollBar.AsNeeded
-
+                
                 ColumnLayout {
                     width: parent.width // Occupy available width inside ScrollView
                     spacing: 16
@@ -428,16 +433,24 @@ Item {
 
             // --- Sub-Page Content Area ---
             SettingsPages.BluetoothDevices {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
                 onBackRequested: settingsRoot.goBack()
+                // Forward the signal from the child to the parent (this file)
+                onOpenPairingDialog: settingsRoot.openPairingDialog()
             }
 
             // --- Display Sub-Page ---
             SettingsPages.Display {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
                 onBackRequested: settingsRoot.goBack()
             }
 
             // --- Sound Sub-Page ---
             SettingsPages.Sound {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
                 onBackRequested: settingsRoot.goBack()
             }
 

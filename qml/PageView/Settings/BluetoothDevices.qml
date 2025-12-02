@@ -10,6 +10,9 @@ Item {
     // Signal to notify the parent (Settings.qml) to go back
     signal backRequested()
 
+    // Signal to open the pairing dialog in Main.qml
+    signal openPairingDialog()
+
     ScrollView {
         id: bluetoothScrollView // Give the ScrollView an id
         anchors.fill: parent
@@ -88,6 +91,65 @@ Item {
                                 SoundManager.playTouch()
                                 Theme.toggleBluetooth()
                             }
+                        }
+                    }
+                }
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 1
+                color: Theme.separator
+            }
+
+            // --- Add New Device Setting ---
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.topMargin: 8
+                height: 56 // Fixed height for consistency
+
+                // Left side: Text
+                Text {
+                    text: "Pair new device with \"RaspberryPi\""
+                    color: Theme.primaryText
+                    font.pointSize: 16
+                    Layout.alignment: Qt.AlignVCenter
+                    Layout.leftMargin: 12
+                }
+
+                Item { Layout.fillWidth: true } // Spacer
+
+                // Right side: Button
+                Rectangle {
+                    id: addDeviceButton
+                    width: 140
+                    height: 40
+                    Layout.alignment: Qt.AlignVCenter
+                    Layout.rightMargin: 20
+                    color: "transparent"
+                    radius: 6
+                    border.color: Theme.buttonBorder
+                    border.width: 1
+
+                    // Control opacity based on Bluetooth status
+                    opacity: Theme.bluetoothEnabled ? 1.0 : 0.4
+                    Behavior on opacity { NumberAnimation { duration: 200 } }
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: "Add device"
+                        color: Theme.primaryText
+                        font.pointSize: 14
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        enabled: Theme.bluetoothEnabled // Disable clicks when Bluetooth is off
+                        onClicked: {
+                            SoundManager.playTouch()
+                            // Emit a signal to be caught by Main.qml
+                            openPairingDialog()
                         }
                     }
                 }

@@ -261,7 +261,7 @@ Item {
                         // Right side: Dropdown-like button and the dropdown list itself
                         Item {
                             id: dropdownContainer
-                            width: 250
+                            Layout.preferredWidth: parent.width / 2 // Use Layout.preferredWidth
                             height: 40
                             Layout.alignment: Qt.AlignVCenter
                             Layout.rightMargin: 20
@@ -298,6 +298,14 @@ Item {
                                         color: Theme.primaryText
                                         font.pointSize: 14
                                         elide: Text.ElideRight
+                                        // Hide the text when the dropdown is open
+                                        visible: !outputDeviceLayout.expanded
+                                    }
+
+                                    // Spacer to push the arrow to the right when the text is hidden
+                                    Item {
+                                        Layout.fillWidth: true
+                                        visible: outputDeviceLayout.expanded
                                     }
 
                                     Text {
@@ -347,22 +355,27 @@ Item {
 
                                         delegate: Rectangle {
                                             width: parent.width
-                                            height: 40
-                                            color: "transparent"
+                                            height: 54 // Increased height
+                                            color: isCurrent ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.2) : (deviceMouseArea.hovered ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.1) : "transparent")
+                                            Behavior on color { ColorAnimation { duration: 150 } }
+
                                             property bool isDevice: typeof modelData !== "string"
                                             property bool isCurrent: isDevice && modelData.description === SoundManager.audioOutput.device.description
 
-                                            Rectangle {
-                                                anchors.fill: parent
-                                                color: Theme.accent
-                                                opacity: isCurrent ? 0.2 : (deviceMouseArea.hovered ? 0.1 : 0)
-                                                Behavior on opacity { NumberAnimation { duration: 100 } }
-                                            }
-
                                             RowLayout {
                                                 anchors.fill: parent
-                                                anchors.leftMargin: 8
+                                                anchors.leftMargin: 12
                                                 anchors.rightMargin: 8
+                                                spacing: 8
+
+                                                Text {
+                                                    text: "speaker" // Speaker icon
+                                                    font.family: materialFontFamily
+                                                    font.pixelSize: 24
+                                                    color: Theme.icon
+                                                    Layout.alignment: Qt.AlignVCenter
+                                                    visible: isDevice
+                                                }
 
                                                 Text {
                                                     Layout.fillWidth: true
@@ -370,14 +383,8 @@ Item {
                                                     text: isDevice ? modelData.description : modelData
                                                     color: isDevice ? Theme.primaryText : Theme.secondaryText
                                                     font.pointSize: 14
+                                                    font.bold: isCurrent
                                                     elide: Text.ElideRight
-                                                }
-                                                Text {
-                                                    text: "check"
-                                                    font.family: materialFontFamily
-                                                    font.pixelSize: 24
-                                                    color: Theme.accent
-                                                    visible: isCurrent
                                                 }
                                             }
 

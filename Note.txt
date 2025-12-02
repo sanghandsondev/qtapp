@@ -14,3 +14,6 @@ Add Device. Sau đó hiển thị model để tìm kiếm device bluetooth mới
 
 Danh sách các device đã từng kết nối -> pair hay không, chọn thằng để pair
 (thằng pair mà là Sink tức Audio phát thì cho nó hiển thị bên danh sách chọn Audio device và ưu tiên nó luôn)
+
+
+3. Tại sao các giao diện lại kéo thả được -> Đã fix, nhớ check

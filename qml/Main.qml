@@ -233,6 +233,7 @@ Window {
                             anchors.fill: parent
                             visible: currentPageId === "Settings"
                             wsClient: wsClient          // Pass the wsClient instance
+                            onOpenPairingDialog: bluetoothPairingDialog.open()
                         }
 
                         // --- Notification Banner ---
@@ -248,6 +249,15 @@ Window {
                         // --- Confirmation Dialog ---
                         Components.ConfirmationDialog {
                             id: confirmationDialog
+                        }
+
+                        // --- Bluetooth Pairing Dialog ---
+                        Components.BluetoothPairingDialog {
+                            id: bluetoothPairingDialog
+                            onDeviceSelected: (deviceName) => {
+                                showNotification("Pairing with " + deviceName + "...", "info")
+                                // TODO: Add actual pairing logic via WebSocket
+                            }
                         }
                     }
                 }

@@ -16,6 +16,7 @@
     <file>qml/PageView/Settings/Display.qml</file>
     <file>qml/PageView/Settings/Sound.qml</file>
 
+    <file>qml/Components/BluetoothPairingDialog.qml</file>
     <file>qml/Components/NotificationBanner.qml</file>
     <file>qml/Components/ConfirmationDialog.qml</file>
     <file>qml/Components/Header.qml</file>
