@@ -11,6 +11,7 @@ Rectangle {
     visible: false
     z: 20 // Đảm bảo nó ở trên cùng
 
+    property var wsClient
     property int dotCount: 1
 
     signal deviceSelected(string deviceName)
@@ -25,6 +26,19 @@ Rectangle {
     function close() {
         dialogRoot.opacity = 0
         // Reset state when closing
+    }
+    //  {"device_name", },
+    //     {"device_address",},
+    //     {"rssi", },
+    //     {"is_paired",},
+    //     {"is_connected", }
+    //     {"icon"}
+    function addNewScanBTDevice(deviceData) {
+        deviceListView.model.append({
+            name: deviceData.device_name,
+            icon: deviceData.icon,
+            isPaired: deviceData.is_paired
+        })
     }
 
     // --- Timers ---
@@ -101,18 +115,17 @@ Rectangle {
                     width: parent.width
                     spacing: 8
                     model: ListModel {
-                        ListElement { name: "WH-1000XM4" }
-                        ListElement { name: "JBL Charge 5" }
-                        ListElement { name: "AirPods Pro" }
-                        ListElement { name: "Unknown Device" }
-                        ListElement { name: "Unknown Device" }
-                        ListElement { name: "Unknown Device" }
-                        ListElement { name: "Unknown Device" }
-                        ListElement { name: "Unknown Device" }
-                        ListElement { name: "Unknown Device" }
-                        ListElement { name: "Unknown Device" }
-                        ListElement { name: "Unknown Device" }
-                        ListElement { name: "Unknown Device" }
+                        // ListElement { name: "WH-1000XM4" }
+                        // ListElement { name: "JBL Charge 5" }
+                        // ListElement { name: "AirPods Pro" }
+                        // ListElement { name: "Unknown Device" }
+                        // ListElement { name: "Unknown Device" }
+                        // ListElement { name: "Unknown Device" }
+                        // ListElement { name: "Unknown Device" }
+                        // ListElement { name: "Unknown Device" }
+                        // ListElement { name: "Unknown Device" }
+                        // ListElement { name: "Unknown Device" }
+                        // ListElement { name: "Unknown Device" }
                     }
 
                     delegate: Rectangle {
@@ -177,6 +190,11 @@ Rectangle {
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
+                        // wsClient.sendMessage({"cmd": "stop_scan_btdevice"})
+                        SoundManager.playTouch()
+                        if (wsClient && wsClient.sendMessage({ command: "stop_scan_btdevice", data: {} })) {
+                            console.log("Stop scan bluetooth device")
+                        }
                         dialogRoot.rejected()
                         dialogRoot.close()
                     }

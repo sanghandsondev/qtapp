@@ -235,6 +235,9 @@ Window {
                             wsClient: wsClient          // Pass the wsClient instance
                             onOpenPairingDialog: bluetoothPairingDialog.open()
                             onClosePairingDialog: bluetoothPairingDialog.close()
+                            onAddNewScanBTDevice: function(deviceData) {
+                                bluetoothPairingDialog.addNewScanBTDevice(deviceData)
+                            }
                             confirmationDialog: confirmationDialog // Pass the dialog instance
                         }
 
@@ -256,6 +259,7 @@ Window {
                         // --- Bluetooth Pairing Dialog ---
                         Components.BluetoothPairingDialog {
                             id: bluetoothPairingDialog
+                            wsClient: wsClient // Pass the wsClient instance
                             onDeviceSelected: (deviceName) => {
                                 showNotification("Pairing with " + deviceName + "...", "info")
                                 // TODO: Add actual pairing logic via WebSocket

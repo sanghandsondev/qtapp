@@ -29,6 +29,7 @@ Item {
     // Signal to forward to Main.qml
     signal openPairingDialog()
     signal closePairingDialog()
+    signal addNewScanBTDevice(variant deviceData)
 
     // --- State Management for Sub-Pages ---
     property string currentSubPage: "" // e.g., "bluetooth", "display"
@@ -54,22 +55,15 @@ Item {
                 settingsRoot.closePairingDialog()
             }
         }
-        // {"device_name", },
-        //     {"device_address",},
-        //     {"rssi", },
-        //     {"is_paired",},
-        //     {"is_connected", }
         else if (msgType === "paired_btdevice_found_noti") {
             if (msgStatus) {
-                console.log("Paired Bluetooth device found:", serverData.deviceName, serverData.deviceAddress)
                 // TODO: Forward the paired device info to Setting bluetooth
             }
         }
         else if (msgType === "scanning_btdevice_found_noti") {
             if (msgStatus) {
-                console.log("Discovered Bluetooth device:", serverData.deviceName, serverData.deviceAddress)
                 // TODO: Forward the new device info to the pairing dialog
-                // settingsRoot.addNewDevice()
+                settingsRoot.addNewScanBTDevice(serverData)
             }
             
         } else {
