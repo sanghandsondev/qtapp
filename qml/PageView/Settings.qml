@@ -28,6 +28,7 @@ Item {
 
     // Signal to forward to Main.qml
     signal openPairingDialog()
+    signal closePairingDialog()
 
     // --- State Management for Sub-Pages ---
     property string currentSubPage: "" // e.g., "bluetooth", "display"
@@ -36,6 +37,44 @@ Item {
     function goBack() {
         currentSubPage = ""
         subPageTitle = ""
+    }
+
+    // Function to process messages from the server
+    function processServerMessage(message) {
+        var msgStatus = message.status === "success" ? true : false
+        var msgType = message.data.msg
+        var serverData = message.data.data
+
+        console.log("Settings Page processing message:", msgType)
+
+        if (msgType === "start_scan_btdevice_noti") {
+            if (!msgStatus) {
+                // If scanning fails to start, close the pairing dialog.
+                console.log("Failed to start Bluetooth scan, closing pairing dialog.")
+                settingsRoot.closePairingDialog()
+            }
+        }
+        // {"device_name", },
+        //     {"device_address",},
+        //     {"rssi", },
+        //     {"is_paired",},
+        //     {"is_connected", }
+        else if (msgType === "paired_btdevice_found_noti") {
+            if (msgStatus) {
+                console.log("Paired Bluetooth device found:", serverData.deviceName, serverData.deviceAddress)
+                // TODO: Forward the paired device info to Setting bluetooth
+            }
+        }
+        else if (msgType === "scanning_btdevice_found_noti") {
+            if (msgStatus) {
+                console.log("Discovered Bluetooth device:", serverData.deviceName, serverData.deviceAddress)
+                // TODO: Forward the new device info to the pairing dialog
+                // settingsRoot.addNewDevice()
+            }
+            
+        } else {
+            console.warn("Header Component received unknown message type:", msgType)
+        }
     }
 
     ColumnLayout {
@@ -436,6 +475,7 @@ Item {
             SettingsPages.BluetoothDevices {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
+                wsClient: settingsRoot.wsClient // Pass wsClient to sub-page
                 onBackRequested: settingsRoot.goBack()
                 // Forward the signal from the child to the parent (this file)
                 onOpenPairingDialog: settingsRoot.openPairingDialog()

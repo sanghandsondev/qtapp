@@ -11,6 +11,9 @@ Item {
     // Signal to open the pairing dialog in Main.qml
     signal openPairingDialog()
 
+    // Property to hold the WebSocket client instance
+    property var wsClient
+
     // Property to hold the confirmation dialog instance from Settings.qml
     property var confirmationDialog
 
@@ -143,8 +146,10 @@ Item {
                     enabled: Theme.bluetoothEnabled // Disable clicks when Bluetooth is off
                     onClicked: {
                         SoundManager.playTouch()
-                        // Emit a signal to be caught by Main.qml
-                        openPairingDialog()
+                        if (wsClient && wsClient.sendMessage({ command: "start_scan_btdevice", data: {} })) {
+                            console.log("Requested to start scanning for Bluetooth devices")
+                            openPairingDialog() // Emit a signal to be caught by Main.qml
+                        }
                     }
                 }
             }

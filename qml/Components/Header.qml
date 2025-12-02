@@ -15,7 +15,7 @@ Rectangle {
 
     // Function to process messages from the server
     function processServerMessage(message) {
-        var msgStatus = message.status
+        var msgStatus = message.status === "success" ? true : false
         var msgType = message.data.msg
         var serverData = message.data.data
 

@@ -59,14 +59,14 @@ Window {
         if (message) {
             // Lấy ra message.data.component để xử lý tùy theo component
             switch (message.data.component) {
+                case "Header":
+                    header.processServerMessage(message)
+                    break;
                 case "Settings":
                     settingsPage.processServerMessage(message)
                     break;
                 case "Record":
                     recordPage.processServerMessage(message)
-                    break;
-                case "Header":
-                    header.processServerMessage(message)
                     break;
                 default:
                     console.warn("Unknown component in server message:", message.data.component)
@@ -234,6 +234,7 @@ Window {
                             visible: currentPageId === "Settings"
                             wsClient: wsClient          // Pass the wsClient instance
                             onOpenPairingDialog: bluetoothPairingDialog.open()
+                            onClosePairingDialog: bluetoothPairingDialog.close()
                             confirmationDialog: confirmationDialog // Pass the dialog instance
                         }
 

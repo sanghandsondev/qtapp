@@ -176,7 +176,6 @@ Item {
 
     // Function to stop recording
     function stopRecording() {
-        
         if (wsClient && wsClient.sendMessage({ command: "stop_record", data: {  } })) {
             console.log("Recording finished. Duration:", recordTime, "seconds.")
         }
