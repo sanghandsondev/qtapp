@@ -7,15 +7,18 @@ import com.company.sound 1.0
 Item {
     // Signal to notify the parent (Settings.qml) to go back
     signal backRequested()
-
-    // Signal to open the pairing dialog in Main.qml
-    signal openPairingDialog()
+    // Signal to notify the parent to toggle the bluetooth power
+    signal togglePower()
 
     // Property to hold the WebSocket client instance
     property var wsClient
 
     // Property to hold the confirmation dialog instance from Settings.qml
     property var confirmationDialog
+
+    // This property is now the single source of truth for the toggle state.
+    // The parent (Settings.qml) will have an alias to this.
+    property bool isTogglingBluetooth: false
 
     ColumnLayout {
         anchors.fill: parent
@@ -51,7 +54,7 @@ Item {
                         font.pointSize: 16
                     }
                     Text {
-                        text: Theme.bluetoothEnabled ? "Discoverable as \"RaspberryPi\"" : "Bluetooth is turned off"
+                        text: Theme.bluetoothEnabled ? "Discoverable as \"raspberrypi\"" : "Bluetooth is turned off"
                         color: Theme.secondaryText
                         font.pointSize: 12
                     }
@@ -81,13 +84,16 @@ Item {
 
                     text: Theme.bluetoothEnabled ? "toggle_on" : "toggle_off"
                     color: Theme.bluetoothEnabled ? Theme.toggleOn : Theme.toggleOff
+                    opacity: isTogglingBluetooth ? 0.4 : 1.0
+                    Behavior on opacity { NumberAnimation { duration: 50 } }
 
                     MouseArea {
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor
+                        enabled: !isTogglingBluetooth
                         onClicked: {
-                            SoundManager.playTouch()
-                            Theme.toggleBluetooth()
+                            // Emit a signal to the parent to handle the logic
+                            togglePower()
                         }
                     }
                 }
@@ -108,7 +114,7 @@ Item {
 
             // Left side: Text
             Text {
-                text: "Pair new device with \"RaspberryPi\""
+                text: "Pair new device with \"raspberrypi\""
                 color: Theme.primaryText
                 font.pointSize: 16
                 Layout.alignment: Qt.AlignVCenter
@@ -148,7 +154,6 @@ Item {
                         SoundManager.playTouch()
                         if (wsClient && wsClient.sendMessage({ command: "start_scan_btdevice", data: {} })) {
                             console.log("Requested to start scanning for Bluetooth devices")
-                            openPairingDialog() // Emit a signal to be caught by Main.qml
                         }
                     }
                 }

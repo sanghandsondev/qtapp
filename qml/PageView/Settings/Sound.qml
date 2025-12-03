@@ -356,7 +356,7 @@ Item {
                                         delegate: Rectangle {
                                             width: parent.width
                                             height: 54 // Increased height
-                                            color: isCurrent ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.2) : (deviceMouseArea.hovered ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.1) : "transparent")
+                                            color: isCurrent ? Theme.separator : (deviceMouseArea.hovered ? Theme.hover : "transparent")
                                             Behavior on color { ColorAnimation { duration: 150 } }
 
                                             property bool isDevice: typeof modelData !== "string"
@@ -383,7 +383,6 @@ Item {
                                                     text: isDevice ? modelData.description : modelData
                                                     color: isDevice ? Theme.primaryText : Theme.secondaryText
                                                     font.pointSize: 14
-                                                    font.bold: isCurrent
                                                     elide: Text.ElideRight
                                                 }
                                             }

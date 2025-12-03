@@ -26,10 +26,15 @@ Item {
     property var wsClient
     property var confirmationDialog // Add property for the dialog
 
+    // Property to track the state of the bluetooth power toggle
+    // This is now an alias to the property in the sub-page to create a two-way binding.
+    property alias isTogglingBluetooth: bluetoothDevicesPage.isTogglingBluetooth
+
     // Signal to forward to Main.qml
     signal openPairingDialog()
     signal closePairingDialog()
     signal addNewScanBTDevice(variant deviceData)
+    signal deleteScanBTDevice(variant deviceAdress)
 
     // --- State Management for Sub-Pages ---
     property string currentSubPage: "" // e.g., "bluetooth", "display"
@@ -38,6 +43,19 @@ Item {
     function goBack() {
         currentSubPage = ""
         subPageTitle = ""
+    }
+
+    // Centralized function to handle Bluetooth power toggling
+    function toggleBluetoothPower() {
+        SoundManager.playTouch()
+        isTogglingBluetooth = true
+        const command = Theme.bluetoothEnabled ? "bluetooth_power_off" : "bluetooth_power_on"
+        if (wsClient && wsClient.sendMessage({ command: command, data: {} })) {
+            console.log("Requested to " + command)
+        } else {
+            // If sending fails, immediately re-enable the toggle
+            isTogglingBluetooth = false
+        }
     }
 
     // Function to process messages from the server
@@ -53,7 +71,15 @@ Item {
                 // If scanning fails to start, close the pairing dialog.
                 console.log("Failed to start Bluetooth scan, closing pairing dialog.")
                 settingsRoot.closePairingDialog()
+            } else {
+                console.log("Bluetooth scan started successfully.")
+                settingsRoot.openPairingDialog()
             }
+        } else if (msgType === "stop_scan_btdevice_noti") {
+            if (msgStatus) {
+                console.log("Bluetooth scan stopped successfully, closing pairing dialog.")
+            }
+            settingsRoot.closePairingDialog()
         }
         else if (msgType === "paired_btdevice_found_noti") {
             if (msgStatus) {
@@ -62,11 +88,29 @@ Item {
         }
         else if (msgType === "scanning_btdevice_found_noti") {
             if (msgStatus) {
-                // TODO: Forward the new device info to the pairing dialog
                 settingsRoot.addNewScanBTDevice(serverData)
             }
             
-        } else {
+        } 
+        else if(msgType === "scanning_btdevice_delete_noti") {
+            if (msgStatus) {
+                settingsRoot.deleteScanBTDevice(serverData)
+            }
+        }
+        else if (msgType === "bluetooth_power_on_noti") {
+            if (msgStatus) {
+                Theme.bluetoothEnabled = true
+            }
+            isTogglingBluetooth = false
+        }
+        else if (msgType === "bluetooth_power_off_noti") {
+            if (msgStatus) {
+                Theme.bluetoothEnabled = false
+                settingsRoot.closePairingDialog()
+            }
+            isTogglingBluetooth = false
+        }
+        else {
             console.warn("Header Component received unknown message type:", msgType)
         }
     }
@@ -320,14 +364,16 @@ Item {
 
                                 text: Theme.bluetoothEnabled ? "toggle_on" : "toggle_off"
                                 color: Theme.bluetoothEnabled ? Theme.toggleOn : Theme.toggleOff
+                                opacity: isTogglingBluetooth ? 0.4 : 1.0
+                                Behavior on opacity { NumberAnimation { duration: 50 } }
 
                                 MouseArea {
                                     anchors.fill: parent
                                     cursorShape: Qt.PointingHandCursor
+                                    enabled: !isTogglingBluetooth
                                     onClicked: {
                                         // This click is handled here and won't pass to the parent MouseArea
-                                        SoundManager.playTouch()
-                                        Theme.toggleBluetooth()
+                                        settingsRoot.toggleBluetoothPower()
                                     }
                                 }
                             }
@@ -467,13 +513,13 @@ Item {
 
             // --- Sub-Page Content Area ---
             SettingsPages.BluetoothDevices {
+                id: bluetoothDevicesPage // Add id to call its functions
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 wsClient: settingsRoot.wsClient // Pass wsClient to sub-page
-                onBackRequested: settingsRoot.goBack()
-                // Forward the signal from the child to the parent (this file)
-                onOpenPairingDialog: settingsRoot.openPairingDialog()
                 confirmationDialog: settingsRoot.confirmationDialog // Pass dialog to sub-page
+                onBackRequested: settingsRoot.goBack()
+                onTogglePower: settingsRoot.toggleBluetoothPower() // Connect signal to function
             }
 
             // --- Display Sub-Page ---

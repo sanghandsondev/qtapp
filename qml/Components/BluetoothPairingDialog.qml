@@ -25,20 +25,50 @@ Rectangle {
 
     function close() {
         dialogRoot.opacity = 0
-        // Reset state when closing
     }
-    //  {"device_name", },
-    //     {"device_address",},
-    //     {"rssi", },
-    //     {"is_paired",},
-    //     {"is_connected", }
-    //     {"icon"}
+
+    function getIconForDevice(iconName) {
+        switch (iconName) {
+            case "audio-headset":
+                return "headset";
+            case "phone":
+                return "smartphone";
+            case "computer":
+                return "computer";
+            case "input-keyboard":
+                return "keyboard";
+            case "input-mouse":
+                return "mouse";
+            case "input-gaming":
+                return "sports_esports";
+            case "audio-card":
+            case "audio-speakers":
+                return "speaker";
+            case "audio-headphones":
+                return "headphones";
+            default:
+                return "bluetooth"; // Default icon if empty or unknown
+        }
+    }
+
+    //  {"device_name", }, {"device_address",}, {"rssi", }, {"is_paired",}, {"is_connected", } {"icon"}
+    
     function addNewScanBTDevice(deviceData) {
         deviceListView.model.append({
             name: deviceData.device_name,
+            address: deviceData.device_address,
             icon: deviceData.icon,
             isPaired: deviceData.is_paired
         })
+    }
+
+    function deleteScanBTDevice(deviceAddress) {
+        for (var i = 0; i < deviceListView.model.count; i++) {
+            if (deviceListView.model.get(i).address === deviceAddress.device_address) {
+                deviceListView.model.remove(i)
+                break
+            }
+        }
     }
 
     // --- Timers ---
@@ -118,14 +148,6 @@ Rectangle {
                         // ListElement { name: "WH-1000XM4" }
                         // ListElement { name: "JBL Charge 5" }
                         // ListElement { name: "AirPods Pro" }
-                        // ListElement { name: "Unknown Device" }
-                        // ListElement { name: "Unknown Device" }
-                        // ListElement { name: "Unknown Device" }
-                        // ListElement { name: "Unknown Device" }
-                        // ListElement { name: "Unknown Device" }
-                        // ListElement { name: "Unknown Device" }
-                        // ListElement { name: "Unknown Device" }
-                        // ListElement { name: "Unknown Device" }
                     }
 
                     delegate: Rectangle {
@@ -140,7 +162,7 @@ Rectangle {
                             spacing: 12
 
                             Text {
-                                text: "bluetooth"
+                                text: getIconForDevice(model.icon)
                                 font.family: materialFontFamily
                                 font.pixelSize: 24
                                 color: Theme.icon
@@ -190,7 +212,6 @@ Rectangle {
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
-                        // wsClient.sendMessage({"cmd": "stop_scan_btdevice"})
                         SoundManager.playTouch()
                         if (wsClient && wsClient.sendMessage({ command: "stop_scan_btdevice", data: {} })) {
                             console.log("Stop scan bluetooth device")

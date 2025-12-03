@@ -233,12 +233,15 @@ Window {
                             anchors.fill: parent
                             visible: currentPageId === "Settings"
                             wsClient: wsClient          // Pass the wsClient instance
+                            confirmationDialog: confirmationDialog // Pass the dialog instance
                             onOpenPairingDialog: bluetoothPairingDialog.open()
                             onClosePairingDialog: bluetoothPairingDialog.close()
                             onAddNewScanBTDevice: function(deviceData) {
                                 bluetoothPairingDialog.addNewScanBTDevice(deviceData)
                             }
-                            confirmationDialog: confirmationDialog // Pass the dialog instance
+                            onDeleteScanBTDevice: function(deviceAddress) {
+                                bluetoothPairingDialog.deleteScanBTDevice(deviceAddress)
+                            }
                         }
 
                         // --- Notification Banner ---

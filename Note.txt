@@ -8,11 +8,6 @@ sudo apt install pipewire \
 wpctl status
 wpctl set-default <node_id>
 
-
-
-3. Tại sao các giao diện lại kéo thả được -> Vẫn chua được ở Sound và Display. Bluetooth & devices thì k biết có được ko
-Màu highlight của chỗ chọn Audio device xấu vl
-
 4. Thêm xử lý signal cho Bluetooth
 
 5. Khi close / nhận signal gì đó từ DBus là phải clear hết mấy cái device đã tìm thấy ở trong Dialog.
@@ -42,16 +37,10 @@ Discovery stopped
 [DEL] Device 0C:6A:C4:8B:A4:3A HoangTrungSang
 
 
-
-SetDiscoveryFilter success
-Discovery started
-
 6. Có Power off power on tương ứng bật tắt với client (xem xét có nên không, chắc là có thôi. Do it)
 Khi Power off cũng sẽ clear list pairing.
 
 7. Hình như request Cancel StopDiscovery ko hữu nghiệm
-Trước tiên phải sửa lại vụ khi mà phải nhận noti sucess thì mới cho hiển thị Dialog, 
-đỡ phải nhận noti fail rồi mới đóng.
 
 8. Hình như sau khi stop discovery thì khoảng 5s nó mới thực thi xong hay sao ấy. 
 
@@ -94,8 +83,3 @@ Changing power off succeeded
 
 Change property của chính Controller -> Hmm xem xét.
 power on, power off có khả năng cũng sẽ phải xét duyệt từ noti CHG này thôi
-
-
-10. icon
-audio-headset
-phone
