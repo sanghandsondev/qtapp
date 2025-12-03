@@ -38,6 +38,7 @@ Item {
     signal closePairingDialog()
     signal addNewScanBTDevice(variant deviceData)
     signal deleteScanBTDevice(variant deviceAdress)
+    signal addNewPairedBTDevice(variant deviceData)
 
     // --- State Management for Sub-Pages ---
     property string currentSubPage: "" // e.g., "bluetooth", "display"
@@ -101,17 +102,44 @@ Item {
             break
         case "paired_btdevice_found_noti":
             if (msgStatus) {
-                // TODO: Forward the paired device info to Setting bluetooth
+                settingsRoot.addNewPairedBTDevice(serverData)
             }
             break
         case "scanning_btdevice_found_noti":
             if (msgStatus) {
+                // If the found device is already paired or connected,
+                // ensure it's in the paired list (add or update).
+                if (serverData.is_paired || serverData.is_connected) {
+                    bluetoothDevicesPage.addPairedDevice(serverData)
+                }
+                // Always try to add to the scanning list.
+                // The dialog itself will filter out paired devices.
                 settingsRoot.addNewScanBTDevice(serverData)
             }
             break
         case "scanning_btdevice_delete_noti":
-            if (msgStatus) {
+            if (msgStatus && serverData.device_address) {
+                // This notification means a device is no longer in range.
+                // It could be a device from the scanning list or a paired device.
+                // We attempt to remove it from both lists.
+                settingsRoot.deleteScanBTDevice(serverData) // For scanning dialog
+                bluetoothDevicesPage.removePairedDevice(serverData.device_address) // For paired list
+            }
+            break
+        case "pair_btdevice_noti":
+            if (msgStatus && serverData.device_address) {
+                console.log("Device paired successfully:", serverData.device_address)
+                // Remove from scanning list
                 settingsRoot.deleteScanBTDevice(serverData)
+                // Add to paired list
+                bluetoothDevicesPage.addPairedDevice(serverData)
+            }
+            break
+        case "unpair_btdevice_noti":
+            if (msgStatus && serverData.device_address) {
+                console.log("Device unpaired successfully:", serverData.device_address)
+                // Remove from paired list
+                bluetoothDevicesPage.removePairedDevice(serverData.device_address)
             }
             break
         case "bluetooth_power_on_noti":
@@ -125,6 +153,7 @@ Item {
                 Theme.bluetoothEnabled = false
                 isScanning = false // Stop scanning if bluetooth is turned off
                 settingsRoot.closePairingDialog()
+                // bluetoothDevicesPage.clearPairedDevices() // This line is removed as requested
             }
             isTogglingBluetooth = false
             break

@@ -3,6 +3,7 @@ import QtQuick.Layouts 1.15
 import QtQuick.Controls 2.15 // Import Controls for ScrollView
 import com.company.style 1.0
 import com.company.sound 1.0
+import com.company.utils 1.0
 
 Item {
     // Signal to notify the parent (Settings.qml) to go back
@@ -22,6 +23,43 @@ Item {
     // The parent (Settings.qml) will have an alias to this.
     property bool isTogglingBluetooth: false
     property bool isScanning: false
+
+    // Function to add a new paired device to the model
+    //  {"device_name", }, {"device_address",}, {"rssi", }, {"is_paired",}, {"is_connected", } {"icon"}
+    function addPairedDevice(deviceData) {
+        // Check if the device already exists to avoid duplicates
+        for (var i = 0; i < pairedDevicesModel.count; i++) {
+            if (pairedDevicesModel.get(i).address === deviceData.device_address) {
+                // Optional: Update existing device info if needed
+                pairedDevicesModel.setProperty(i, "name", deviceData.device_name)
+                pairedDevicesModel.setProperty(i, "connected", deviceData.is_connected)
+                pairedDevicesModel.setProperty(i, "icon", Utils.getIconForDevice(deviceData.icon))
+                return // Device already in the list
+            }
+        }
+        // Append new device if it doesn't exist
+        pairedDevicesModel.append({
+            name: deviceData.device_name,
+            address: deviceData.device_address,
+            icon: Utils.getIconForDevice(deviceData.icon),
+            connected: deviceData.is_connected
+        })
+    }
+
+    // Function to remove a paired device from the model by its address
+    function removePairedDevice(deviceAddress) {
+        for (var i = 0; i < pairedDevicesModel.count; i++) {
+            if (pairedDevicesModel.get(i).address === deviceAddress) {
+                pairedDevicesModel.remove(i)
+                break
+            }
+        }
+    }
+
+    // Function to clear all paired devices from the list
+    function clearPairedDevices() {
+        pairedDevicesModel.clear()
+    }
 
     ColumnLayout {
         anchors.fill: parent
@@ -197,9 +235,7 @@ Item {
                 spacing: 8
                 model: ListModel {
                     id: pairedDevicesModel
-                    ListElement { name: "WH-1000XM4"; icon: "headphones"; connected: true }
-                    ListElement { name: "Pixel 7 Pro"; icon: "smartphone"; connected: false }
-                    ListElement { name: "JBL Charge 5"; icon: "speaker"; connected: false }
+                    // Mock data removed. The list will be populated dynamically.
                 }
 
                 delegate: Item {
@@ -218,7 +254,7 @@ Item {
                             spacing: 16
 
                             Text {
-                                text: model.icon
+                                text: model.icon // The icon is now pre-processed
                                 font.family: materialFontFamily
                                 font.pixelSize: 28
                                 color: Theme.icon
@@ -289,6 +325,9 @@ Item {
                                 border.color: Theme.buttonBorder
                                 border.width: 1
 
+                                opacity: Theme.bluetoothEnabled ? 1.0 : 0.4
+                                Behavior on opacity { NumberAnimation { duration: 50 } }
+
                                 Text {
                                     anchors.centerIn: parent
                                     text: "close"
@@ -299,14 +338,31 @@ Item {
                                 MouseArea {
                                     anchors.fill: parent
                                     cursorShape: Qt.PointingHandCursor
+                                    enabled: Theme.bluetoothEnabled
                                     onClicked: {
                                         SoundManager.playTouch()
                                         if (confirmationDialog) {
-                                            confirmationDialog.accepted.connect(function onAccepted() {
-                                                console.log("Unpairing device:", model.name)
-                                                // TODO: Add actual unpair logic via WebSocket
+                                            var onAccepted = function() {
+                                                // Double-check if Bluetooth is still enabled before sending
+                                                if (!Theme.bluetoothEnabled) {
+                                                    console.warn("Unpair cancelled: Bluetooth was turned off.")
+                                                    confirmationDialog.accepted.disconnect(onAccepted)
+                                                    return
+                                                }
+
+                                                console.log("Unpairing device:", model.name, "Address:", model.address)
+                                                if (wsClient && wsClient.sendMessage({
+                                                    command: "unpair_btdevice",
+                                                    data: {
+                                                        device_address: model.address
+                                                    }
+                                                })) {
+                                                    console.log("Sent unpair request for device:", model.address)
+                                                }
                                                 confirmationDialog.accepted.disconnect(onAccepted) // Clean up connection
-                                            })
+                                            }
+                                            confirmationDialog.accepted.connect(onAccepted)
+
                                             confirmationDialog.open(
                                                 "Unpair Device",
                                                 "Are you sure you want to unpair \"" + model.name + "\"?",

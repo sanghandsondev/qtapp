@@ -14,4 +14,28 @@ QtObject {
         }
         return filePath.substring(lastSlash + 1)
     }
+
+    function getIconForDevice(iconName) {
+        switch (iconName) {
+        case "audio-headset":
+            return "headset"
+        case "phone":
+            return "smartphone"
+        case "computer":
+            return "computer"
+        case "input-keyboard":
+            return "keyboard"
+        case "input-mouse":
+            return "mouse"
+        case "input-gaming":
+            return "sports_esports"
+        case "audio-card":
+        case "audio-speakers":
+            return "speaker"
+        case "audio-headphones":
+            return "headphones"
+        default:
+            return "bluetooth" // Default icon if empty or unknown
+        }
+    }
 }

@@ -264,9 +264,18 @@ Window {
                             id: bluetoothPairingDialog
                             wsClient: wsClient // Pass the wsClient instance
                             isScanning: settingsPage.isScanning // Pass scanning state
-                            onDeviceSelected: (deviceName) => {
+                            onDeviceSelected: (deviceName, deviceAddress) => {
+                                if (!Theme.bluetoothEnabled) {
+                                    showNotification("Cannot pair, Bluetooth is turned off.", "warning")
+                                    return
+                                }
                                 showNotification("Pairing with " + deviceName + "...", "info")
-                                // TODO: Add actual pairing logic via WebSocket
+                                if (wsClient && deviceAddress && wsClient.sendMessage({
+                                    command: "pair_btdevice",
+                                    data: {
+                                        device_address: deviceAddress }})) {
+                                    console.log("Sent pairing request for device:", deviceAddress)
+                                }
                             }
                         }
                     }

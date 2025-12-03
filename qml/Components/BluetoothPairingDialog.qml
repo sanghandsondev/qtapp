@@ -3,6 +3,7 @@ import QtQuick.Layouts 1.15
 import QtQuick.Controls 2.15
 import com.company.style 1.0
 import com.company.sound 1.0
+import com.company.utils 1.0
 
 Rectangle {
     id: dialogRoot
@@ -15,7 +16,7 @@ Rectangle {
     property bool isScanning: false // Add this property
     property int dotCount: 1
 
-    signal deviceSelected(string deviceName)
+    signal deviceSelected(string deviceName, string deviceAddress)
     signal rejected()
 
     // --- Functions ---
@@ -28,39 +29,25 @@ Rectangle {
         dialogRoot.opacity = 0
     }
 
-    function getIconForDevice(iconName) {
-        switch (iconName) {
-            case "audio-headset":
-                return "headset";
-            case "phone":
-                return "smartphone";
-            case "computer":
-                return "computer";
-            case "input-keyboard":
-                return "keyboard";
-            case "input-mouse":
-                return "mouse";
-            case "input-gaming":
-                return "sports_esports";
-            case "audio-card":
-            case "audio-speakers":
-                return "speaker";
-            case "audio-headphones":
-                return "headphones";
-            default:
-                return "bluetooth"; // Default icon if empty or unknown
-        }
-    }
-
     //  {"device_name", }, {"device_address",}, {"rssi", }, {"is_paired",}, {"is_connected", } {"icon"}
     
     function addNewScanBTDevice(deviceData) {
-        deviceListView.model.append({
+        // Do not show devices that are already paired or connected in the scanning list.
+        if (deviceData.is_paired || deviceData.is_connected) {
+            return
+        }
+
+        var deviceObject = {
             name: deviceData.device_name,
             address: deviceData.device_address,
             icon: deviceData.icon,
-            isPaired: deviceData.is_paired
-        })
+        }
+
+        if (Utils.getIconForDevice(deviceData.icon) !== "bluetooth") {
+            deviceListView.model.insert(0, deviceObject)
+        } else {
+            deviceListView.model.append(deviceObject)
+        }
     }
 
     function deleteScanBTDevice(deviceAddress) {
@@ -163,7 +150,7 @@ Rectangle {
                             spacing: 12
 
                             Text {
-                                text: getIconForDevice(model.icon)
+                                text: Utils.getIconForDevice(model.icon)
                                 font.family: materialFontFamily
                                 font.pixelSize: 24
                                 color: Theme.icon
@@ -183,12 +170,8 @@ Rectangle {
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
                                 SoundManager.playTouch()
-                                if (isScanning) {
-                                    if (wsClient && wsClient.sendMessage({ command: "stop_scan_btdevice", data: {} })) {
-                                        console.log("Stop scan bluetooth device before pairing")
-                                    }
-                                }
-                                dialogRoot.deviceSelected(model.name)
+                                // The stop scan logic is removed. The pairing request will be sent from the parent.
+                                dialogRoot.deviceSelected(model.name, model.address)
                                 dialogRoot.close()
                             }
                         }
