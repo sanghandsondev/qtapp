@@ -83,3 +83,7 @@ Changing power off succeeded
 
 Change property của chính Controller -> Hmm xem xét.
 power on, power off có khả năng cũng sẽ phải xét duyệt từ noti CHG này thôi
+
+////////////////////////////////
+Tức là khi nhận PropertyChange 
+1. Nếu unpair -> pair thì ok bt_
