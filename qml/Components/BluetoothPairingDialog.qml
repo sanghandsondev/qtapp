@@ -12,6 +12,7 @@ Rectangle {
     z: 20 // Đảm bảo nó ở trên cùng
 
     property var wsClient
+    property bool isScanning: false // Add this property
     property int dotCount: 1
 
     signal deviceSelected(string deviceName)
@@ -76,7 +77,7 @@ Rectangle {
         id: dotAnimationTimer
         interval: 800
         repeat: true
-        running: true
+        running: dialogRoot.visible && isScanning // Only run when visible and scanning
         onTriggered: {
             dotCount = (dotCount % 3) + 1
         }
@@ -125,7 +126,7 @@ Rectangle {
 
             // --- Scanning Text ---
             Text {
-                text: "Scanning for devices " + ".".repeat(dotCount)
+                text: isScanning ? "Scanning for devices " + ".".repeat(dotCount) : "Select a device to pair"
                 color: Theme.secondaryText
                 font.pointSize: 14
                 Layout.fillWidth: true
@@ -182,6 +183,11 @@ Rectangle {
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
                                 SoundManager.playTouch()
+                                if (isScanning) {
+                                    if (wsClient && wsClient.sendMessage({ command: "stop_scan_btdevice", data: {} })) {
+                                        console.log("Stop scan bluetooth device before pairing")
+                                    }
+                                }
                                 dialogRoot.deviceSelected(model.name)
                                 dialogRoot.close()
                             }
@@ -213,8 +219,10 @@ Rectangle {
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
                         SoundManager.playTouch()
-                        if (wsClient && wsClient.sendMessage({ command: "stop_scan_btdevice", data: {} })) {
-                            console.log("Stop scan bluetooth device")
+                        if (isScanning) {
+                            if (wsClient && wsClient.sendMessage({ command: "stop_scan_btdevice", data: {} })) {
+                                console.log("Stop scan bluetooth device")
+                            }
                         }
                         dialogRoot.rejected()
                         dialogRoot.close()

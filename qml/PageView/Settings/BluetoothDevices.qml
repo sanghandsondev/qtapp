@@ -9,6 +9,8 @@ Item {
     signal backRequested()
     // Signal to notify the parent to toggle the bluetooth power
     signal togglePower()
+    // Signal to request opening the pairing dialog
+    signal openPairingDialog()
 
     // Property to hold the WebSocket client instance
     property var wsClient
@@ -19,6 +21,7 @@ Item {
     // This property is now the single source of truth for the toggle state.
     // The parent (Settings.qml) will have an alias to this.
     property bool isTogglingBluetooth: false
+    property bool isScanning: false
 
     ColumnLayout {
         anchors.fill: parent
@@ -152,8 +155,15 @@ Item {
                     enabled: Theme.bluetoothEnabled // Disable clicks when Bluetooth is off
                     onClicked: {
                         SoundManager.playTouch()
-                        if (wsClient && wsClient.sendMessage({ command: "start_scan_btdevice", data: {} })) {
-                            console.log("Requested to start scanning for Bluetooth devices")
+                        if (isScanning) {
+                            // If already scanning, just open the dialog
+                            openPairingDialog()
+                        } else {
+                            // Otherwise, request a new scan
+                            if (wsClient && wsClient.sendMessage({ command: "start_scan_btdevice", data: {} })) {
+                                console.log("Requested to start scanning for Bluetooth devices")
+                            }
+                            openPairingDialog()
                         }
                     }
                 }

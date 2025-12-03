@@ -30,6 +30,9 @@ Item {
     // This is now an alias to the property in the sub-page to create a two-way binding.
     property alias isTogglingBluetooth: bluetoothDevicesPage.isTogglingBluetooth
 
+    // Property to track if a bluetooth scan is in progress
+    property bool isScanning: false
+
     // Signal to forward to Main.qml
     signal openPairingDialog()
     signal closePairingDialog()
@@ -66,52 +69,68 @@ Item {
 
         console.log("Settings Page processing message:", msgType)
 
-        if (msgType === "start_scan_btdevice_noti") {
+        switch (msgType) {
+        case "initial_state":
+            if(msgStatus) {
+                Theme.bluetoothEnabled = serverData.bluetooth_power_state
+                isScanning = serverData.scanning_btdevice_state
+            } else {
+                console.warn("Failed to get initial state from server.")
+            }
+            break
+        case "start_scan_btdevice_noti":
             if (!msgStatus) {
                 // If scanning fails to start, close the pairing dialog.
                 console.log("Failed to start Bluetooth scan, closing pairing dialog.")
                 settingsRoot.closePairingDialog()
             } else {
                 console.log("Bluetooth scan started successfully.")
-                settingsRoot.openPairingDialog()
+                isScanning = true
+                // settingsRoot.openPairingDialog()
             }
-        } else if (msgType === "stop_scan_btdevice_noti") {
+            break
+        case "stop_scan_btdevice_noti":
             if (msgStatus) {
                 console.log("Bluetooth scan stopped successfully, closing pairing dialog.")
-            }
-            settingsRoot.closePairingDialog()
-        }
-        else if (msgType === "paired_btdevice_found_noti") {
+                isScanning = false
+            } else {
+                console.warn("Failed to stop Bluetooth scan.")
+            }  
+            // Don't close the dialog here, let the user do it.
+            // The dialog UI will update to show scanning has stopped.
+            break
+        case "paired_btdevice_found_noti":
             if (msgStatus) {
                 // TODO: Forward the paired device info to Setting bluetooth
             }
-        }
-        else if (msgType === "scanning_btdevice_found_noti") {
+            break
+        case "scanning_btdevice_found_noti":
             if (msgStatus) {
                 settingsRoot.addNewScanBTDevice(serverData)
             }
-            
-        } 
-        else if(msgType === "scanning_btdevice_delete_noti") {
+            break
+        case "scanning_btdevice_delete_noti":
             if (msgStatus) {
                 settingsRoot.deleteScanBTDevice(serverData)
             }
-        }
-        else if (msgType === "bluetooth_power_on_noti") {
+            break
+        case "bluetooth_power_on_noti":
             if (msgStatus) {
                 Theme.bluetoothEnabled = true
             }
             isTogglingBluetooth = false
-        }
-        else if (msgType === "bluetooth_power_off_noti") {
+            break
+        case "bluetooth_power_off_noti":
             if (msgStatus) {
                 Theme.bluetoothEnabled = false
+                isScanning = false // Stop scanning if bluetooth is turned off
                 settingsRoot.closePairingDialog()
             }
             isTogglingBluetooth = false
-        }
-        else {
+            break
+        default:
             console.warn("Header Component received unknown message type:", msgType)
+            break
         }
     }
 
@@ -518,8 +537,10 @@ Item {
                 Layout.fillHeight: true
                 wsClient: settingsRoot.wsClient // Pass wsClient to sub-page
                 confirmationDialog: settingsRoot.confirmationDialog // Pass dialog to sub-page
+                isScanning: settingsRoot.isScanning // Pass scanning state
                 onBackRequested: settingsRoot.goBack()
                 onTogglePower: settingsRoot.toggleBluetoothPower() // Connect signal to function
+                onOpenPairingDialog: settingsRoot.openPairingDialog() // Signal to open dialog
             }
 
             // --- Display Sub-Page ---

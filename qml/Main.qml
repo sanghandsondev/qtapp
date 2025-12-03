@@ -263,6 +263,7 @@ Window {
                         Components.BluetoothPairingDialog {
                             id: bluetoothPairingDialog
                             wsClient: wsClient // Pass the wsClient instance
+                            isScanning: settingsPage.isScanning // Pass scanning state
                             onDeviceSelected: (deviceName) => {
                                 showNotification("Pairing with " + deviceName + "...", "info")
                                 // TODO: Add actual pairing logic via WebSocket
