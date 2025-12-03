@@ -36,6 +36,13 @@ Rectangle {
         if (deviceData.is_paired || deviceData.is_connected) {
             return
         }
+        
+        for(var i = 0; i < deviceListView.model.count; i++) {
+            if (deviceListView.model.get(i).address === deviceData.device_address) {
+                // Device already exists in the list
+                return
+            }
+        }
 
         var deviceObject = {
             name: deviceData.device_name,
@@ -52,7 +59,7 @@ Rectangle {
 
     function deleteScanBTDevice(deviceAddress) {
         for (var i = 0; i < deviceListView.model.count; i++) {
-            if (deviceListView.model.get(i).address === deviceAddress.device_address) {
+            if (deviceListView.model.get(i).address === deviceAddress) {
                 deviceListView.model.remove(i)
                 break
             }

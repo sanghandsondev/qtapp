@@ -114,7 +114,7 @@ Item {
             break
         case "scanning_btdevice_delete_noti":
             if (msgStatus && serverData.device_address) {
-                settingsRoot.deleteScanBTDevice(serverData)                         // For scanning dialog
+                settingsRoot.deleteScanBTDevice(serverData.device_address)                         // For scanning dialog
                 bluetoothDevicesPage.removePairedDevice(serverData.device_address)  // For paired list
             }
             break
@@ -123,16 +123,11 @@ Item {
                 // This handles changes like pairing, unpairing, connecting, disconnecting.
                 if (serverData.is_paired || serverData.is_connected) {
                     console.log("Device property changed: now paired/connected.", serverData.device_address)
-                    // Add/update it in the paired list
                     bluetoothDevicesPage.addPairedDevice(serverData)
-                    // Remove it from the scanning list
-                    settingsRoot.deleteScanBTDevice(serverData)
+                    settingsRoot.deleteScanBTDevice(serverData.device_address)
                 } else { // Device is now unpaired and not connected
                     console.log("Device property changed: now unpaired.", serverData.device_address)
-                    // Remove it from the paired list
                     bluetoothDevicesPage.removePairedDevice(serverData.device_address)
-                    // Add it back to the scanning list, as it's now discoverable.
-                    // The dialog's logic will handle duplicates and visibility.
                     settingsRoot.addNewScanBTDevice(serverData)
                 }
             }

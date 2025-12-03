@@ -1,6 +1,6 @@
 [Unit]
 Description=QT App Service for Raspberry Pi
-After=network-online.target coremanager.service
+After=network-online.target coremanager.service recordmanager.service hardwaremanager.service
 Wants=network-online.target
 
 [Service]

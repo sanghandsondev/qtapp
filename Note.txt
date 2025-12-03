@@ -8,82 +8,22 @@ sudo apt install pipewire \
 wpctl status
 wpctl set-default <node_id>
 
-4. Thêm xử lý signal cho Bluetooth
 
-5. Khi close / nhận signal gì đó từ DBus là phải clear hết mấy cái device đã tìm thấy ở trong Dialog.
-Khi scan thì lại scan lại. (tương ứng scan on, scan off)
-[bluetoothctl]> scan on
-SetDiscoveryFilter success
-Discovery started
-[CHG] Controller D8:3A:DD:0F:FB:BE Discovering: yes
-[NEW] Device 48:91:56:27:95:A3 48-91-56-27-95-A3
-[NEW] Device 43:D1:F6:42:33:4A 43-D1-F6-42-33-4A
-[NEW] Device C9:CC:67:11:24:33 S2025
-[NEW] Device 0C:6A:C4:8B:A4:3A HoangTrungSang
-[NEW] Device B8:3D:FB:8B:EA:30 B8-3D-FB-8B-EA-30
-[bluetoothctl]> scan off
-[CHG] Device B8:3D:FB:8B:EA:30 RSSI is nil  -> Chỗ này là properychange thì phải
-[CHG] Device 0C:6A:C4:8B:A4:3A RSSI is nil
-[CHG] Device C9:CC:67:11:24:33 RSSI is nil
-[CHG] Device 43:D1:F6:42:33:4A RSSI is nil
-[CHG] Device 48:91:56:27:95:A3 TxPower is nil
-[CHG] Device 48:91:56:27:95:A3 RSSI is nil
-[CHG] Controller D8:3A:DD:0F:FB:BE Discovering: no
-Discovery stopped
-[DEL] Device 48:91:56:27:95:A3 48-91-56-27-95-A3
-[DEL] Device B8:3D:FB:8B:EA:30 B8-3D-FB-8B-EA-30
-[DEL] Device 43:D1:F6:42:33:4A 43-D1-F6-42-33-4A
-[DEL] Device C9:CC:67:11:24:33 S2025
-[DEL] Device 0C:6A:C4:8B:A4:3A HoangTrungSang
+///////////////////////////////////////////////////////////////////////////////////
+1/ sau khi insert 1 item record mới thì cái index expand phải là cái mới nhất (cái đầu tiên).
+Bất cứ nó dang expand ở một thằng nào khác.
 
+2/ Đang play 1 thằng mà record mới -> end record mới
+Chơi lại thằng khi nãi thì thanh slider bị sai (full slide) và ko thể thao tác đúng
 
-6. Có Power off power on tương ứng bật tắt với client (xem xét có nên không, chắc là có thôi. Do it)
-Khi Power off cũng sẽ clear list pairing.
+3/ Trước khi play 1 record, mà kéo thanh trượt (vẫn kéo được).
+Sau đó play thì lại start từ đầu -> Khi chưa chơi thì ko cho kéo thanh trượt, disable nó đi 
 
-7. Hình như request Cancel StopDiscovery ko hữu nghiệm
+4/ Khi chọn Audio Device thì cái dưới chưa có tích. Nên thêm 1 icon tròn tròn ở cuối là biết là mình đang chọn
 
-8. Hình như sau khi stop discovery thì khoảng 5s nó mới thực thi xong hay sao ấy. 
+5/ Khi connected với WebSocket, request DBUSSender từ WebSocket của CoreManager để get ObjectManaged. -> findAdapter()
+(vừa get Adapter property + vừa get được paired device)
+---> Bỏ initState của bluetooth state 
+---> Ngoài ra cần kết nối WS thì chức năng bluetooth mới enable nhé, đảm bảo ko cho request luôn. 
 
-[CHG] Controller D8:3A:DD:0F:FB:BE Discovering: yes -> PropertyChange signal 
-[NEW] Device 63:A5:CA:94:79:84 63-A5-CA-94-79-84
-[NEW] Device 47:54:C0:A6:0C:9B 47-54-C0-A6-0C-9B
-[NEW] Device 40:58:C5:B8:5B:03 40-58-C5-B8-5B-03
-[NEW] Device 0C:E1:00:D2:60:B8 RC860S
-[NEW] Device B8:3D:FB:8B:EA:30 HUN171919083595sdoor8N1@
-[NEW] Device C9:CC:67:11:24:33 S2025
-[NEW] Device 65:B9:0C:F1:B8:F3 65-B9-0C-F1-B8-F3
-[NEW] Device 52:DC:5B:DD:88:E9 52-DC-5B-DD-88-E9
-[NEW] Device 0C:6A:C4:8B:A4:3A HoangTrungSang
-[DEL] Device 63:A5:CA:94:79:84 63-A5-CA-94-79-84
-[DEL] Device 47:54:C0:A6:0C:9B 47-54-C0-A6-0C-9B
-[DEL] Device 0C:E1:00:D2:60:B8 RC860S
-[DEL] Device B8:3D:FB:8B:EA:30 HUN171919083595sdoor8N1@
-[NEW] Device B8:3D:FB:8B:EA:30 HUN171919083595sdoor8N1@
-[DEL] Device 65:B9:0C:F1:B8:F3 65-B9-0C-F1-B8-F3
-[DEL] Device 52:DC:5B:DD:88:E9 52-DC-5B-DD-88-E9
-[DEL] Device 0C:6A:C4:8B:A4:3A HoangTrungSang
-[NEW] Device 5E:60:F2:27:15:CC 5E-60-F2-27-15-CC
-[NEW] Device 56:A1:4C:08:91:45 56-A1-4C-08-91-45
-
-PHẢI TÌM ĐƯỢC SIGNAL tương ứng với DEL kia. Để xóa tương ứng với thằng list pairring đã scan
-HÌNH NHƯ SCAN OFF thì cứ để vậy thôi. đừng clear. Để cái signal DEL kia tự xóa. 
-Vì một lúc sau nó mới DEL. Nên đừng clear tự động ở Client, cái gì cũng phải thông qua Noti
-
-Khi nào mà CHG của controller là discovering là no thì tức là stop_noti mới success. 
-Khi đó mới ẩn dialog đi. Còn DEL thì cứ nhận thì xóa. ko nhận thì ko xóa. 
-
-9. Khi Power On thì cũng tìm đăng ký signal hay method gì để discovery on 
-Tức cho phép điện thoại nhìn thấy pi. Cái này thì từ từ ...
-[CHG] Controller D8:3A:DD:0F:FB:BE PowerState: on-disabling
-Changing power off succeeded
-[CHG] Controller D8:3A:DD:0F:FB:BE PowerState: off
-[CHG] Controller D8:3A:DD:0F:FB:BE Powered: no
-[CHG] Controller D8:3A:DD:0F:FB:BE Discovering: no
-[CHG] Controller D8:3A:DD:0F:FB:BE Class: 0x00000000 (0)
-
-Change property của chính Controller -> Hmm xem xét.
-power on, power off có khả năng cũng sẽ phải xét duyệt từ noti CHG này thôi
-
-////////////////////////////////
-Tức là khi nhận PropertyChange 
-1. Nếu unpair -> pair thì ok bt_
+6/ Xử lý Connect, tìm hiểu về "Trusted" -> (Thường là) Đã tin cậy, cho phép kết nối tự động.

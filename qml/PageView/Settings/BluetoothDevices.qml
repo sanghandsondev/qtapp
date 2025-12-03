@@ -33,6 +33,7 @@ Item {
                 // Optional: Update existing device info if needed
                 pairedDevicesModel.setProperty(i, "name", deviceData.device_name)
                 pairedDevicesModel.setProperty(i, "connected", deviceData.is_connected)
+                pairedDevicesModel.setProperty(i, "paired", deviceData.is_paired)
                 pairedDevicesModel.setProperty(i, "icon", Utils.getIconForDevice(deviceData.icon))
                 return // Device already in the list
             }
@@ -42,6 +43,7 @@ Item {
             name: deviceData.device_name,
             address: deviceData.device_address,
             icon: Utils.getIconForDevice(deviceData.icon),
+            paired: deviceData.is_paired,
             connected: deviceData.is_connected
         })
     }
