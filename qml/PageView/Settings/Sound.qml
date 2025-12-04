@@ -3,6 +3,7 @@ import QtQuick.Layouts 1.15
 import QtQuick.Controls 2.15
 import com.company.style 1.0
 import com.company.sound 1.0
+import com.company.utils 1.0
 
 Item {
     // Signal to notify the parent (Settings.qml) to go back
@@ -369,7 +370,7 @@ Item {
                                                 spacing: 8
 
                                                 Text {
-                                                    text: "speaker" // Speaker icon
+                                                    text: isDevice ? Utils.getIconForAudioDevice(modelData) : "speaker" // Use new function for dynamic icon
                                                     font.family: materialFontFamily
                                                     font.pixelSize: 24
                                                     color: Theme.icon

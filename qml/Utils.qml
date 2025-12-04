@@ -38,4 +38,48 @@ QtObject {
             return "bluetooth" // Default icon if empty or unknown
         }
     }
+
+    // Function to determine the priority of an audio output device.
+    // Higher number = higher priority.
+    function getAudioDevicePriority(device) {
+        if (!device || !device.description) {
+            return 0
+        }
+        const desc = device.description.toLowerCase()
+
+        // Highest priority: Bluetooth devices
+        if (desc.includes("bluez") || desc.includes("bluetooth")) {
+            return 3
+        }
+        // Medium priority: Analog output (headphones/speakers jack)
+        if (desc.includes("headphones") || desc.includes("analog") || desc.includes("bcm2835")) {
+            return 2
+        }
+        // Low priority: HDMI
+        if (desc.includes("hdmi")) {
+            return 1
+        }
+        // Lowest priority for anything else
+        return 0
+    }
+
+    // Function to get a suitable icon for an audio output device.
+    function getIconForAudioDevice(device) {
+        if (!device || !device.description) {
+            return "speaker" // Default icon
+        }
+        const desc = device.description.toLowerCase()
+
+        if (desc.includes("bluez") || desc.includes("bluetooth")) {
+            return "headset"
+        }
+        if (desc.includes("headphones")) {
+            return "headphones"
+        }
+        if (desc.includes("hdmi")) {
+            return "tv"
+        }
+        // Default for analog, speakers, etc.
+        return "speaker"
+    }
 }
