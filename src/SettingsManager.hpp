@@ -19,6 +19,7 @@ class SettingsManager : public QObject
     Q_PROPERTY(qreal volumeLevel READ getVolumeLevel WRITE setVolumeLevel NOTIFY onVolumeLevelChanged)
     Q_PROPERTY(bool bluetoothEnabled READ getBluetoothEnabled WRITE setBluetoothEnabled NOTIFY onBluetoothEnabledChanged)
     Q_PROPERTY(QString audioOutputDevice READ getAudioOutputDevice WRITE setAudioOutputDevice NOTIFY onAudioOutputDeviceChanged)
+    Q_PROPERTY(qreal brightnessLevel READ getBrightnessLevel WRITE setBrightnessLevel NOTIFY onBrightnessLevelChanged)
 
 public:
     explicit SettingsManager(QObject *parent = nullptr);
@@ -34,6 +35,7 @@ public:
     qreal getVolumeLevel() const;
     bool getBluetoothEnabled() const;
     QString getAudioOutputDevice() const;
+    qreal getBrightnessLevel() const;
 
 public slots:
     // Specific setters for properties
@@ -43,6 +45,7 @@ public slots:
     void setVolumeLevel(qreal volumeLevel);
     void setBluetoothEnabled(bool bluetoothEnabled);
     void setAudioOutputDevice(const QString &audioOutputDevice);
+    void setBrightnessLevel(qreal brightnessLevel);
 
 signals:
     // Phát tín hiệu thay đổi, QML sẽ nhận biết và cập nhật giao diện
@@ -52,6 +55,7 @@ signals:
     void onVolumeLevelChanged();
     void onBluetoothEnabledChanged();
     void onAudioOutputDeviceChanged();
+    void onBrightnessLevelChanged();
 
 private:
     QSettings m_settings;
@@ -63,6 +67,7 @@ private:
     static const QString KEY_VOLUME_LEVEL;
     static const QString KEY_BLUETOOTH_ENABLED;
     static const QString KEY_AUDIO_OUTPUT_DEVICE;
+    static const QString KEY_BRIGHTNESS_LEVEL;
 };
 
 #endif // SETTINGS_MANAGER_HPP

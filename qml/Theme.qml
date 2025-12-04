@@ -35,6 +35,14 @@ QtObject {
         _settingsManager.audioOutputDevice = deviceDescription
     }
 
+    // Brightness setting (0.6 - 1.0)
+    property alias brightnessLevel: _settingsManager.brightnessLevel
+    function setBrightnessLevel(level) {
+        if (level >= 0.6 && level <= 1.0) {
+            _settingsManager.brightnessLevel = level
+        }
+    }
+
     // Volume setting (0.0 - 1.0)
     property alias volumeLevel: _settingsManager.volumeLevel
     // onVolumeLevelChanged: {

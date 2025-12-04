@@ -7,6 +7,7 @@ const QString SettingsManager::KEY_SOUND_TOUCH_ENABLED = "theme/soundTouchEnable
 const QString SettingsManager::KEY_VOLUME_LEVEL = "theme/volumeLevel";
 const QString SettingsManager::KEY_BLUETOOTH_ENABLED = "system/bluetoothEnabled";
 const QString SettingsManager::KEY_AUDIO_OUTPUT_DEVICE = "sound/audioOutputDevice";
+const QString SettingsManager::KEY_BRIGHTNESS_LEVEL = "theme/brightnessLevel";
 
 SettingsManager::SettingsManager(QObject *parent)
     : QObject(parent), m_settings("MyCompany", "QtApp") // Tên tổ chức và tên ứng dụng
@@ -47,6 +48,12 @@ QString SettingsManager::getAudioOutputDevice() const
 {
     // Default to an empty string, SoundManager will use the system default
     return m_settings.value(KEY_AUDIO_OUTPUT_DEVICE, "").toString();
+}
+
+qreal SettingsManager::getBrightnessLevel() const
+{
+    // Default to 1.0 (100% brightness)
+    return m_settings.value(KEY_BRIGHTNESS_LEVEL, 1.0).toReal();
 }
 
 // -- Specific setters for properties --
@@ -98,5 +105,15 @@ void SettingsManager::setAudioOutputDevice(const QString &audioOutputDevice)
     if (getAudioOutputDevice() != audioOutputDevice) {
         m_settings.setValue(KEY_AUDIO_OUTPUT_DEVICE, audioOutputDevice);
         emit onAudioOutputDeviceChanged();
+    }
+}
+
+void SettingsManager::setBrightnessLevel(qreal brightnessLevel)
+{
+    // Clamp the value between 0.1 and 1.0 to prevent screen from being completely black
+    brightnessLevel = qBound(0.1, brightnessLevel, 1.0);
+    if (getBrightnessLevel() != brightnessLevel) {
+        m_settings.setValue(KEY_BRIGHTNESS_LEVEL, brightnessLevel);
+        emit onBrightnessLevelChanged();
     }
 }

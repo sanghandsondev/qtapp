@@ -16,6 +16,7 @@ Window {
     height: 600
     visible: true
     title: "Qt App"
+    // opacity: Theme.brightnessLevel // Bind window opacity to brightness level // REMOVED
 
     property string currentPageId: "Home"
     property var currentTime: new Date()
@@ -294,6 +295,20 @@ Window {
                     }
                 }
             }
+        }
+
+        // --- Brightness Overlay ---
+        // This rectangle sits on top of all content and its opacity is adjusted
+        // to simulate a brightness change.
+        Rectangle {
+            anchors.fill: parent
+            color: "black"
+            // The overlay is more opaque as brightnessLevel decreases.
+            opacity: 1.0 - Theme.brightnessLevel
+            // Ensure the overlay doesn't block mouse events from reaching the UI below.
+            enabled: false
+            // Set z-index to be above content but below popups like notifications (z=10) and screensaver (z=21).
+            z: 9
         }
 
         // This MouseArea covers the whole window to detect activity
