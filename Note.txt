@@ -26,7 +26,12 @@ Sau đó play thì lại start từ đầu -> Khi chưa chơi thì ko cho k
 
 5/ Khi connected với WebSocket, request DBUSSender từ WebSocket của CoreManager để get ObjectManaged. -> findAdapter()
 (vừa get Adapter property + vừa get được paired device)
----> Bỏ initState của bluetooth state 
----> Ngoài ra cần kết nối WS thì chức năng bluetooth mới enable nhé, đảm bảo ko cho request luôn. 
+[CHECK]
 
 6/ Xử lý Connect, tìm hiểu về "Trusted" -> (Thường là) Đã tin cậy, cho phép kết nối tự động.
+
+7/ Ưu tiên loa bluetooth, sau đó là loa jack 3.5mm. 
+Có thay đổi đượcc default ko. hay là phải xử lý bên dưới pipewire.
+Cần setting gì ở linux cmd
+
+8/ Lấy data Batery của device như loa, speaker

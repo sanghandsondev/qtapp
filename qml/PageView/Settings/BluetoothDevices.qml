@@ -35,6 +35,8 @@ Item {
                 pairedDevicesModel.setProperty(i, "connected", deviceData.is_connected)
                 pairedDevicesModel.setProperty(i, "paired", deviceData.is_paired)
                 pairedDevicesModel.setProperty(i, "icon", Utils.getIconForDevice(deviceData.icon))
+                pairedDevicesModel.setProperty(i, "connecting", false)      // Reset connecting state on update
+                pairedDevicesModel.setProperty(i, "disconnecting", false)   // Reset disconnecting state on update
                 return // Device already in the list
             }
         }
@@ -44,7 +46,9 @@ Item {
             address: deviceData.device_address,
             icon: Utils.getIconForDevice(deviceData.icon),
             paired: deviceData.is_paired,
-            connected: deviceData.is_connected
+            connected: deviceData.is_connected,
+            connecting: false,
+            disconnecting: false
         })
     }
 
@@ -244,6 +248,29 @@ Item {
                     width: pairedDevicesView.width
                     height: 64
 
+                    property bool isConnecting: model.connecting
+                    property bool isDisconnecting: model.disconnecting
+
+                    Timer {
+                        id: connectTimer
+                        interval: 10000 // 10-second timeout
+                        repeat: false
+                        onTriggered: {
+                            console.log("Connection timed out for", model.address)
+                            pairedDevicesModel.setProperty(model.index, "connecting", false)
+                        }
+                    }
+
+                    Timer {
+                        id: disconnectTimer
+                        interval: 10000 // 10-second timeout for disconnect
+                        repeat: false
+                        onTriggered: {
+                            console.log("Disconnection timed out for", model.address)
+                            pairedDevicesModel.setProperty(model.index, "disconnecting", false)
+                        }
+                    }
+
                     RowLayout {
                         anchors.fill: parent
                         anchors.leftMargin: 12
@@ -270,7 +297,11 @@ Item {
                                     font.pointSize: 16
                                 }
                                 Text {
-                                    text: model.connected ? "Connected" : "Paired"
+                                    text: {
+                                        if (isConnecting) return "Connecting..."
+                                        if (isDisconnecting) return "Disconnecting..."
+                                        return model.connected ? "Connected" : "Paired"
+                                    }
                                     color: Theme.secondaryText
                                     font.pointSize: 12
                                 }
@@ -295,7 +326,7 @@ Item {
                                 border.width: 1
                                 Behavior on border.color { ColorAnimation { duration: 50 } }
 
-                                opacity: Theme.bluetoothEnabled ? 1.0 : 0.4
+                                opacity: (Theme.bluetoothEnabled && !isConnecting && !isDisconnecting) ? 1.0 : 0.4
                                 Behavior on opacity { NumberAnimation { duration: 50 } }
 
                                 Text {
@@ -307,13 +338,28 @@ Item {
                                 MouseArea {
                                     anchors.fill: parent
                                     cursorShape: Qt.PointingHandCursor
-                                    enabled: Theme.bluetoothEnabled
+                                    enabled: Theme.bluetoothEnabled && !isConnecting && !isDisconnecting
                                     onClicked: {
                                         SoundManager.playTouch()
-                                        // Toggle connected state for this device
-                                        // In a real app, you would also handle logic to ensure only one audio device is connected at a time.
-                                        pairedDevicesModel.setProperty(model.index, "connected", !model.connected)
-                                        // TODO: Add actual connect/disconnect logic
+                                        if (model.connected) { // Disconnect action
+                                            if (wsClient && wsClient.sendMessage({
+                                                command: "disconnect_btdevice",
+                                                data: { device_address: model.address }
+                                            })) {
+                                                console.log("Sent disconnect request for", model.address)
+                                                pairedDevicesModel.setProperty(model.index, "disconnecting", true)
+                                                disconnectTimer.start()
+                                            }
+                                        } else { // Connect action
+                                            if (wsClient && wsClient.sendMessage({
+                                                command: "connect_btdevice",
+                                                data: { device_address: model.address }
+                                            })) {
+                                                console.log("Sent connect request for", model.address)
+                                                pairedDevicesModel.setProperty(model.index, "connecting", true)
+                                                connectTimer.start()
+                                            } 
+                                        }
                                     }
                                 }
                             }

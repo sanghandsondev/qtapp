@@ -74,6 +74,8 @@ Item {
         case "initial_state":
             if(msgStatus) {
                 Theme.bluetoothEnabled = serverData.bluetooth_power_state
+                isTogglingBluetooth = false
+                
                 isScanning = serverData.scanning_btdevice_state
             } else {
                 console.warn("Failed to get initial state from server.")
@@ -87,7 +89,6 @@ Item {
             } else {
                 console.log("Bluetooth scan started successfully.")
                 isScanning = true
-                // settingsRoot.openPairingDialog()
             }
             break
         case "stop_scan_btdevice_noti":
@@ -141,9 +142,8 @@ Item {
         case "bluetooth_power_off_noti":
             if (msgStatus) {
                 Theme.bluetoothEnabled = false
-                isScanning = false // Stop scanning if bluetooth is turned off
+                // isScanning = false // Scanning state will be updated via other notifications automatically
                 settingsRoot.closePairingDialog()
-                // bluetoothDevicesPage.clearPairedDevices() // This line is removed as requested
             }
             isTogglingBluetooth = false
             break
@@ -152,6 +152,34 @@ Item {
             break
         case "unpair_btdevice_noti":
             // TODO
+            break
+        case "connect_btdevice_noti":
+            if (!msgStatus) {
+                if (serverData && serverData.device_address) {
+                    console.log("Connect command failed for", serverData.device_address)
+                    for (var i = 0; i < bluetoothDevicesPage.pairedDevicesModel.count; i++) {
+                        if (bluetoothDevicesPage.pairedDevicesModel.get(i).address === serverData.device_address) {
+                                bluetoothDevicesPage.pairedDevicesModel.setProperty(i, "connecting", false)
+                            break
+                        }
+                    }
+                }
+            }
+            // If successful, do nothing and wait for property_change_noti or timeout
+            break
+        case "disconnect_btdevice_noti":
+            if (!msgStatus) {
+                if (serverData && serverData.device_address) {
+                    console.log("Connect command failed for", serverData.device_address)
+                    for (var i = 0; i < bluetoothDevicesPage.pairedDevicesModel.count; i++) {
+                        if (bluetoothDevicesPage.pairedDevicesModel.get(i).address === serverData.device_address) {
+                                bluetoothDevicesPage.pairedDevicesModel.setProperty(i, "disconnecting", false)
+                            break
+                        }
+                    }
+                }
+            }
+            // If successful, do nothing and wait for property_change_noti or timeout
             break
         default:
             console.warn("Header Component received unknown message type:", msgType)

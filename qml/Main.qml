@@ -269,12 +269,12 @@ Window {
                                     showNotification("Cannot pair, Bluetooth is turned off.", "warning")
                                     return
                                 }
-                                showNotification("Pairing with " + deviceName + "...", "info")
                                 if (wsClient && deviceAddress && wsClient.sendMessage({
                                     command: "pair_btdevice",
                                     data: {
                                         device_address: deviceAddress }})) {
                                     console.log("Sent pairing request for device:", deviceAddress)
+                                    showNotification("Pairing with " + deviceName + "...", "info")
                                 }
                             }
                         }

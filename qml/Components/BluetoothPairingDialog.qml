@@ -120,7 +120,7 @@ Rectangle {
 
             // --- Scanning Text ---
             Text {
-                text: isScanning ? "Scanning for devices " + ".".repeat(dotCount) : "Select a device to pair"
+                text: isScanning ? "Scanning for devices " + ".".repeat(dotCount) : "Not scanning"
                 color: Theme.secondaryText
                 font.pointSize: 14
                 Layout.fillWidth: true
