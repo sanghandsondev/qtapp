@@ -385,6 +385,19 @@ Item {
                                                     font.pointSize: 14
                                                     elide: Text.ElideRight
                                                 }
+
+                                                // Spacer to push the indicator to the right
+                                                Item { Layout.fillWidth: true }
+
+                                                // --- Selection Indicator ---
+                                                Text {
+                                                    text: "circle" // Solid circle icon
+                                                    font.family: materialFontFamily
+                                                    font.pixelSize: 16
+                                                    color: Theme.toggleOn // Use a distinct color
+                                                    Layout.alignment: Qt.AlignVCenter
+                                                    visible: isCurrent
+                                                }
                                             }
 
                                             MouseArea {

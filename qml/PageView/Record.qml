@@ -40,7 +40,7 @@ Item {
         nowPlayingIndex = -1
         playbackStatus = MediaPlayer.StoppedState
         playbackPosition = 0
-        playbackDuration = 1
+        // playbackDuration = 1 // Do not reset duration here, it will be reset when collapsing
     }
 
     // Function to handle messages from the server routed by Main.qml
@@ -108,12 +108,18 @@ Item {
                 if (msgStatus) {
                     // Insert the new record at the top of the list
                     if (serverData && serverData.record) {
+                        // Stop any ongoing playback before changing the list
+                        resetPlaybackState()
+
                         recordListView.model.insert(0, {
                             recordId: serverData.record.id,
                             name: Utils.getFileName(serverData.record.file_path),
                             duration: serverData.record.duration_sec,
                             filepath: serverData.record.file_path
                         })
+
+                        // Set the current index to the newly inserted item to expand it
+                        recordListView.currentIndex = 0
                     }
                 } else {
                     console.warn("Failed to insert new record from server.", msgType)
@@ -202,22 +208,11 @@ Item {
         }
     }
 
-    // --- Audio Output for Media Player ---
-    MediaDevices {
-        id: mediaDevices
-    }
-
-    AudioOutput {
-        id: audioOutput
-        volume: Theme.volume
-        device: mediaDevices.defaultAudioOutput
-    }
-
     // --- Central Media Player ---
     // https://doc.qt.io/qt-6/qml-qtmultimedia-mediaplayer.html#stop-method
     MediaPlayer {
         id: mediaPlayer
-        audioOutput: audioOutput // Set the audio output
+        audioOutput: SoundManager.audioOutput // Use the global audio output from SoundManager
         onPlaybackStateChanged: function(playbackState) {
             recordRoot.playbackStatus = playbackState
             if (playbackState === MediaPlayer.StoppedState) {
@@ -420,6 +415,9 @@ Item {
                             } else {
                                 recordListView.currentIndex = -1 // Collapse if already expanded
                                 recordRoot.resetPlaybackState()
+                                // When collapsing, also reset duration and clear media source
+                                mediaPlayer.source = ""
+                                recordRoot.playbackDuration = 1
                             }
                         }
                     }
@@ -584,8 +582,7 @@ Item {
                                     from: 0
                                     to: (isPlaying || isPaused) ? recordRoot.playbackDuration : 1
                                     value: (isPlaying || isPaused) ? recordRoot.playbackPosition : 0
-                                    // enabled: (isPlaying || isPaused)
-                                    enabled: true       // TODO
+                                    enabled: isPlaying || isPaused
                                     opacity: enabled ? 1.0 : 0.4 // Make it more visually distinct when disabled
 
                                     Behavior on opacity { NumberAnimation { duration: 200 } }

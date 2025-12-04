@@ -1,4 +1,3 @@
-
 // PipeWire (dc QT uu tien)
 sudo apt install pipewire \
                  pipewire-audio-client-libraries \
@@ -12,14 +11,18 @@ wpctl set-default <node_id>
 ///////////////////////////////////////////////////////////////////////////////////
 1/ sau khi insert 1 item record mới thì cái index expand phải là cái mới nhất (cái đầu tiên).
 Bất cứ nó dang expand ở một thằng nào khác.
+[CHECK]
 
 2/ Đang play 1 thằng mà record mới -> end record mới
 Chơi lại thằng khi nãi thì thanh slider bị sai (full slide) và ko thể thao tác đúng
+[CHECK]
 
 3/ Trước khi play 1 record, mà kéo thanh trượt (vẫn kéo được).
 Sau đó play thì lại start từ đầu -> Khi chưa chơi thì ko cho kéo thanh trượt, disable nó đi 
+[CHECK]
 
 4/ Khi chọn Audio Device thì cái dưới chưa có tích. Nên thêm 1 icon tròn tròn ở cuối là biết là mình đang chọn
+[CHECK]
 
 5/ Khi connected với WebSocket, request DBUSSender từ WebSocket của CoreManager để get ObjectManaged. -> findAdapter()
 (vừa get Adapter property + vừa get được paired device)
