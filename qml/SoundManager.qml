@@ -9,25 +9,28 @@ import com.company.utils 1.0
 QtObject {
     id: soundManager
 
+    // ---------------------- Audio Output Device Management ----------------------
+
+    // Lưu trạng thái: trước đó đã từng có bluetooth device chưa
+    property bool hadBluetoothDevice: false
+
     property var mediaDevices: MediaDevices {
         onAudioOutputsChanged: {
             console.log("Audio outputs changed. Re-evaluating best device.")
-            // Check if the currently selected device is still available.
-            var currentDeviceStillExists = false
+            console.log("Available audio output devices:")
             for (var i = 0; i < mediaDevices.audioOutputs.length; i++) {
-                if (mediaDevices.audioOutputs[i].description === Theme.audioOutputDevice) {
-                    currentDeviceStillExists = true
-                    break
-                }
+                console.log("name:", mediaDevices.audioOutputs[i].description, 
+                        ", id:", mediaDevices.audioOutputs[i].id, ",", 
+                        "isDefault:", mediaDevices.audioOutputs[i].isDefault)
             }
-
-            // If the current device is gone (e.g., BT disconnected), or if no device was set,
-            // find and set the new best one.
-            if (!currentDeviceStillExists) {
-                console.log("Current audio device is not available. Selecting a new best device.")
-                selectBestAudioDevice()
-            }
+            selectBestAudioDevice()
         }
+    }
+
+    property var audioOutput: AudioOutput {
+        volume: Theme.volume
+        // Set initial device from settings
+        device: findAudioDevice(Theme.audioOutputDevice)
     }
 
     // Find the audio device based on the description stored in settings
@@ -45,34 +48,47 @@ QtObject {
         return mediaDevices.defaultAudioOutput
     }
 
-    // Function to find and set the best available audio device based on priority.
+    // Select the best audio output device based on priority
     function selectBestAudioDevice() {
-        var bestDevice = mediaDevices.defaultAudioOutput
-        var maxPriority = -1
-
-        if (mediaDevices.audioOutputs.length === 0) {
-            console.log("No audio output devices found. Using default.")
-            Theme.setAudioOutputDevice(bestDevice.description)
+        var outputs = mediaDevices.audioOutputs
+        if (outputs.length === 0) {
+            Theme.setAudioOutputDevice(mediaDevices.defaultAudioOutput.description)
+            hadBluetoothDevice = false
             return
         }
 
-        for (var i = 0; i < mediaDevices.audioOutputs.length; i++) {
-            var device = mediaDevices.audioOutputs[i]
-            var priority = Utils.getAudioDevicePriority(device)
-            if (priority > maxPriority) {
-                maxPriority = priority
-                bestDevice = device
+        var hasBluetooth = Utils.hasBluetoothDevice(outputs)
+        // Nếu vừa xuất hiện bluetooth (trước đó chưa có)
+        if (hasBluetooth && !hadBluetoothDevice) {
+            for (var i = 0; i < outputs.length; ++i) {
+                var d = outputs[i]
+                var idStr = String(d.id)
+                if (idStr.includes("bluez") || idStr.includes("bluetooth")) {
+                    Theme.setAudioOutputDevice(d.description)
+                    hadBluetoothDevice = true
+                    return
+                }
             }
         }
+        hadBluetoothDevice = hasBluetooth
 
-        console.log("Selected best audio device:", bestDevice.description, "with priority:", maxPriority)
-        Theme.setAudioOutputDevice(bestDevice.description)
-    }
+        // Nếu thiết bị hiện tại vẫn còn thì giữ nguyên
+        for (var i = 0; i < outputs.length; ++i) {
+            if (outputs[i].description === Theme.audioOutputDevice)
+                return
+        }
 
-    property var audioOutput: AudioOutput {
-        volume: Theme.volume
-        // Set initial device from settings
-        device: findAudioDevice(Theme.audioOutputDevice)
+        // Nếu không còn, chọn thiết bị ưu tiên nhất
+        var best = outputs[0]
+        var maxP = Utils.getAudioDevicePriority(best)
+        for (var i = 1; i < outputs.length; ++i) {
+            var p = Utils.getAudioDevicePriority(outputs[i])
+            if (p > maxP) {
+                best = outputs[i]
+                maxP = p
+            }
+        }
+        Theme.setAudioOutputDevice(best.description)
     }
 
     // When the setting changes, update the device on the AudioOutput
@@ -83,16 +99,6 @@ QtObject {
             console.log("Global audio output device changed to:", soundManager.audioOutput.device.description)
         }
     }
-    
-    property var mediaPlayer: MediaPlayer {
-        // source: "file://" + Qt.resolvedUrl("../assets/sounds/touch_2.mp3")
-        source: isPiBuild ? "file:///home/pi/sangank/QtApp/assets/sounds/touch_2.mp3"
-            : "file:///home/sang/sangank/qtapp/assets/sounds/touch_2.mp3"
-        audioOutput: soundManager.audioOutput
-        onErrorChanged: {
-            console.error("MediaPlayer Error:", mediaPlayer.errorString)
-        }
-    }
 
     Component.onCompleted: {
         // On startup, perform an initial selection of the best device.
@@ -100,14 +106,26 @@ QtObject {
         Qt.callLater(selectBestAudioDevice)
     }
 
+    // ---------------------- Sound Effects ----------------------
+    
+    property var mediaPlayer: MediaPlayer {
+        // source: "file://" + Qt.resolvedUrl("../assets/sounds/touch_2.mp3")
+        source: isPiBuild ? "file:///home/pi/sangank/QtApp/assets/sounds/touch_2.wav"
+            : "file:///home/sang/sangank/qtapp/assets/sounds/touch_2.wav"
+        audioOutput: soundManager.audioOutput
+        onErrorChanged: {
+            console.error("MediaPlayer Error:", mediaPlayer.errorString)
+        }
+    }
+
     // Play sound effect for touch interactions
     function playTouch() {
         if (!Theme.soundTouchEnabled) {
             return
         }
-
-        // console.log("mediaPlayer.source: ", mediaPlayer.source)
-        // console.log("mediaPlayer.mediaStatus: ", mediaPlayer.mediaStatus)
+        if (mediaPlayer.playbackState !== MediaPlayer.StoppedState)
+            mediaPlayer.stop()
+        mediaPlayer.position = 0
         mediaPlayer.play()
     }
 }

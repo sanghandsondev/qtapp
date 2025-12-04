@@ -209,10 +209,15 @@ Item {
     }
 
     // --- Central Media Player ---
-    // https://doc.qt.io/qt-6/qml-qtmultimedia-mediaplayer.html#stop-method
+    AudioOutput {
+        id: audioOutput
+        volume: Theme.volume
+        device: SoundManager.findAudioDevice(Theme.audioOutputDevice)
+    }
+
     MediaPlayer {
         id: mediaPlayer
-        audioOutput: SoundManager.audioOutput // Use the global audio output from SoundManager
+        audioOutput: audioOutput // Use the global audio output from SoundManager
         onPlaybackStateChanged: function(playbackState) {
             recordRoot.playbackStatus = playbackState
             if (playbackState === MediaPlayer.StoppedState) {

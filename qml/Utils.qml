@@ -42,21 +42,23 @@ QtObject {
     // Function to determine the priority of an audio output device.
     // Higher number = higher priority.
     function getAudioDevicePriority(device) {
-        if (!device || !device.description) {
+        if (!device || !device.description || !device.id) {
             return 0
         }
+
+        const idStr = String(device.id)
         const desc = device.description.toLowerCase()
 
         // Highest priority: Bluetooth devices
-        if (desc.includes("bluez") || desc.includes("bluetooth")) {
+        if (idStr.includes("bluez") || idStr.includes("bluetooth")) {
             return 3
         }
         // Medium priority: Analog output (headphones/speakers jack)
-        if (desc.includes("headphones") || desc.includes("analog") || desc.includes("bcm2835")) {
+        if (idStr.includes("headphones") || idStr.includes("analog") || idStr.includes("mailbox")) {
             return 2
         }
         // Low priority: HDMI
-        if (desc.includes("hdmi")) {
+        if (idStr.includes("hdmi")) {
             return 1
         }
         // Lowest priority for anything else
@@ -65,21 +67,33 @@ QtObject {
 
     // Function to get a suitable icon for an audio output device.
     function getIconForAudioDevice(device) {
-        if (!device || !device.description) {
+        if (!device || !device.description || !device.id) {
             return "speaker" // Default icon
         }
+
+        const idStr = String(device.id)
         const desc = device.description.toLowerCase()
 
-        if (desc.includes("bluez") || desc.includes("bluetooth")) {
-            return "headset"
+        if (idStr.includes("bluez") || idStr.includes("bluetooth")) {
+            return "bluetooth"
         }
-        if (desc.includes("headphones")) {
-            return "headphones"
-        }
-        if (desc.includes("hdmi")) {
+        if (idStr.includes("hdmi")) {
             return "tv"
         }
         // Default for analog, speakers, etc.
         return "speaker"
+    }
+
+    // Kiểm tra danh sách device có bluetooth device không
+    function hasBluetoothDevice(devices) {
+        if (!devices || devices.length === 0)
+            return false
+        for (var i = 0; i < devices.length; i++) {
+            var idStr = String(devices[i].id)
+            if (idStr.includes("bluez") || idStr.includes("bluetooth")) {
+                return true
+            }
+        }
+        return false
     }
 }

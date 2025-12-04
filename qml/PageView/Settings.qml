@@ -123,7 +123,7 @@ Item {
             if (msgStatus && serverData.device_address) {
                 // This handles changes like pairing, unpairing, connecting, disconnecting.
                 if (serverData.is_paired || serverData.is_connected) {
-                    console.log("Device property changed: now paired/connected.", serverData.device_address)
+                    console.log("Device property changed: now paired / connected.", serverData.device_address)
                     bluetoothDevicesPage.addPairedDevice(serverData)
                     settingsRoot.deleteScanBTDevice(serverData.device_address)
                 } else { // Device is now unpaired and not connected
@@ -269,341 +269,335 @@ Item {
         }
 
         // --- Content Area: Switches between settings list and sub-pages ---
-        StackLayout {
+        // Instantiate all pages and control their visibility to preserve state
+
+        // Main Settings List
+        ScrollView {
+            id: settingsScrollView
             Layout.fillWidth: true
             Layout.fillHeight: true
-            currentIndex: {
-                if (currentSubPage === "") return 0;
-                if (currentSubPage === "bluetooth") return 1;
-                if (currentSubPage === "display") return 2;
-                if (currentSubPage === "sound") return 3;
-                return 0; // Default to main list
-            }
+            clip: true
+            visible: currentSubPage === ""
+            ScrollBar.vertical.policy: ScrollBar.AsNeeded
 
-            // --- Settings List (Scrollable) ---
-            ScrollView {
-                id: settingsScrollView // Add an id to the ScrollView
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                clip: true
-                ScrollBar.vertical.policy: ScrollBar.AsNeeded
-                
-                ColumnLayout {
-                    width: parent.width // Occupy available width inside ScrollView
-                    spacing: 16
+            ColumnLayout {
+                width: parent.width
+                spacing: 16
 
-                    // Connection Status Setting - Replaced RowLayout with Item for better control
-                    Item {
-                        Layout.fillWidth: true
-                        // Automatically adjust height based on the text content
-                        height: Math.max(statusTextColumn.implicitHeight, connectionToggle.implicitHeight)
+                // Connection Status Setting - Replaced RowLayout with Item for better control
+                Item {
+                    Layout.fillWidth: true
+                    // Automatically adjust height based on the text content
+                    height: Math.max(statusTextColumn.implicitHeight, connectionToggle.implicitHeight)
 
-                        ColumnLayout {
-                            id: statusTextColumn
-                            anchors.left: parent.left
-                            anchors.verticalCenter: parent.verticalCenter
-                            spacing: 2
+                    ColumnLayout {
+                        id: statusTextColumn
+                        anchors.left: parent.left
+                        anchors.verticalCenter: parent.verticalCenter
+                        spacing: 2
 
-                            Text {
-                                text: "WebSocket Server Connection Status"
-                                color: Theme.primaryText
-                                font.pointSize: 16
-                            }
-                            Text {
-                                // Detailed status text
-                                text: {
-                                    if (!wsClient) return "WS: Not available";
-                                    switch(wsClient.status) {
-                                        case WebSocket.Open: return "Connected";
-                                        case WebSocket.Connecting: return "Connecting...";
-                                        case WebSocket.Closing: return "Closing...";
-                                        case WebSocket.Closed: return "Disconnected";
-                                        case WebSocket.Error: return "Error";
-                                        default: return "Unknown";
-                                    }
+                        Text {
+                            text: "WebSocket Server Connection Status"
+                            color: Theme.primaryText
+                            font.pointSize: 16
+                        }
+                        Text {
+                            // Detailed status text
+                            text: {
+                                if (!wsClient) return "WS: Not available";
+                                switch(wsClient.status) {
+                                    case WebSocket.Open: return "Connected";
+                                    case WebSocket.Connecting: return "Connecting...";
+                                    case WebSocket.Closing: return "Closing...";
+                                    case WebSocket.Closed: return "Disconnected";
+                                    case WebSocket.Error: return "Error";
+                                    default: return "Unknown";
                                 }
-                                color: Theme.secondaryText // Lighter gray for description
-                                font.pointSize: 12
                             }
+                            color: Theme.secondaryText // Lighter gray for description
+                            font.pointSize: 12
+                        }
+                    }
+
+                    // Custom Toggle Switch
+                    Text {
+                        id: connectionToggle
+                        anchors.right: parent.right
+                        anchors.rightMargin: 20 // Add margin to the right
+                        anchors.verticalCenter: parent.verticalCenter
+                        font.family: materialFontFamily
+                        font.pixelSize: 48
+
+                        property bool isConnecting: wsClient && wsClient.status === WebSocket.Connecting
+                        property bool isConnected: wsClient && wsClient.status === WebSocket.Open
+                        property bool canConnect: wsClient ? (wsClient.status === WebSocket.Closed || wsClient.status === WebSocket.Error) : false
+
+                        text: isConnected || isConnecting ? "toggle_on" : "toggle_off"
+                        color: {
+                            if (isConnected) return Theme.success; // Green when connected
+                            if (isConnecting) return Theme.toggleOn; // Default "on" color when connecting
+                            return Theme.toggleOff; // Gray otherwise
                         }
 
-                        // Custom Toggle Switch
+                        opacity: isConnecting ? 0.2 : 1.0
+
+                        MouseArea {
+                            anchors.fill: parent
+                            enabled: connectionToggle.canConnect
+                            cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                            onClicked: {
+                                SoundManager.playTouch()
+                                if (wsClient) {
+                                    wsClient.open()
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 1
+                    color: Theme.separator
+                }
+
+                // --- Bluetooth & Devices Setting ---
+                Item {
+                    Layout.fillWidth: true
+                    height: Math.max(bluetoothTextColumn.implicitHeight, bluetoothToggle.implicitHeight)
+
+                    // This MouseArea will handle navigation. It's placed here
+                    // so it acts as a background click handler for the row,
+                    // but other MouseAreas on top (like the toggle's) will
+                    // catch the click first.
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            SoundManager.playTouch()
+                            currentSubPage = "bluetooth"
+                            subPageTitle = "Bluetooth & devices"
+                        }
+                    }
+
+                    ColumnLayout {
+                        id: bluetoothTextColumn
+                        anchors.left: parent.left
+                        anchors.verticalCenter: parent.verticalCenter
+                        spacing: 2
+
                         Text {
-                            id: connectionToggle
-                            anchors.right: parent.right
-                            anchors.rightMargin: 20 // Add margin to the right
-                            anchors.verticalCenter: parent.verticalCenter
+                            text: "Bluetooth & devices"
+                            color: Theme.primaryText
+                            font.pointSize: 16
+                        }
+                        Text {
+                            text: Theme.bluetoothEnabled ? "Discoverable as \"RaspberryPi\"" : "Bluetooth is turned off"
+                            color: Theme.secondaryText
+                            font.pointSize: 12
+                        }
+                    }
+
+                    // Right side: On/Off text, toggle, and navigation arrow
+                    RowLayout {
+                        anchors.right: parent.right
+                        anchors.rightMargin: 20
+                        anchors.verticalCenter: parent.verticalCenter
+                        spacing: 8
+
+                        Text {
+                            text: Theme.bluetoothEnabled ? "On" : "Off"
+                            color: Theme.secondaryText
+                            font.pointSize: 14
+                            Layout.alignment: Qt.AlignVCenter
+                        }
+
+                        Text {
+                            id: bluetoothToggle
                             font.family: materialFontFamily
                             font.pixelSize: 48
+                            Layout.alignment: Qt.AlignVCenter
 
-                            property bool isConnecting: wsClient && wsClient.status === WebSocket.Connecting
-                            property bool isConnected: wsClient && wsClient.status === WebSocket.Open
-                            property bool canConnect: wsClient ? (wsClient.status === WebSocket.Closed || wsClient.status === WebSocket.Error) : false
-
-                            text: isConnected || isConnecting ? "toggle_on" : "toggle_off"
-                            color: {
-                                if (isConnected) return Theme.success; // Green when connected
-                                if (isConnecting) return Theme.toggleOn; // Default "on" color when connecting
-                                return Theme.toggleOff; // Gray otherwise
-                            }
-
-                            opacity: isConnecting ? 0.2 : 1.0
+                            text: Theme.bluetoothEnabled ? "toggle_on" : "toggle_off"
+                            color: Theme.bluetoothEnabled ? Theme.toggleOn : Theme.toggleOff
+                            opacity: isTogglingBluetooth ? 0.4 : 1.0
+                            Behavior on opacity { NumberAnimation { duration: 50 } }
 
                             MouseArea {
                                 anchors.fill: parent
-                                enabled: connectionToggle.canConnect
-                                cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                                cursorShape: Qt.PointingHandCursor
+                                enabled: !isTogglingBluetooth
                                 onClicked: {
-                                    SoundManager.playTouch()
-                                    if (wsClient) {
-                                        wsClient.open()
-                                    }
+                                    // This click is handled here and won't pass to the parent MouseArea
+                                    settingsRoot.toggleBluetoothPower()
                                 }
                             }
                         }
-                    }
 
-                    Rectangle {
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: 1
-                        color: Theme.separator
-                    }
-
-                    // --- Bluetooth & Devices Setting ---
-                    Item {
-                        Layout.fillWidth: true
-                        height: Math.max(bluetoothTextColumn.implicitHeight, bluetoothToggle.implicitHeight)
-
-                        // This MouseArea will handle navigation. It's placed here
-                        // so it acts as a background click handler for the row,
-                        // but other MouseAreas on top (like the toggle's) will
-                        // catch the click first.
-                        MouseArea {
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: {
-                                SoundManager.playTouch()
-                                currentSubPage = "bluetooth"
-                                subPageTitle = "Bluetooth & devices"
-                            }
+                        // Navigation Arrow
+                        Text {
+                            text: "chevron_right" // > icon
+                            font.family: materialFontFamily
+                            font.pixelSize: 32
+                            color: Theme.secondaryText
+                            Layout.alignment: Qt.AlignVCenter
                         }
-
-                        ColumnLayout {
-                            id: bluetoothTextColumn
-                            anchors.left: parent.left
-                            anchors.verticalCenter: parent.verticalCenter
-                            spacing: 2
-
-                            Text {
-                                text: "Bluetooth & devices"
-                                color: Theme.primaryText
-                                font.pointSize: 16
-                            }
-                            Text {
-                                text: Theme.bluetoothEnabled ? "Discoverable as \"RaspberryPi\"" : "Bluetooth is turned off"
-                                color: Theme.secondaryText
-                                font.pointSize: 12
-                            }
-                        }
-
-                        // Right side: On/Off text, toggle, and navigation arrow
-                        RowLayout {
-                            anchors.right: parent.right
-                            anchors.rightMargin: 20
-                            anchors.verticalCenter: parent.verticalCenter
-                            spacing: 8
-
-                            Text {
-                                text: Theme.bluetoothEnabled ? "On" : "Off"
-                                color: Theme.secondaryText
-                                font.pointSize: 14
-                                Layout.alignment: Qt.AlignVCenter
-                            }
-
-                            Text {
-                                id: bluetoothToggle
-                                font.family: materialFontFamily
-                                font.pixelSize: 48
-                                Layout.alignment: Qt.AlignVCenter
-
-                                text: Theme.bluetoothEnabled ? "toggle_on" : "toggle_off"
-                                color: Theme.bluetoothEnabled ? Theme.toggleOn : Theme.toggleOff
-                                opacity: isTogglingBluetooth ? 0.4 : 1.0
-                                Behavior on opacity { NumberAnimation { duration: 50 } }
-
-                                MouseArea {
-                                    anchors.fill: parent
-                                    cursorShape: Qt.PointingHandCursor
-                                    enabled: !isTogglingBluetooth
-                                    onClicked: {
-                                        // This click is handled here and won't pass to the parent MouseArea
-                                        settingsRoot.toggleBluetoothPower()
-                                    }
-                                }
-                            }
-
-                            // Navigation Arrow
-                            Text {
-                                text: "chevron_right" // > icon
-                                font.family: materialFontFamily
-                                font.pixelSize: 32
-                                color: Theme.secondaryText
-                                Layout.alignment: Qt.AlignVCenter
-                            }
-                        }
-                    }
-
-                    Rectangle {
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: 1
-                        color: Theme.separator
-                    }
-
-                    // --- Display Setting ---
-                    Item {
-                        Layout.fillWidth: true
-                        height: Math.max(displayTextColumn.implicitHeight, 48) // Use fixed height for consistency
-
-                        MouseArea {
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: {
-                                SoundManager.playTouch()
-                                currentSubPage = "display"
-                                subPageTitle = "Display"
-                            }
-                        }
-
-                        ColumnLayout {
-                            id: displayTextColumn
-                            anchors.left: parent.left
-                            anchors.verticalCenter: parent.verticalCenter
-                            spacing: 2
-
-                            Text {
-                                text: "Display"
-                                color: Theme.primaryText
-                                font.pointSize: 16
-                            }
-                            Text {
-                                text: "Time format, dark theme, brightness"
-                                color: Theme.secondaryText
-                                font.pointSize: 12
-                            }
-                        }
-
-                        // Right side: Navigation arrow
-                        RowLayout {
-                            anchors.right: parent.right
-                            anchors.rightMargin: 20
-                            anchors.verticalCenter: parent.verticalCenter
-                            spacing: 8
-
-                            // Navigation Arrow
-                            Text {
-                                text: "chevron_right" // > icon
-                                font.family: materialFontFamily
-                                font.pixelSize: 32
-                                color: Theme.secondaryText
-                                Layout.alignment: Qt.AlignVCenter
-                            }
-                        }
-                    }
-
-                    Rectangle {
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: 1
-                        color: Theme.separator
-                    }
-
-                    // --- Sound Setting ---
-                    Item {
-                        Layout.fillWidth: true
-                        height: Math.max(soundTextColumn.implicitHeight, 48) // Use fixed height for consistency
-
-                        MouseArea {
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: {
-                                SoundManager.playTouch()
-                                currentSubPage = "sound"
-                                subPageTitle = "Sound"
-                            }
-                        }
-
-                        ColumnLayout {
-                            id: soundTextColumn
-                            anchors.left: parent.left
-                            anchors.verticalCenter: parent.verticalCenter
-                            spacing: 2
-
-                            Text {
-                                text: "Sound"
-                                color: Theme.primaryText
-                                font.pointSize: 16
-                            }
-                            Text {
-                                text: "Touch sounds, volume"
-                                color: Theme.secondaryText
-                                font.pointSize: 12
-                            }
-                        }
-
-                        // Right side: Navigation arrow
-                        RowLayout {
-                            anchors.right: parent.right
-                            anchors.rightMargin: 20
-                            anchors.verticalCenter: parent.verticalCenter
-                            spacing: 8
-
-                            // Navigation Arrow
-                            Text {
-                                text: "chevron_right" // > icon
-                                font.family: materialFontFamily
-                                font.pixelSize: 32
-                                color: Theme.secondaryText
-                                Layout.alignment: Qt.AlignVCenter
-                            }
-                        }
-                    }
-
-                    Rectangle {
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: 1
-                        color: Theme.separator
                     }
                 }
-            }
 
-            // --- Sub-Page Content Area ---
-            SettingsPages.BluetoothDevices {
-                id: bluetoothDevicesPage // Add id to call its functions
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                wsClient: settingsRoot.wsClient // Pass wsClient to sub-page
-                confirmationDialog: settingsRoot.confirmationDialog // Pass dialog to sub-page
-                isScanning: settingsRoot.isScanning // Pass scanning state
-                onBackRequested: settingsRoot.goBack()
-                onTogglePower: settingsRoot.toggleBluetoothPower() // Connect signal to function
-                onOpenPairingDialog: settingsRoot.openPairingDialog() // Signal to open dialog
-            }
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 1
+                    color: Theme.separator
+                }
 
-            // --- Display Sub-Page ---
-            SettingsPages.Display {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                onBackRequested: settingsRoot.goBack()
-            }
+                // --- Display Setting ---
+                Item {
+                    Layout.fillWidth: true
+                    height: Math.max(displayTextColumn.implicitHeight, 48) // Use fixed height for consistency
 
-            // --- Sound Sub-Page ---
-            SettingsPages.Sound {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                onBackRequested: settingsRoot.goBack()
-            }
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            SoundManager.playTouch()
+                            currentSubPage = "display"
+                            subPageTitle = "Display"
+                        }
+                    }
 
-            // Add other sub-pages here in the future, but StackLayout only shows one at a time.
-            // For more pages, a different logic for currentIndex would be needed.
+                    ColumnLayout {
+                        id: displayTextColumn
+                        anchors.left: parent.left
+                        anchors.verticalCenter: parent.verticalCenter
+                        spacing: 2
+
+                        Text {
+                            text: "Display"
+                            color: Theme.primaryText
+                            font.pointSize: 16
+                        }
+                        Text {
+                            text: "Time format, dark theme, brightness"
+                            color: Theme.secondaryText
+                            font.pointSize: 12
+                        }
+                    }
+
+                    // Right side: Navigation arrow
+                    RowLayout {
+                        anchors.right: parent.right
+                        anchors.rightMargin: 20
+                        anchors.verticalCenter: parent.verticalCenter
+                        spacing: 8
+
+                        // Navigation Arrow
+                        Text {
+                            text: "chevron_right" // > icon
+                            font.family: materialFontFamily
+                            font.pixelSize: 32
+                            color: Theme.secondaryText
+                            Layout.alignment: Qt.AlignVCenter
+                        }
+                    }
+                }
+
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 1
+                    color: Theme.separator
+                }
+
+                // --- Sound Setting ---
+                Item {
+                    Layout.fillWidth: true
+                    height: Math.max(soundTextColumn.implicitHeight, 48) // Use fixed height for consistency
+
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            SoundManager.playTouch()
+                            currentSubPage = "sound"
+                            subPageTitle = "Sound"
+                        }
+                    }
+
+                    ColumnLayout {
+                        id: soundTextColumn
+                        anchors.left: parent.left
+                        anchors.verticalCenter: parent.verticalCenter
+                        spacing: 2
+
+                        Text {
+                            text: "Sound"
+                            color: Theme.primaryText
+                            font.pointSize: 16
+                        }
+                        Text {
+                            text: "Touch sounds, volume"
+                            color: Theme.secondaryText
+                            font.pointSize: 12
+                        }
+                    }
+
+                    // Right side: Navigation arrow
+                    RowLayout {
+                        anchors.right: parent.right
+                        anchors.rightMargin: 20
+                        anchors.verticalCenter: parent.verticalCenter
+                        spacing: 8
+
+                        // Navigation Arrow
+                        Text {
+                            text: "chevron_right" // > icon
+                            font.family: materialFontFamily
+                            font.pixelSize: 32
+                            color: Theme.secondaryText
+                            Layout.alignment: Qt.AlignVCenter
+                        }
+                    }
+                }
+
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 1
+                    color: Theme.separator
+                }
+            }
         }
+
+        // Bluetooth Sub-Page
+        SettingsPages.BluetoothDevices {
+            id: bluetoothDevicesPage
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            visible: currentSubPage === "bluetooth"
+            wsClient: settingsRoot.wsClient
+            confirmationDialog: settingsRoot.confirmationDialog
+            isScanning: settingsRoot.isScanning
+            onBackRequested: settingsRoot.goBack()
+            onTogglePower: settingsRoot.toggleBluetoothPower()
+            onOpenPairingDialog: settingsRoot.openPairingDialog()
+        }
+
+        // Display Sub-Page
+        SettingsPages.Display {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            visible: currentSubPage === "display"
+            onBackRequested: settingsRoot.goBack()
+        }
+
+        // Sound Sub-Page
+        SettingsPages.Sound {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            visible: currentSubPage === "sound"
+            onBackRequested: settingsRoot.goBack()
+        }
+
+        // Add other sub-pages here in the future, but StackLayout only shows one at a time.
+        // For more pages, a different logic for currentIndex would be needed.
     }
 }

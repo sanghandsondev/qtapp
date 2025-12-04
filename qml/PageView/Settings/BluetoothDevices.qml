@@ -27,31 +27,18 @@ Item {
     // Function to add a new paired device to the model
     //  {"device_name", }, {"device_address",}, {"rssi", }, {"is_paired",}, {"is_connected", } {"icon"}
     function addPairedDevice(deviceData) {
-        // Check if the device already exists to avoid duplicates
         for (var i = 0; i < pairedDevicesModel.count; i++) {
             if (pairedDevicesModel.get(i).address === deviceData.device_address) {
-                // Stop any running timers for this device since we got an update
-                var delegateItem = pairedDevicesView.itemAt(i)
-                if (delegateItem) {
-                    if (delegateItem.isConnecting) {
-                        delegateItem.connectTimer.stop()
-                    }
-                    if (delegateItem.isDisconnecting) {
-                        delegateItem.disconnectTimer.stop()
-                    }
-                }
-
-                // Optional: Update existing device info if needed
+                // Không cần truy cập delegate để dừng Timer
                 pairedDevicesModel.setProperty(i, "name", deviceData.device_name)
                 pairedDevicesModel.setProperty(i, "connected", deviceData.is_connected)
                 pairedDevicesModel.setProperty(i, "paired", deviceData.is_paired)
                 pairedDevicesModel.setProperty(i, "icon", Utils.getIconForDevice(deviceData.icon))
-                pairedDevicesModel.setProperty(i, "connecting", false)      // Reset connecting state on update
-                pairedDevicesModel.setProperty(i, "disconnecting", false)   // Reset disconnecting state on update
-                return // Device already in the list
+                pairedDevicesModel.setProperty(i, "connecting", false)
+                pairedDevicesModel.setProperty(i, "disconnecting", false)
+                return
             }
         }
-        // Append new device if it doesn't exist
         pairedDevicesModel.append({
             name: deviceData.device_name,
             address: deviceData.device_address,
@@ -83,10 +70,7 @@ Item {
         console.log("Handling connection failure for", deviceAddress)
         for (var i = 0; i < pairedDevicesModel.count; i++) {
             if (pairedDevicesModel.get(i).address === deviceAddress) {
-                var delegateItem = pairedDevicesView.itemAt(i)
-                if (delegateItem && delegateItem.isConnecting) {
-                    delegateItem.connectTimer.stop()
-                }
+                // Không cần truy cập delegate để dừng Timer
                 pairedDevicesModel.setProperty(i, "connecting", false)
                 break
             }
@@ -98,10 +82,7 @@ Item {
         console.log("Handling disconnection failure for", deviceAddress)
         for (var i = 0; i < pairedDevicesModel.count; i++) {
             if (pairedDevicesModel.get(i).address === deviceAddress) {
-                var delegateItem = pairedDevicesView.itemAt(i)
-                if (delegateItem && delegateItem.isDisconnecting) {
-                    delegateItem.disconnectTimer.stop()
-                }
+                // Không cần truy cập delegate để dừng Timer
                 pairedDevicesModel.setProperty(i, "disconnecting", false)
                 break
             }
@@ -304,12 +285,22 @@ Item {
 
                     Timer {
                         id: disconnectTimer
-                        interval: 10000 // 10-second timeout for disconnect
+                        interval: 30000 // 30-second timeout for disconnect
                         repeat: false
                         onTriggered: {
                             console.log("Disconnection timed out for", model.address)
                             pairedDevicesModel.setProperty(model.index, "disconnecting", false)
                         }
+                    }
+
+                    // Dừng timer khi trạng thái đổi thành false
+                    onIsConnectingChanged: {
+                        if (!isConnecting && connectTimer.running)
+                            connectTimer.stop()
+                    }
+                    onIsDisconnectingChanged: {
+                        if (!isDisconnecting && disconnectTimer.running)
+                            disconnectTimer.stop()
                     }
 
                     RowLayout {
