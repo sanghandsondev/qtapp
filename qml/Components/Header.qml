@@ -76,8 +76,8 @@ Rectangle {
             font.pixelSize: 26
             color: Theme.icon
             text: {
-                if (Theme.volumeLevel === 0) return "volume_off";
-                if (Theme.volumeLevel <= 2) return "volume_down";
+                if (Theme.volumeSteps === 0) return "volume_off";
+                if (Theme.volumeSteps <= 2) return "volume_down";
                 return "volume_up";
             }
         }
@@ -89,7 +89,7 @@ Rectangle {
                 width: 4
                 height: 8 + (index * 3) // Bars get taller
                 radius: 2
-                color: index < Theme.volumeLevel ? Theme.icon : Theme.tertiaryBg
+                color: index < Theme.volumeSteps ? Theme.icon : Theme.tertiaryBg
             }
         }
     }

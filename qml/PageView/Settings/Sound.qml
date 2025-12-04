@@ -129,7 +129,7 @@ Item {
                             font.pointSize: 16
                         }
                         Text {
-                            text: "Volume: " + Theme.volumeLevel*20 + " %"
+                            text: "Volume: " + Math.round(Theme.volumeLevel * 100) + " %"
                             color: Theme.secondaryText
                             font.pointSize: 12
                         }
@@ -138,59 +138,61 @@ Item {
 
                 Item { Layout.fillWidth: true } // Spacer
 
-                // Right side: Volume level selector
-                RowLayout {
+                // Right side: Volume slider
+                Item {
                     id: volumeControl
+                    Layout.preferredWidth: parent.width / 2
+                    height: 40
                     Layout.alignment: Qt.AlignVCenter
                     Layout.rightMargin: 20
-                    spacing: 16
 
-                    Text {
-                        text: "remove"
-                        font.family: materialFontFamily
-                        font.pixelSize: 32
-                        color: Theme.volumeLevel > 0 ? Theme.icon : Theme.tertiaryBg
-                        MouseArea {
-                            anchors.fill: parent
-                            anchors.margins: -10
-                            cursorShape: Qt.PointingHandCursor
-                            enabled: Theme.volumeLevel > 0
-                            onClicked: {
-                                SoundManager.playTouch()
-                                Theme.setVolumeLevel(Theme.volumeLevel - 1)
+                    Slider {
+                        id: volumeSlider
+                        anchors.fill: parent
+                        from: 0.0
+                        to: 1.0
+                        value: Theme.volumeLevel
+                        stepSize: 0.01 // Allow fine-grained control
+
+                        onValueChanged: {
+                            if (pressed) { // Only update when user is interacting
+                                Theme.setVolumeLevel(value)
                             }
                         }
-                    }
 
-                    RowLayout {
-                        spacing: 4
-                        Repeater {
-                            model: 5
-                            delegate: Rectangle {
-                                width: 24
-                                height: 14
-                                radius: 2
-                                color: index < Theme.volumeLevel ? Theme.toggleOn : Theme.tertiaryBg
-                                border.color: Theme.separator
-                                border.width: 1
+                        onPressedChanged: {
+                            if (!pressed) { // User has just released the slider
+                                // Play sound when user finishes sliding
+                                SoundManager.playTouch()
                             }
                         }
-                    }
 
-                    Text {
-                        text: "add"
-                        font.family: materialFontFamily
-                        font.pixelSize: 32
-                        color: Theme.volumeLevel < 5 ? Theme.icon : Theme.tertiaryBg
-                        MouseArea {
-                            anchors.fill: parent
-                            anchors.margins: -10
-                            cursorShape: Qt.PointingHandCursor
-                            enabled: Theme.volumeLevel < 5
-                            onClicked: {
-                                SoundManager.playTouch()
-                                Theme.setVolumeLevel(Theme.volumeLevel + 1)
+                        background: Rectangle {
+                            x: volumeSlider.leftPadding
+                            y: volumeSlider.topPadding + volumeSlider.availableHeight / 2 - height / 2
+                            width: volumeSlider.availableWidth
+                            height: 6 // Thicker bar
+                            radius: 3
+                            color: Theme.tertiaryBg
+
+                            Rectangle {
+                                width: volumeSlider.visualPosition * parent.width
+                                height: parent.height
+                                radius: 3
+                                color: Theme.toggleOn
                             }
+                        }
+
+                        handle: Rectangle {
+                            x: volumeSlider.leftPadding + volumeSlider.visualPosition * (volumeSlider.availableWidth - width)
+                            y: volumeSlider.topPadding + volumeSlider.availableHeight / 2 - height / 2
+                            width: 24 // Larger handle
+                            height: 24
+                            radius: 12
+                            color: Theme.primaryText
+                            border.color: Theme.buttonBorder
+                            border.width: 1
+                            visible: true
                         }
                     }
                 }

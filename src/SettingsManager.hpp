@@ -16,7 +16,7 @@ class SettingsManager : public QObject
     Q_PROPERTY(bool isDark READ getIsDark WRITE setIsDark NOTIFY onIsDarkChanged)
     Q_PROPERTY(bool is24HourFormat READ getIs24HourFormat WRITE setIs24HourFormat NOTIFY onIs24HourFormatChanged)
     Q_PROPERTY(bool soundTouchEnabled READ getSoundTouchEnabled WRITE setSoundTouchEnabled NOTIFY onSoundTouchEnabledChanged)
-    Q_PROPERTY(int volumeLevel READ getVolumeLevel WRITE setVolumeLevel NOTIFY onVolumeLevelChanged)
+    Q_PROPERTY(qreal volumeLevel READ getVolumeLevel WRITE setVolumeLevel NOTIFY onVolumeLevelChanged)
     Q_PROPERTY(bool bluetoothEnabled READ getBluetoothEnabled WRITE setBluetoothEnabled NOTIFY onBluetoothEnabledChanged)
     Q_PROPERTY(QString audioOutputDevice READ getAudioOutputDevice WRITE setAudioOutputDevice NOTIFY onAudioOutputDeviceChanged)
 
@@ -31,7 +31,7 @@ public:
     bool getIsDark() const;
     bool getIs24HourFormat() const;
     bool getSoundTouchEnabled() const;
-    int getVolumeLevel() const;
+    qreal getVolumeLevel() const;
     bool getBluetoothEnabled() const;
     QString getAudioOutputDevice() const;
 
@@ -40,7 +40,7 @@ public slots:
     void setIsDark(bool isDark);
     void setIs24HourFormat(bool is24HourFormat);
     void setSoundTouchEnabled(bool soundTouchEnabled);
-    void setVolumeLevel(int volumeLevel);
+    void setVolumeLevel(qreal volumeLevel);
     void setBluetoothEnabled(bool bluetoothEnabled);
     void setAudioOutputDevice(const QString &audioOutputDevice);
 

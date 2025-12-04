@@ -31,9 +31,10 @@ bool SettingsManager::getSoundTouchEnabled() const
     return m_settings.value(KEY_SOUND_TOUCH_ENABLED, true).toBool();
 }
 
-int SettingsManager::getVolumeLevel() const
+qreal SettingsManager::getVolumeLevel() const
 {
-    return m_settings.value(KEY_VOLUME_LEVEL, 4).toInt();
+    // Default to 0.8 (which corresponds to level 4 out of 5)
+    return m_settings.value(KEY_VOLUME_LEVEL, 0.8).toReal();
 }
 
 bool SettingsManager::getBluetoothEnabled() const
@@ -74,9 +75,11 @@ void SettingsManager::setSoundTouchEnabled(bool soundTouchEnabled)
     }
 }
 
-void SettingsManager::setVolumeLevel(int volumeLevel)
+void SettingsManager::setVolumeLevel(qreal volumeLevel)
 {
-    if (volumeLevel >= 0 && volumeLevel <= 5 && getVolumeLevel() != volumeLevel) {
+    // Clamp the value between 0.0 and 1.0
+    volumeLevel = qBound(0.0, volumeLevel, 1.0);
+    if (getVolumeLevel() != volumeLevel) {
         m_settings.setValue(KEY_VOLUME_LEVEL, volumeLevel);
         emit onVolumeLevelChanged();
     }

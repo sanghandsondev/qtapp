@@ -29,9 +29,17 @@ Sau đó play thì lại start từ đầu -> Khi chưa chơi thì ko cho k
 [CHECK]
 
 6/ Xử lý Connect, tìm hiểu về "Trusted" -> (Thường là) Đã tin cậy, cho phép kết nối tự động.
+[CHECK]
 
 7/ Ưu tiên loa bluetooth, sau đó là loa jack 3.5mm. 
 Có thay đổi đượcc default ko. hay là phải xử lý bên dưới pipewire.
 Cần setting gì ở linux cmd
+[CHECK]
 
-8/ Lấy data Batery của device như loa, speaker
+8/ Chuyển volume thành thanh trượt -> mức level tương ứng
+[CHECK ÂM THANH]
+
+9/ Thanh trượt độ sáng màn hình
+
+10/ Mua bíp bíp về để làm chuông báo thức. 
+Giao diện giống đặt báo thức của Iphone nhưng có thể đơn giản hơn chút
