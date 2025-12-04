@@ -141,7 +141,8 @@ Item {
                 // Right side: Volume slider
                 Item {
                     id: volumeControl
-                    Layout.preferredWidth: parent.width / 2
+                    // Layout.preferredWidth: parent.width / 2
+                    Layout.preferredWidth: 420
                     height: 40
                     Layout.alignment: Qt.AlignVCenter
                     Layout.rightMargin: 20
@@ -264,7 +265,8 @@ Item {
                         // Right side: Dropdown-like button and the dropdown list itself
                         Item {
                             id: dropdownContainer
-                            Layout.preferredWidth: parent.width / 2 // Use Layout.preferredWidth
+                            // Layout.preferredWidth: parent.width / 2
+                            Layout.preferredWidth: 420
                             height: 40
                             Layout.alignment: Qt.AlignVCenter
                             Layout.rightMargin: 20

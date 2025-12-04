@@ -36,21 +36,19 @@ QtObject {
     }
 
     // Volume setting (0.0 - 1.0)
-    property real volumeLevel: _settingsManager.volumeLevel
-    onVolumeLevelChanged: {
-        if (_settingsManager.volumeLevel !== volumeLevel) {
-            _settingsManager.volumeLevel = volumeLevel
-        }
-    }
+    property alias volumeLevel: _settingsManager.volumeLevel
+    // onVolumeLevelChanged: {
+    //     if (_settingsManager.volumeLevel !== volumeLevel) {
+    //         _settingsManager.volumeLevel = volumeLevel
+    //     }
+    // }
     function setVolumeLevel(level) {
         if (level >= 0.0 && level <= 1.0) {
-            volumeLevel = level
+            _settingsManager.volumeLevel = level
         }
     }
-    // For UI display (0-5 steps)
-    readonly property int volumeSteps: Math.ceil(volumeLevel * 5)
-    // For AudioOutput component (0.0 - 1.0)
-    readonly property real volume: volumeLevel
+    readonly property int volumeSteps: Math.ceil(volumeLevel * 5) // For UI display (0-5 steps)
+    readonly property real volume: volumeLevel      // For AudioOutput component (0.0 - 1.0) 
 
     // Define colors based on the theme
     readonly property color primaryBg: isDark ? "#111827" : "#f9fafb"      // Main background
