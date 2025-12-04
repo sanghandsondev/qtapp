@@ -30,6 +30,17 @@ Item {
         // Check if the device already exists to avoid duplicates
         for (var i = 0; i < pairedDevicesModel.count; i++) {
             if (pairedDevicesModel.get(i).address === deviceData.device_address) {
+                // Stop any running timers for this device since we got an update
+                var delegateItem = pairedDevicesView.itemAt(i)
+                if (delegateItem) {
+                    if (delegateItem.isConnecting) {
+                        delegateItem.connectTimer.stop()
+                    }
+                    if (delegateItem.isDisconnecting) {
+                        delegateItem.disconnectTimer.stop()
+                    }
+                }
+
                 // Optional: Update existing device info if needed
                 pairedDevicesModel.setProperty(i, "name", deviceData.device_name)
                 pairedDevicesModel.setProperty(i, "connected", deviceData.is_connected)
@@ -65,6 +76,36 @@ Item {
     // Function to clear all paired devices from the list
     function clearPairedDevices() {
         pairedDevicesModel.clear()
+    }
+
+    // Function to handle a failed connection attempt
+    function handleConnectionFailure(deviceAddress) {
+        console.log("Handling connection failure for", deviceAddress)
+        for (var i = 0; i < pairedDevicesModel.count; i++) {
+            if (pairedDevicesModel.get(i).address === deviceAddress) {
+                var delegateItem = pairedDevicesView.itemAt(i)
+                if (delegateItem && delegateItem.isConnecting) {
+                    delegateItem.connectTimer.stop()
+                }
+                pairedDevicesModel.setProperty(i, "connecting", false)
+                break
+            }
+        }
+    }
+
+    // Function to handle a failed disconnection attempt
+    function handleDisconnectionFailure(deviceAddress) {
+        console.log("Handling disconnection failure for", deviceAddress)
+        for (var i = 0; i < pairedDevicesModel.count; i++) {
+            if (pairedDevicesModel.get(i).address === deviceAddress) {
+                var delegateItem = pairedDevicesView.itemAt(i)
+                if (delegateItem && delegateItem.isDisconnecting) {
+                    delegateItem.disconnectTimer.stop()
+                }
+                pairedDevicesModel.setProperty(i, "disconnecting", false)
+                break
+            }
+        }
     }
 
     ColumnLayout {

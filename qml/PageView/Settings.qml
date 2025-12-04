@@ -157,12 +157,8 @@ Item {
             if (!msgStatus) {
                 if (serverData && serverData.device_address) {
                     console.log("Connect command failed for", serverData.device_address)
-                    for (var i = 0; i < bluetoothDevicesPage.pairedDevicesModel.count; i++) {
-                        if (bluetoothDevicesPage.pairedDevicesModel.get(i).address === serverData.device_address) {
-                                bluetoothDevicesPage.pairedDevicesModel.setProperty(i, "connecting", false)
-                            break
-                        }
-                    }
+                    // Call the dedicated function in the child component
+                    bluetoothDevicesPage.handleConnectionFailure(serverData.device_address)
                 }
             }
             // If successful, do nothing and wait for property_change_noti or timeout
@@ -170,13 +166,9 @@ Item {
         case "disconnect_btdevice_noti":
             if (!msgStatus) {
                 if (serverData && serverData.device_address) {
-                    console.log("Connect command failed for", serverData.device_address)
-                    for (var i = 0; i < bluetoothDevicesPage.pairedDevicesModel.count; i++) {
-                        if (bluetoothDevicesPage.pairedDevicesModel.get(i).address === serverData.device_address) {
-                                bluetoothDevicesPage.pairedDevicesModel.setProperty(i, "disconnecting", false)
-                            break
-                        }
-                    }
+                    console.log("Disconnect command failed for", serverData.device_address)
+                    // Call the dedicated function in the child component
+                    bluetoothDevicesPage.handleDisconnectionFailure(serverData.device_address)
                 }
             }
             // If successful, do nothing and wait for property_change_noti or timeout
