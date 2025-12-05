@@ -74,4 +74,6 @@ QtObject {
     readonly property color accent: isDark ? "#ef4444" : "#dc2626" // Red
     readonly property color accentSubtle: isDark ? "#991b1b" : "#fca5a5" // Lighter/darker red for borders
     readonly property color success: isDark ? "#22c55e" : "#16a34a" // Green for success states
+    readonly property color warning: isDark ? "#f59e0b" : "#d97706" // Yellow for warnings
+    readonly property color blue: isDark ? "#3b82f6" : "#2563eb" // Blue for links and highlights
 }

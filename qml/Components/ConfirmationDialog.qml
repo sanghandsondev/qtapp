@@ -119,7 +119,7 @@ Rectangle {
                 Rectangle {
                     Layout.fillWidth: true
                     height: 40
-                    color: Theme.accent // Use theme accent color
+                    color: Theme.blue 
                     radius: 6
 
                     Text {

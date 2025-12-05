@@ -26,6 +26,16 @@ Item {
     property var wsClient
     property var confirmationDialog // Add property for the dialog
 
+    Timer {
+        id: confirmationTimer
+        interval: 10000 // 10 seconds
+        repeat: false
+        onTriggered: {
+            console.log("Request confirmation timed out on UI. Closing dialog.")
+            confirmationDialog.close()
+        }
+    }
+
     // Property to track the state of the bluetooth power toggle
     // This is now an alias to the property in the sub-page to create a two-way binding.
     property alias isTogglingBluetooth: bluetoothDevicesPage.isTogglingBluetooth
@@ -39,7 +49,7 @@ Item {
     signal addNewScanBTDevice(variant deviceData)
     signal deleteScanBTDevice(variant deviceAdress)
     signal addNewPairedBTDevice(variant deviceData)
-    signal onNotify(string message, string type)
+    signal notify(string message, string type)
 
     // --- State Management for Sub-Pages ---
     property string currentSubPage: "" // e.g., "bluetooth", "display"
@@ -127,7 +137,7 @@ Item {
                     console.log("Device property changed: now connected.", serverData.device_address)
                     bluetoothDevicesPage.addPairedDevice(serverData)
                     settingsRoot.deleteScanBTDevice(serverData.device_address)
-                    settingsRoot.onNotify("Connected to " + serverData.device_name, "success")
+                    settingsRoot.notify("Connected to " + serverData.device_name, "success")
                 } else if (serverData.is_paired) {
                     console.log("Device property changed: now paired.", serverData.device_address)
                     bluetoothDevicesPage.addPairedDevice(serverData)
@@ -143,7 +153,7 @@ Item {
                 //     settingsRoot.deleteScanBTDevice(serverData.device_address)
                 //     // Notify Banner
                 //     if (serverData.is_connected) {
-                //         settingsRoot.onNotify("Connected to " + serverData.device_name, "success")
+                //         settingsRoot.notify("Connected to " + serverData.device_name, "success")
                 //     }
                 // } else { // Device is now unpaired and not connected
                 //     console.log("Device property changed: now unpaired.", serverData.device_address)
@@ -191,6 +201,60 @@ Item {
                 }
             }
             // If successful, do nothing and wait for property_change_noti or timeout
+            break
+        case "btdevice_request_confirmation_noti":
+            if (msgStatus) {
+                if (serverData && serverData.device_address && serverData.passkey) {
+                    console.log("Received confirmation request for", serverData.device_address)
+                    console.log("Passkey:", serverData.passkey)
+                    
+                    if (!confirmationDialog) {
+                        console.error("Confirmation dialog component is not set in Settings.qml")
+                        return
+                    }
+
+                    var onAccepted = function() {
+                        if (!Theme.bluetoothEnabled) {
+                            console.warn("Bluetooth is disabled, cannot accept confirmation.")
+                            confirmationDialog.accepted.disconnect(onAccepted)
+                            return
+                        }
+                        console.log("User accepted the request confirmation for", serverData.device_address)
+                        if (wsClient && wsClient.sendMessage({
+                            command: "accept_request_confirmation",
+                            data: { device_address: serverData.device_address}
+                        })) {
+                            console.log("Sent acceptance response to server.")
+                        }
+                        confirmationDialog.accepted.disconnect(onAccepted)
+                        confirmationTimer.stop()
+                    }
+
+                    var onRejected = function() {
+                        console.log("User rejected the request confirmation for", serverData.device_address)
+                        if (wsClient && wsClient.sendMessage({
+                            command: "reject_request_confirmation",
+                            data: { device_address: serverData.device_address}
+                        })) {
+                            console.log("Sent rejection response to server.")
+                        }
+                        confirmationDialog.rejected.disconnect(onRejected)
+                        confirmationTimer.stop()
+                    }
+
+                    confirmationDialog.accepted.connect(onAccepted)
+                    confirmationDialog.rejected.connect(onRejected)
+
+                    // Open the confirmation dialog with the provided data
+                    confirmationDialog.open(
+                        "Request Confirmation",
+                        "Please confirm the request from new device:\n" + serverData.passkey,
+                        "Accept"
+                    )
+                    confirmationTimer.start()
+                }
+                
+            }
             break
         default:
             console.warn("Header Component received unknown message type:", msgType)

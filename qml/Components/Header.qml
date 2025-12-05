@@ -49,7 +49,7 @@ Rectangle {
             font.family: materialFontFamily
             font.pixelSize: 26
             color: {
-                if (headerRoot.temperature < 20) return "#3b82f6"; // Blue for cold
+                if (headerRoot.temperature < 20) return Theme.blue; // Blue for cold
                 if (headerRoot.temperature > 26) return Theme.accent; // Red for hot
                 return Theme.icon; // Default color for normal
             }
