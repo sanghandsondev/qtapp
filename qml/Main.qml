@@ -235,6 +235,7 @@ Window {
                             visible: currentPageId === "Settings"
                             wsClient: wsClient          // Pass the wsClient instance
                             confirmationDialog: confirmationDialog // Pass the dialog instance
+                            onNotify: (message, type) => showNotification(message, type)
                             onOpenPairingDialog: bluetoothPairingDialog.open()
                             onClosePairingDialog: bluetoothPairingDialog.close()
                             onAddNewScanBTDevice: function(deviceData) {

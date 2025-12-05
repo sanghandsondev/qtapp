@@ -39,6 +39,7 @@ Item {
     signal addNewScanBTDevice(variant deviceData)
     signal deleteScanBTDevice(variant deviceAdress)
     signal addNewPairedBTDevice(variant deviceData)
+    signal onNotify(string message, string type)
 
     // --- State Management for Sub-Pages ---
     property string currentSubPage: "" // e.g., "bluetooth", "display"
@@ -122,8 +123,13 @@ Item {
         case "btdevice_property_change_noti":
             if (msgStatus && serverData.device_address) {
                 // This handles changes like pairing, unpairing, connecting, disconnecting.
-                if (serverData.is_paired || serverData.is_connected) {
-                    console.log("Device property changed: now paired / connected.", serverData.device_address)
+                if (serverData.is_connected) {
+                    console.log("Device property changed: now connected.", serverData.device_address)
+                    bluetoothDevicesPage.addPairedDevice(serverData)
+                    settingsRoot.deleteScanBTDevice(serverData.device_address)
+                    settingsRoot.onNotify("Connected to " + serverData.device_name, "success")
+                } else if (serverData.is_paired) {
+                    console.log("Device property changed: now paired.", serverData.device_address)
                     bluetoothDevicesPage.addPairedDevice(serverData)
                     settingsRoot.deleteScanBTDevice(serverData.device_address)
                 } else { // Device is now unpaired and not connected
@@ -131,6 +137,19 @@ Item {
                     bluetoothDevicesPage.removePairedDevice(serverData.device_address)
                     settingsRoot.addNewScanBTDevice(serverData)
                 }
+                // if (serverData.is_paired || serverData.is_connected) {
+                //     console.log("Device property changed: now paired / connected.", serverData.device_address)
+                //     bluetoothDevicesPage.addPairedDevice(serverData)
+                //     settingsRoot.deleteScanBTDevice(serverData.device_address)
+                //     // Notify Banner
+                //     if (serverData.is_connected) {
+                //         settingsRoot.onNotify("Connected to " + serverData.device_name, "success")
+                //     }
+                // } else { // Device is now unpaired and not connected
+                //     console.log("Device property changed: now unpaired.", serverData.device_address)
+                //     bluetoothDevicesPage.removePairedDevice(serverData.device_address)
+                //     settingsRoot.addNewScanBTDevice(serverData)
+                // }
             }
             break
         case "bluetooth_power_on_noti":
