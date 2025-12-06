@@ -89,6 +89,22 @@ Item {
         }
     }
 
+    // Function to auto-connect to known paired devices after receiveing bluetooth_power_on_noti
+    function autoConnectKnownDevices() {
+        for (var i = 0; i < pairedDevicesModel.count; i++) {
+            var device = pairedDevicesModel.get(i)
+            if (device.paired && !device.connected) {
+                console.log("Auto-connecting to known device:", device.name, "Address:", device.address)
+                if (wsClient && wsClient.sendMessage({
+                    command: "connect_btdevice",
+                    data: { device_address: device.address }
+                })) {
+                    pairedDevicesModel.setProperty(i, "connecting", true)
+                }
+            }
+        }
+    }
+
     ColumnLayout {
         anchors.fill: parent
         spacing: 16

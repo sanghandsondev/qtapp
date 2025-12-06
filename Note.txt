@@ -10,10 +10,7 @@ wpctl set-default <node_id>
 
 ///////////////////////////////////////////////////////////////////////////////////
 
-
-
-
-
+Trước mõi khi gọi dbus_message_new_method_call thì phải kiểm tra path 
 
 
 

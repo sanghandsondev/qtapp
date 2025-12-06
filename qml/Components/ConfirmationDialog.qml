@@ -6,7 +6,7 @@ import com.company.sound 1.0
 Rectangle {
     id: dialogRoot
     anchors.fill: parent
-    color: "#80000000" // Lớp phủ màu đen mờ
+    color: '#34111111' // Lớp phủ màu đen mờ
     visible: false
     z: 20 // Đảm bảo nó ở trên cùng
 

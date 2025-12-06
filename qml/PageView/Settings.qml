@@ -28,7 +28,7 @@ Item {
 
     Timer {
         id: confirmationTimer
-        interval: 10000 // 10 seconds
+        interval: 30000 // 30 seconds
         repeat: false
         onTriggered: {
             console.log("Request confirmation timed out on UI. Closing dialog.")
@@ -137,7 +137,7 @@ Item {
                     console.log("Device property changed: now connected.", serverData.device_address)
                     bluetoothDevicesPage.addPairedDevice(serverData)
                     settingsRoot.deleteScanBTDevice(serverData.device_address)
-                    settingsRoot.notify("Connected to " + serverData.device_name, "success")
+                    // settingsRoot.notify("Connected to " + serverData.device_name, "success")
                 } else if (serverData.is_paired) {
                     console.log("Device property changed: now paired.", serverData.device_address)
                     bluetoothDevicesPage.addPairedDevice(serverData)
@@ -167,6 +167,7 @@ Item {
                 Theme.bluetoothEnabled = true
             }
             isTogglingBluetooth = false
+            bluetoothDevicesPage.autoConnectKnownDevices()
             break
         case "bluetooth_power_off_noti":
             if (msgStatus) {
@@ -248,8 +249,8 @@ Item {
                     // Open the confirmation dialog with the provided data
                     confirmationDialog.open(
                         "Request Confirmation",
-                        "Please confirm the request from new device:\n" + serverData.passkey,
-                        "Accept"
+                        "Please confirm that passkey [" + serverData.passkey + "] is displayed on the Bluetooth device.",
+                        "Confirm"
                     )
                     confirmationTimer.start()
                 }
