@@ -154,7 +154,7 @@ Window {
                                     ListElement { pageId: "Home"; icon: "home"; }
                                     ListElement { pageId: "Record"; icon: "fiber_manual_record"; }
                                     ListElement { pageId: "Media"; icon: "perm_media"; }
-                                    ListElement { pageId: "Camera"; icon: "photo_camera"; }
+                                    ListElement { pageId: "Call"; icon: "call"; }
                                     ListElement { pageId: "Settings"; icon: "settings"; }
                                 }
 
@@ -224,9 +224,9 @@ Window {
                             visible: currentPageId === "Media"
                         }
 
-                        Pages.Camera {
+                        Pages.Call {
                             anchors.fill: parent
-                            visible: currentPageId === "Camera"
+                            visible: currentPageId === "Call"
                         }
 
                         Pages.Settings {

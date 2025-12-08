@@ -16,16 +16,16 @@ Item {
     signal wsError(string errorMessage)
 
     // Timer to handle automatic reconnection
-    // Timer {
-    //     id: reconnectTimer
-    //     interval: 10000 // Try to reconnect every 10 seconds
-    //     repeat: true
-    //     running: false // Initially stopped
-    //     onTriggered: {
-    //         console.log("Attempting to reconnect WebSocket...")
-    //         root.open()
-    //     }
-    // }
+    Timer {
+        id: reconnectTimer
+        interval: 5000 // Try to reconnect every 5 seconds
+        repeat: true
+        running: false // Initially stopped
+        onTriggered: {
+            console.log("Attempting to reconnect WebSocket...")
+            root.open()
+        }
+    }
 
     // Tự động kết nối khi component được hoàn thành
     Component.onCompleted: {
@@ -44,14 +44,16 @@ Item {
             console.log("WebSocket status changed:", status)
             root.wsStatusChanged() // Phát tín hiệu khi status thay đổi
 
-            // Manage reconnection timer based on status
-            // if (status === WebSocket.Open || status === WebSocket.Connecting) {
-            //     reconnectTimer.stop()
-            // } else if (status === WebSocket.Closed) {
-            //     if (autoConnect) {
-            //         reconnectTimer.start()
-            //     }
-            // }
+            // Manage reconnection timer based on status, only on Pi
+            if (isPiBuild) {
+                if (status === WebSocket.Open || status === WebSocket.Connecting) {
+                    reconnectTimer.stop()
+                } else if (status === WebSocket.Closed || status === WebSocket.Error) {
+                    if (autoConnect) {
+                        reconnectTimer.start()
+                    }
+                }
+            }
         }
 
         onTextMessageReceived: function(message) {

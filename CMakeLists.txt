@@ -36,6 +36,7 @@ file(GLOB QML_FILES CONFIGURE_DEPENDS RELATIVE
     "qml/*.qml"
     "qml/PageView/*.qml"
     "qml/PageView/Settings/*.qml"
+    "qml/PageView/Call/*.qml"
     "qml/Components/*.qml"
 )
 
