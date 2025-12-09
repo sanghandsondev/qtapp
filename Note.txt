@@ -9,10 +9,116 @@ wpctl set-default <node_id>
 
 
 ///////////////////////////////////////////////////////////////////////////////////
-1/ Khi nhận noti start pull thì hiển thị xoay tròn để đợi cùng text phụ gì đó
-khi end noti pull thì sẽ sắp xếp rồi ném danh sách vào listModel
+1/ Phím số hơi béo
+2/ Text khi gõ phím số sát bên trên quá
 
-2/ Co ket noi phone bluetooth cho phep dong bo thi bluetooth icon chuyen xanh o Header
+3/ Dec 09 21:08:57 raspberrypi hardwaremanager[12261]: [HardwareManager][12261][21:08:57.863][BluetoothWorker.cpp:108][dispatchMessage] [WARN]BluetoothWorker: Received unhandled D-Bus message. Path: /, Interface: org.ofono.Manager, Member: ModemAdded
+
+4/ 
+Dec 09 22:09:08 raspberrypi hardwaremanager[35867]: [HardwareManager][35867][22:09:08.683][BluezDBus.cpp:1096][setOfonoModemProperty] [ERROR]Error setting oFono property 'Powered' on /hfp/org/bluez/hci0/dev_0C_6A_C4_8B_A4_3A: Operation failure due to timeout
+
+
+Dec 09 23:43:15 raspberrypi hardwaremanager[23570]: [HardwareManager][23570][23:43:15.815][BluetoothWorker.cpp:360][handleModemAdded] [INFO]oFono: Modem added at /hfp/org/bluez/hci0/dev_0C_6A_C4_8B_A4_3A. Activating...
+Dec 09 23:43:16 raspberrypi hardwaremanager[23570]: [HardwareManager][23570][23:43:16.379][BluezDBus.cpp:1103][setOfonoModemProperty] [INFO]Successfully set oFono property 'Powered' to true on /hfp/org/bluez/hci0/dev_0C_6A_C4_8B_A4_3A
+
+Type=signal  Endian=l  Flags=1  Version=1 Cookie=1196  Timestamp="Tue 2025-12-09 17:05:51.677579 UTC"
+  Sender=:1.2  Path=/hfp/org/bluez/hci0/dev_0C_6A_C4_8B_A4_3A  Interface=org.ofono.Modem  Member=PropertyChanged
+  UniqueName=:1.2
+  MESSAGE "sv" {
+          STRING "Powered";
+          VARIANT "b" {
+                  BOOLEAN false;
+          };
+  };
+
+‣ Type=signal  Endian=l  Flags=1  Version=1 Cookie=1197  Timestamp="Tue 2025-12-09 17:05:51.680762 UTC"
+  Sender=:1.2  Path=/hfp/org/bluez/hci0/dev_0C_6A_C4_8B_A4_3A  Interface=org.ofono.Modem  Member=PropertyChanged
+  UniqueName=:1.2
+  MESSAGE "sv" {
+          STRING "Online";
+          VARIANT "b" {
+                  BOOLEAN false;
+          };
+  };
+
+  Type=method_return  Endian=l  Flags=1  Version=1 Cookie=189  ReplyCookie=289  Timestamp="Tue 2025-12-09 17:14:30.955228 UTC"
+  Sender=:1.4  Destination=:1.3
+  UniqueName=:1.4
+  MESSAGE "" {
+  };
+
+‣ Type=signal  Endian=l  Flags=1  Version=1 Cookie=190  Timestamp="Tue 2025-12-09 17:14:30.955329 UTC"
+  Sender=:1.4  Path=/  Interface=org.ofono.HandsfreeAudioManager  Member=CardAdded
+  UniqueName=:1.4
+  MESSAGE "oa{sv}" {
+          OBJECT_PATH "/card_2";
+          ARRAY "{sv}" {
+                  DICT_ENTRY "sv" {
+                          STRING "Type";
+                          VARIANT "s" {
+                                  STRING "handsfree";
+                          };
+                  };
+                  DICT_ENTRY "sv" {
+                          STRING "RemoteAddress";
+                          VARIANT "s" {
+                                  STRING "0C:6A:C4:8B:A4:3A";
+                          };
+                  };
+                  DICT_ENTRY "sv" {
+                          STRING "LocalAddress";
+                          VARIANT "s" {
+                                  STRING "D8:3A:DD:0F:FB:BE";
+                          };
+                  };
+          };
+  };
+
+‣ Type=signal  Endian=l  Flags=1  Version=1 Cookie=191  Timestamp="Tue 2025-12-09 17:14:30.956165 UTC"
+  Sender=:1.4  Path=/hfp/org/bluez/hci0/dev_0C_6A_C4_8B_A4_3A  Interface=org.ofono.Modem  Member=PropertyChanged
+  UniqueName=:1.4
+  MESSAGE "sv" {
+          STRING "Serial";
+          VARIANT "s" {
+                  STRING "0C:6A:C4:8B:A4:3A";
+          };
+  };
+
+‣ Type=signal  Endian=l  Flags=1  Version=1 Cookie=192  Timestamp="Tue 2025-12-09 17:14:30.956642 UTC"
+  Sender=:1.4  Path=/hfp/org/bluez/hci0/dev_0C_6A_C4_8B_A4_3A  Interface=org.ofono.Modem  Member=PropertyChanged
+  UniqueName=:1.4
+  MESSAGE "sv" {
+          STRING "Interfaces";
+          VARIANT "as" {
+                  ARRAY "s" {
+                          STRING "org.ofono.CallVolume";
+                          STRING "org.ofono.Handsfree";
+                          STRING "org.ofono.NetworkRegistration";
+                  };
+          };
+  };
+
+‣ Type=signal  Endian=l  Flags=1  Version=1 Cookie=193  Timestamp="Tue 2025-12-09 17:14:30.957520 UTC"
+  Sender=:1.4  Path=/hfp/org/bluez/hci0/dev_0C_6A_C4_8B_A4_3A  Interface=org.ofono.Modem  Member=PropertyChanged
+  UniqueName=:1.4
+  MESSAGE "sv" {
+          STRING "Features";
+          VARIANT "as" {
+                  ARRAY "s" {
+                          STRING "net";
+                  };
+          };
+  };
+
+
+
+
+
+4/ Tách ofonoDBus ra một class riêng, tách khỏi bluez 
+
+
+5/ Conflic nang profile giua blueZ va ofono ve A2DP gi do -> ko connect dc loa 
+-> Chấp nhận bỏ tính năng Add Device chủ động ở Pi 4. CHỉ đợi phone pair mình mà thôi
 
 10/ Mua bíp bíp về để làm chuông báo thức. 
 Giao diện giống đặt báo thức của Iphone nhưng có thể đơn giản hơn chút
