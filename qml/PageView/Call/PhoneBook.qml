@@ -257,7 +257,7 @@ Item {
                                 onClicked: {
                                     SoundManager.playTouch()
                                     if (!phoneBookRoot.isPhoneConnected) {
-                                        phoneBookRoot.notify("Please sync your phone to make calls.", "warning")
+                                        phoneBookRoot.notify("Please connect bluetooth and Sync your phone to make calls.", "warning")
                                         return
                                     }
                                     console.log("Calling " + model.name + " at " + model.number)

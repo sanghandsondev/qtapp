@@ -3,44 +3,102 @@ import QtQuick.Layouts 1.15
 import QtQuick.Controls 2.15 // For ScrollView
 import com.company.style 1.0
 import com.company.sound 1.0
+import com.company.utils 1.0
 
 Item {
     id: historyRoot
 
-    property string currentFilter: "all" // "all" or "missed"
+    property string currentFilter: "all" // "all", "missed"
+    property bool isPhoneConnected: false
+    property bool isSyncing: false
+
+    property var historyList: []
+    property var historyMissedList: []
 
     signal notify(string message, string type)
 
     onVisibleChanged: {
         if (visible) {
             currentFilter = "all"
+            updateHistoryModel()
+        }
+    }
+
+    function updateHistoryModel() {
+        historyModel.clear()
+        var sourceList = (currentFilter === "missed") ? historyMissedList : historyList
+        for (var i = 0; i < sourceList.length; i++) {
+            historyModel.append(sourceList[i])
+        }
+    }
+
+    function processMessage(type, data) {
+        switch (type) {
+        case "call_history_pull_start_noti":
+            console.log("History: Starting call history sync.")
+            historyList = []
+            historyMissedList = []
+            historyModel.clear()
+            break
+        case "call_history_pull_noti":
+            var callItem = {
+                name: data.call_history_name,
+                number: data.call_history_number,
+                type: data.call_history_type,
+                datetime: data.call_history_datetime
+            }
+            historyList.push(callItem)
+            if (callItem.type === "missed") {
+                historyMissedList.push(callItem)
+            }
+            break
+        case "call_history_pull_end_noti":
+            console.log("History: Call history sync finished. Populating model.")
+            updateHistoryModel()
+            break
+        case "pbap_session_end_noti":
+            console.log("History: PBAP session ended. Clearing data.")
+            historyList = []
+            historyMissedList = []
+            historyModel.clear()
+            break
         }
     }
 
     function getIconForCallType(type) {
         switch (type) {
-        case "incoming":
+        case "received": // ofono uses 'received'
             return "call_received"
-        case "outgoing":
+        case "dialed": // ofono uses 'dialed'
             return "call_made"
         case "missed":
             return "call_missed"
         default:
-            return ""
+            return "help"
         }
     }
 
     function getColorForCallType(type) {
         switch (type) {
-        case "incoming":
+        case "received":
             return Theme.success // Green
-        case "outgoing":
+        case "dialed":
             return Theme.blue // Blue
         case "missed":
             return Theme.accent // Red
         default:
             return Theme.secondaryText
         }
+    }
+
+    ListModel {
+        id: historyModel
+        // Sample Data
+        // ListElement { name: "Alice Johnson"; number: "+1-202-555-0181"; type: "received"; time: "10:30 AM" }
+        // ListElement { name: "Charlie Brown"; number: "+1-415-555-0156"; type: "missed"; time: "Yesterday" }
+        // ListElement { name: "Diana Miller"; number: "+1-646-555-0199"; type: "dialed"; time: "2 days ago" }
+        // ListElement { name: "Ethan Davis"; number: "+44 20 7946 0958"; type: "received"; time: "Oct 15" }
+        // ListElement { name: "Unknown"; number: "+44 1632 960123"; type: "missed"; time: "Oct 14" }
     }
 
     ColumnLayout {
@@ -52,7 +110,8 @@ Item {
             id: filterTabs
             Layout.alignment: Qt.AlignLeft
             Layout.leftMargin: 20
-            Layout.preferredHeight: 34
+            Layout.preferredHeight: 40
+            Layout.maximumHeight: 40
             spacing: 4
 
             Repeater {
@@ -97,6 +156,7 @@ Item {
                             if (currentFilter !== model.filter) {
                                 SoundManager.playTouch()
                                 currentFilter = model.filter
+                                updateHistoryModel()
                             }
                         }
                     }
@@ -122,20 +182,11 @@ Item {
                 id: historyListView
                 width: parent.width
                 spacing: 4
-                model: ListModel {
-                    id: historyModel
-                    // Sample Data
-                    ListElement { name: "Alice Johnson"; phone: "+1-202-555-0181"; type: "incoming"; time: "10:30 AM" }
-                    ListElement { name: "Charlie Brown"; phone: "+1-415-555-0156"; type: "missed"; time: "Yesterday" }
-                    ListElement { name: "Diana Miller"; phone: "+1-646-555-0199"; type: "outgoing"; time: "2 days ago" }
-                    ListElement { name: "Ethan Davis"; phone: "+44 20 7946 0958"; type: "incoming"; time: "Oct 15" }
-                    ListElement { name: "Unknown"; phone: "+44 1632 960123"; type: "missed"; time: "Oct 14" }
-                }
+                model: historyModel
 
                 delegate: Item {
                     width: historyListView.width
                     height: 64
-                    visible: currentFilter === 'all' || (currentFilter === 'missed' && model.type === 'missed')
 
                     RowLayout {
                         anchors.fill: parent
@@ -156,7 +207,6 @@ Item {
                         ColumnLayout {
                             spacing: 2
                             Layout.alignment: Qt.AlignVCenter
-                            // Layout.fillWidth: true // Remove this
 
                             Text {
                                 text: model.name
@@ -164,7 +214,7 @@ Item {
                                 font.pointSize: 15
                             }
                             Text {
-                                text: model.phone
+                                text: model.number
                                 color: Theme.secondaryText
                                 font.pointSize: 12
                             }
@@ -178,7 +228,7 @@ Item {
 
                         // Time
                         Text {
-                            text: model.time
+                            text: Utils.formatHistoryTime(model.datetime)
                             color: Theme.secondaryText
                             font.pointSize: 12
                             Layout.alignment: Qt.AlignVCenter
@@ -199,4 +249,55 @@ Item {
             }
         }
     }
+
+    // --- Loading Indicator ---
+    ColumnLayout {
+        anchors.centerIn: parent
+        spacing: 12
+        visible: isSyncing
+
+        BusyIndicator {
+            running: true
+            Layout.alignment: Qt.AlignHCenter
+        }
+        Text {
+            text: "Syncing call history..."
+            color: Theme.secondaryText
+            font.pointSize: 14
+            Layout.alignment: Qt.AlignHCenter
+        }
+    }
+
+    // --- "Not Connected" or "No History" Message ---
+    ColumnLayout {
+        anchors.centerIn: parent
+        spacing: 12
+        visible: !isSyncing && (historyModel.count === 0 || !isPhoneConnected)
+
+        Text {
+            text: "history_toggle_off"
+            font.family: materialFontFamily
+            font.pixelSize: 64
+            color: Theme.secondaryText
+            Layout.alignment: Qt.AlignHCenter
+        }
+        Text {
+            text: isPhoneConnected ? "No call history" : "History not available"
+            color: Theme.secondaryText
+            font.pointSize: 16
+            Layout.alignment: Qt.AlignHCenter
+        }
+        Text {
+            visible: !isPhoneConnected
+            text: "Connect a phone via Bluetooth to sync call histories."
+            color: Theme.secondaryText
+            font.pointSize: 12
+            Layout.alignment: Qt.AlignHCenter
+        }
+    }
 }
+
+
+
+
+

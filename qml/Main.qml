@@ -71,11 +71,12 @@ Window {
                     break;
                 case "Call":
                     callPage.processServerMessage(message)
+                    break;
                 default:
                     console.warn("Unknown component in server message:", message.data.component)
                     break;
-                }
             }
+        }
     }
 
     // Instantiate WebSocket client
@@ -125,8 +126,6 @@ Window {
                 id: header
                 currentTime: root.currentTime
                 isPhoneConnected: callPage.isPhoneConnected
-                // The properties fanSpeed and temperature will be updated
-                // by the handleMessageFromServer function.
             }
 
             // This container holds the sidebar and content area

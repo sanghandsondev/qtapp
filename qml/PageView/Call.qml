@@ -13,6 +13,7 @@ Item {
     property string currentPage: "dial" // "dial", "phonebook", "history"
     property bool isPhoneConnected: false
     property bool isSyncingContacts: false
+    property bool isSyncingHistory: false
 
     signal notify(string message, string type)
 
@@ -35,8 +36,9 @@ Item {
             case "pbap_session_end_noti":
                 isPhoneConnected = false
                 isSyncingContacts = false
+                isSyncingHistory = false
                 phoneBookPage.processMessage(msgType, serverData)
-                // historyPage.processMessage(msgType, serverData) // TODO: Forward to history page later
+                historyPage.processMessage(msgType, serverData)
                 break
             case "pbap_phonebook_pull_start_noti":
                 if (msgStatus) {
@@ -57,13 +59,22 @@ Item {
                 }
                 break
             case "call_history_pull_start_noti":
-                // TODO
+                if (msgStatus) {
+                    isPhoneConnected = true
+                    isSyncingHistory = true
+                    historyPage.processMessage(msgType, serverData)
+                }
                 break
             case "call_history_pull_noti":
-                // TODO
+                if (msgStatus) {
+                    historyPage.processMessage(msgType, serverData)
+                }
                 break
             case "call_history_pull_end_noti":
-                // TODO
+                if (msgStatus) {
+                    isSyncingHistory = false
+                    historyPage.processMessage(msgType, serverData)
+                }
                 break
             default:
                 console.log("Call Page received unknown message type:", msgType)
@@ -168,6 +179,8 @@ Item {
                 id: historyPage
                 anchors.fill: parent
                 visible: currentPage === "history"
+                isPhoneConnected: callRoot.isPhoneConnected
+                isSyncing: callRoot.isSyncingHistory
                 onNotify: (message, type) => callRoot.notify(message, type)
             }
         }

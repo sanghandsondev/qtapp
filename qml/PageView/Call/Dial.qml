@@ -119,7 +119,7 @@ Item {
                         onClicked: {
                             SoundManager.playTouch()
                             if (!dialRoot.isPhoneConnected) {
-                                dialRoot.notify("Please sync your phone to make calls.", "warning")
+                                dialRoot.notify("Please connect bluetooth and Sync your phone to make calls.", "warning")
                                 return
                             }
                             // TODO: Handle making a call

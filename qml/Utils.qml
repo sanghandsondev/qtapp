@@ -96,4 +96,43 @@ QtObject {
         }
         return false
     }
+
+    // Function to format the datetime string for call history
+    function formatHistoryTime(datetimeStr) {
+        if (!datetimeStr) return ""
+
+        // oFono format is like "2024-05-21T10:30:00Z"
+        const callDate = new Date(datetimeStr)
+        if (isNaN(callDate.getTime())) {
+            return datetimeStr // Return original string if parsing fails
+        }
+
+        const now = new Date()
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+        const yesterday = new Date(today)
+        yesterday.setDate(today.getDate() - 1)
+
+        // Normalize callDate to the start of its day for comparison
+        const callDay = new Date(callDate.getFullYear(), callDate.getMonth(), callDate.getDate())
+
+        if (callDay.getTime() === today.getTime()) {
+            // Today: Format as time
+            return callDate.toLocaleTimeString(Qt.locale(),
+                                                Theme.is24HourFormat ? "hh:mm" : "h:mm AP")
+        } else if (callDay.getTime() === yesterday.getTime()) {
+            // Yesterday
+            return "Yesterday"
+        } else {
+            const diffTime = today.getTime() - callDay.getTime()
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+            if (diffDays > 1 && diffDays <= 6) {
+                // Within the last week (2-6 days ago)
+                return diffDays + " days ago"
+            } else {
+                // Older than a week: Format as "Month Day"
+                return callDate.toLocaleDateString(Qt.locale(), "MMMM d")
+            }
+        }
+    }
 }
