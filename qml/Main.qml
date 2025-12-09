@@ -16,7 +16,6 @@ Window {
     height: 600
     visible: true
     title: "Qt App"
-    // opacity: Theme.brightnessLevel // Bind window opacity to brightness level // REMOVED
 
     property string currentPageId: "Home"
     property var currentTime: new Date()
@@ -231,6 +230,15 @@ Window {
                             anchors.fill: parent
                             visible: currentPageId === "Call"
                             onNotify: (message, type) => showNotification(message, type)
+                            onCallStateUpdated: (name, number, status) => {
+                                // Just update the banner's data. Visibility is handled by bindings.
+                                callBanner.callName = name
+                                callBanner.callNumber = number
+                                callBanner.callStatus = status
+                            }
+                            onCallEnded: {
+                                // No longer need to explicitly hide banner. The binding on isInCall handles it.
+                            }
                         }
 
                         Pages.Settings {
@@ -258,6 +266,28 @@ Window {
                             width: 640
                             radius: 8
                             z: 10     // Ensure it's on top of sidebar and content
+                        }
+
+                        // --- Call Banner ---
+                        Components.CallBanner {
+                            id: callBanner
+                            callName: callPage.callName
+                            callNumber: callPage.callNumber
+                            callStatus: callPage.callStatusText
+                            // The banner is visible only when a call is active AND we are not on the Call page.
+                            visible: callPage.isInCall && currentPageId !== "Call"
+
+                            onBannerClicked: {
+                                currentPageId = "Call"
+                            }
+                            onAccepted: {
+                                // TODO: Send accept call command via WebSocket
+                                console.log("Call accepted via banner")
+                            }
+                            onRejected: {
+                                // TODO: Send reject call command via WebSocket
+                                console.log("Call rejected via banner")
+                            }
                         }
 
                         // --- Confirmation Dialog ---

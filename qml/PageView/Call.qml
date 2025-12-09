@@ -14,8 +14,14 @@ Item {
     property bool isPhoneConnected: false
     property bool isSyncingContacts: false
     property bool isSyncingHistory: false
+    property bool isInCall: dialPage.isInCall
+    property alias callName: dialPage.callName
+    property alias callNumber: dialPage.callNumber
+    property alias callStatusText: dialPage.callStatusText
 
     signal notify(string message, string type)
+    signal callStateUpdated(string name, string number, string status)
+    signal callEnded()
 
     // Reset to main dial view when the page becomes visible again.
     onVisibleChanged: {
@@ -74,6 +80,29 @@ Item {
                 if (msgStatus) {
                     isSyncingHistory = false
                     historyPage.processMessage(msgType, serverData)
+                }
+                break
+            // --- Call Handling ---
+            case "incoming_call_noti":
+            case "outgoing_call_noti":
+            case "call_state_changed_noti":
+                if (msgStatus) {
+                    currentPage = "dial" // Force view to dial page
+                    isInCall = true
+                    callName = serverData.call_name
+                    callNumber = serverData.call_number
+                    callStatusText = serverData.call_state
+                    // Emit signal for the main view
+                    // callStateUpdated(serverData.call_name, serverData.call_number, serverData.call_state)
+                }
+                break
+            case "call_ended_noti":
+                if (msgStatus) {
+                    isInCall = false
+                    dialPage.resetCallState()
+                    // Emit signal for the main view
+                    callEnded()
+                    // notify("Call ended with " + serverData.call_name, "info")
                 }
                 break
             default:
@@ -160,6 +189,7 @@ Item {
             Layout.fillHeight: true
 
             CallPages.Dial {
+                id: dialPage
                 anchors.fill: parent
                 visible: currentPage === "dial"
                 isPhoneConnected: callRoot.isPhoneConnected

@@ -97,6 +97,31 @@ QtObject {
         return false
     }
 
+    // Function to format the call status text for display
+    function formatCallStatus(status) {
+        if (!status) {
+            return ""
+        }
+
+        // Capitalize the first letter
+        var formatted = status.charAt(0).toUpperCase() + status.slice(1)
+
+        // Add ellipsis for transient states
+        switch (status) {
+        case "dialing":
+        case "alerting":
+        case "incoming":
+        case "waiting":
+            return formatted + "..."
+        // No ellipsis for steady states
+        case "active":
+        case "held":
+        case "disconnected":
+        default:
+            return formatted
+        }
+    }
+
     // Function to format the datetime string for call history
     function formatHistoryTime(datetimeStr) {
         if (!datetimeStr) return ""
