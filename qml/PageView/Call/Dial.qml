@@ -8,7 +8,9 @@ Item {
 
     property string dialedNumber: ""
     property int maxLen: 15
-    
+    property bool isPhoneConnected: false
+
+    signal notify(string message, string type)
 
     // Function to handle button presses
     function appendDigit(digit) {
@@ -116,6 +118,10 @@ Item {
                         cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                         onClicked: {
                             SoundManager.playTouch()
+                            if (!dialRoot.isPhoneConnected) {
+                                dialRoot.notify("Please sync your phone to make calls.", "warning")
+                                return
+                            }
                             // TODO: Handle making a call
                             console.log("Calling " + dialRoot.dialedNumber)
                         }

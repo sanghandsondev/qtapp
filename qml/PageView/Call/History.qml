@@ -9,6 +9,8 @@ Item {
 
     property string currentFilter: "all" // "all" or "missed"
 
+    signal notify(string message, string type)
+
     onVisibleChanged: {
         if (visible) {
             currentFilter = "all"

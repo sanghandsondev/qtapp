@@ -1,12 +1,20 @@
 import QtQuick 6.4
 import QtQuick.Layouts 1.15
-import QtQuick.Controls 2.15 // For ScrollView
+import QtQuick.Controls 2.15
 import com.company.style 1.0
 import com.company.sound 1.0
 
 Item {
     id: phoneBookRoot
 
+    property bool isPhoneConnected: false
+    property bool isSyncing: false
+
+    property var contactList: []
+    
+    signal notify(string message, string type)
+
+    // Function to get the section key (first letter of the name)
     function getSectionKey(name) {
         if (!name || name.length === 0) {
             return "#";
@@ -25,6 +33,49 @@ Item {
         }
 
         return normalized;
+    }
+
+    // Function to process messages forwarded from Call.qml
+    function processMessage(type, data) {
+        switch (type) {
+            case "pbap_phonebook_pull_start_noti":
+                console.log("PhoneBook: Starting contact sync.")
+                contactList = []
+                phonebookModel.clear()
+                break
+            case "pbap_phonebook_pull_noti":
+                // Add contact to cache
+                contactList.push({
+                                    name: data.contact_name,
+                                    number: data.contact_number
+                                })
+                break
+            case "pbap_phonebook_pull_end_noti":
+                console.log("PhoneBook: Contact sync finished. Sorting and displaying.")
+                // Sort the cache alphabetically by name
+                contactList.sort(function(a, b) {
+                    return a.name.localeCompare(b.name, 'vi')
+                })
+                // Populate the model from the sorted cache
+                for (var i = 0; i < contactList.length; i++) {
+                    phonebookModel.append({
+                        name: contactList[i].name,
+                        number: contactList[i].number,
+                    })
+                }
+                // contactList = [] // Clear cache after use
+                break
+            case "pbap_session_end_noti":
+                console.log("PhoneBook: PBAP session ended. Clearing data.")
+                contactList = []
+                phonebookModel.clear()
+                break
+            }
+    }
+
+    // The model for the ListView
+    ListModel {
+        id: phonebookModel
     }
 
     ColumnLayout {
@@ -91,59 +142,15 @@ Item {
                 spacing: 8
                 currentIndex: -1 // No item selected initially
 
-                // The model is now sorted by name
-                model: ListModel {
-                    id: contactModel
-                    ListElement { name: "Alice Johnson"; phone: "+1-202-555-0181" }
-                    ListElement { name: "charlie Brown"; phone: "+1-415-555-0156" }
-                    ListElement { name: "diana Miller"; phone: "+1-646-555-0199" }
-                    ListElement { name: "đavid Clark"; phone: "+1-212-555-0110" }
-                    ListElement { name: "Ethan Davis"; phone: "+44 20 7946 0958" }
-                    ListElement { name: "Emily White"; phone: "+44 20 7946 0231" }
-                    ListElement { name: "Fiona Garcia"; phone: "+44 1632 960842" }
-                    ListElement { name: "Frank Harris"; phone: "+44 1632 960123" }
-                    ListElement { name: "George Rodriguez"; phone: "+1-773-555-0112" }
-                    ListElement { name: "Grace Lee"; phone: "+1-312-555-0145" }
-                    ListElement { name: "Hannah Martinez"; phone: "+1-214-555-0178" }
-                    ListElement { name: "Henry Wilson"; phone: "+1-404-555-0199" }
-                    ListElement { name: "Ian Taylor"; phone: "+1-512-555-0101" }
-                    ListElement { name: "Isabella Moore"; phone: "+1-713-555-0123" }
-                    ListElement { name: "Jack Anderson"; phone: "+1-901-555-0144" }
-                    ListElement { name: "James Martin"; phone: "+1-215-555-0165" }
-                    ListElement { name: "Kevin Thomas"; phone: "+1-602-555-0187" }
-                    ListElement { name: "Laura Hernandez"; phone: "+1-818-555-0198" }
-                    ListElement { name: "Liam Smith"; phone: "+1-408-555-0134" }
-                    ListElement { name: "Michael Moore"; phone: "+1-206-555-0155" }
-                    ListElement { name: "Mia Jones"; phone: "+1-305-555-0176" }
-                    ListElement { name: "Nancy Martin"; phone: "+1-702-555-0191" }
-                    ListElement { name: "Noah Brown"; phone: "+1-503-555-0122" }
-                    ListElement { name: "Olivia Jackson"; phone: "+1-801-555-0143" }
-                    ListElement { name: "Oliver Wilson"; phone: "+1-619-555-0164" }
-                    ListElement { name: "Peter White"; phone: "+1-407-555-0185" }
-                    ListElement { name: "Penelope Taylor"; phone: "+1-916-555-0117" }
-                    ListElement { name: "Quincy Harris"; phone: "+1-210-555-0138" }
-                    ListElement { name: "Rachel Thompson"; phone: "+1-813-555-0159" }
-                    ListElement { name: "Robert Anderson"; phone: "+1-317-555-0180" }
-                    ListElement { name: "Sam Clark"; phone: "+1-614-555-0111" }
-                    ListElement { name: "Sophia Thomas"; phone: "+1-704-555-0133" }
-                    ListElement { name: "Tom Lewis"; phone: "+1-919-555-0154" }
-                    ListElement { name: "Ursula Robinson"; phone: "+1-414-555-0175" }
-                    ListElement { name: "Victor Walker"; phone: "+1-402-555-0196" }
-                    ListElement { name: "Victoria Hall"; phone: "+1-505-555-0127" }
-                    ListElement { name: "Wendy Hall"; phone: "+1-918-555-0148" }
-                    ListElement { name: "William Young"; phone: "+1-316-555-0169" }
-                    ListElement { name: "Xavier Young"; phone: "+1-208-555-0190" }
-                    ListElement { name: "Yara Allen"; phone: "+1-401-555-0121" }
-                    ListElement { name: "Zoe King"; phone: "+1-203-555-0142" }
-                    ListElement { name: "Zachary Lee"; phone: "+1-302-555-0163" }
-                }
+                // The model is now the main phonebook model
+                model: phonebookModel
 
                 delegate: Item {
                     width: contactListView.width
                     height: 72
                     property bool isSelected: contactListView.currentIndex === index
                     property string sectionKey: getSectionKey(model.name)
-                    property bool showLetter: index === 0 || sectionKey !== getSectionKey(contactModel.get(index - 1).name)
+                    property bool showLetter: index === 0 || sectionKey !== getSectionKey(phonebookModel.get(index - 1).name)
 
                     Rectangle {
                         anchors.fill: parent
@@ -198,7 +205,7 @@ Item {
                                 font.pointSize: 16
                             }
                             Text {
-                                text: model.phone
+                                text: model.number
                                 color: Theme.secondaryText
                                 font.pointSize: 12
                             }
@@ -245,20 +252,23 @@ Item {
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: {
                                     SoundManager.playTouch()
-                                    console.log("Calling " + model.name + " at " + model.phone)
-                                    // TODO: Implement call logic
+                                    if (!phoneBookRoot.isPhoneConnected) {
+                                        phoneBookRoot.notify("Please sync your phone to make calls.", "warning")
+                                        return
+                                    }
+                                    console.log("Calling " + model.name + " at " + model.number)
+                                    // TODO: Implement call functionality
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    // Separator line
                     Rectangle {
-                        visible: index < contactModel.count - 1
+                        visible: index < phonebookModel.count - 1
                         anchors.bottom: parent.bottom
                         anchors.left: parent.left
                         anchors.right: parent.right
-                        anchors.leftMargin: 12 + 40 + 16 + 40 // Align with name text (Letter + Icon + Spacing)
+                        anchors.leftMargin: 12 + 40 // Align with text
                         height: 1
                         color: Theme.separator
                     }
@@ -266,4 +276,51 @@ Item {
             }
         }
     }
+
+    // --- Loading Indicator ---
+    ColumnLayout {
+        anchors.centerIn: parent
+        spacing: 12
+        visible: isSyncing
+
+        BusyIndicator {
+            running: true
+            Layout.alignment: Qt.AlignHCenter
+        }
+        Text {
+            text: "Syncing contacts..."
+            color: Theme.secondaryText
+            font.pointSize: 14
+            Layout.alignment: Qt.AlignHCenter
+        }
+    }
+
+    // --- "Not Connected" or "No Contacts" Message ---
+    ColumnLayout {
+        anchors.centerIn: parent
+        spacing: 12
+        visible: !isSyncing && (phonebookModel.count === 0 || !isPhoneConnected)
+
+        Text {
+            text: "folder_off"
+            font.family: materialFontFamily
+            font.pixelSize: 64
+            color: Theme.secondaryText
+            Layout.alignment: Qt.AlignHCenter
+        }
+        Text {
+            text: isPhoneConnected ? "No contacts found" : "Contacts not available"
+            color: Theme.secondaryText
+            font.pointSize: 16
+            Layout.alignment: Qt.AlignHCenter
+        }
+        Text {
+            visible: !isPhoneConnected
+            text: "Connect a phone via Bluetooth to sync contacts."
+            color: Theme.secondaryText
+            font.pointSize: 12
+            Layout.alignment: Qt.AlignHCenter
+        }
+    }
 }
+

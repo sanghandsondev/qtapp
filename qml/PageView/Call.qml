@@ -6,10 +6,15 @@ import com.company.sound 1.0
 import "qrc:/qml/PageView/Call/" as CallPages
 
 Item {
+    id: callRoot
     width: parent.width
     height: parent.height
 
     property string currentPage: "dial" // "dial", "phonebook", "history"
+    property bool isPhoneConnected: false
+    property bool isSyncingContacts: false
+
+    signal notify(string message, string type)
 
     // Reset to main dial view when the page becomes visible again.
     onVisibleChanged: {
@@ -28,16 +33,28 @@ Item {
 
         switch (msgType) {
             case "pbap_session_end_noti":
-                // TODO
+                isPhoneConnected = false
+                isSyncingContacts = false
+                phoneBookPage.processMessage(msgType, serverData)
+                // historyPage.processMessage(msgType, serverData) // TODO: Forward to history page later
                 break
             case "pbap_phonebook_pull_start_noti":
-                // TODO
+                if (msgStatus) {
+                    isPhoneConnected = true
+                    isSyncingContacts = true
+                    phoneBookPage.processMessage(msgType, serverData)
+                }
                 break
             case "pbap_phonebook_pull_noti":
-                // TODO
+                if (msgStatus) {
+                    phoneBookPage.processMessage(msgType, serverData)
+                }
                 break
             case "pbap_phonebook_pull_end_noti":
-                // TODO
+                if (msgStatus) {
+                    isSyncingContacts = false
+                    phoneBookPage.processMessage(msgType, serverData)
+                }
                 break
             case "call_history_pull_start_noti":
                 // TODO
@@ -134,16 +151,24 @@ Item {
             CallPages.Dial {
                 anchors.fill: parent
                 visible: currentPage === "dial"
+                isPhoneConnected: callRoot.isPhoneConnected
+                onNotify: (message, type) => callRoot.notify(message, type)
             }
 
             CallPages.PhoneBook {
+                id: phoneBookPage
                 anchors.fill: parent
                 visible: currentPage === "phonebook"
+                isPhoneConnected: callRoot.isPhoneConnected
+                isSyncing: callRoot.isSyncingContacts
+                onNotify: (message, type) => callRoot.notify(message, type)
             }
 
             CallPages.History {
+                id: historyPage
                 anchors.fill: parent
                 visible: currentPage === "history"
+                onNotify: (message, type) => callRoot.notify(message, type)
             }
         }
     }

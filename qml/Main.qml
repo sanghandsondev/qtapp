@@ -124,6 +124,7 @@ Window {
             Components.Header {
                 id: header
                 currentTime: root.currentTime
+                isPhoneConnected: callPage.isPhoneConnected
                 // The properties fanSpeed and temperature will be updated
                 // by the handleMessageFromServer function.
             }
@@ -230,6 +231,7 @@ Window {
                             id: callPage
                             anchors.fill: parent
                             visible: currentPageId === "Call"
+                            onNotify: (message, type) => showNotification(message, type)
                         }
 
                         Pages.Settings {

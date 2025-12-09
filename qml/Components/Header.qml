@@ -12,6 +12,7 @@ Rectangle {
 
     property int temperature: 0
     property var currentTime
+    property bool isPhoneConnected: false
 
     // Function to process messages from the server
     function processServerMessage(message) {
@@ -107,7 +108,7 @@ Rectangle {
             text: "bluetooth"
             font.family: materialFontFamily
             font.pixelSize: 28
-            color: Theme.primaryText
+            color: isPhoneConnected ? Theme.blue : Theme.primaryText
             opacity: Theme.bluetoothEnabled ? 1.0 : 0.0 // Control opacity instead of visibility
             visible: opacity > 0 // Keep it invisible when fully transparent to prevent interaction
             Layout.alignment: Qt.AlignVCenter
