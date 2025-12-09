@@ -18,6 +18,42 @@ Item {
         }
     }
 
+    // Function to process messages from the server
+    function processServerMessage(message) {
+        var msgStatus = message.status === "success" ? true : false
+        var msgType = message.data.msg
+        var serverData = message.data.data
+
+        console.log("Call Page processing message:", msgType)
+
+        switch (msgType) {
+            case "pbap_session_end_noti":
+                // TODO
+                break
+            case "pbap_phonebook_pull_start_noti":
+                // TODO
+                break
+            case "pbap_phonebook_pull_noti":
+                // TODO
+                break
+            case "pbap_phonebook_pull_end_noti":
+                // TODO
+                break
+            case "call_history_pull_start_noti":
+                // TODO
+                break
+            case "call_history_pull_noti":
+                // TODO
+                break
+            case "call_history_pull_end_noti":
+                // TODO
+                break
+            default:
+                console.log("Call Page received unknown message type:", msgType)
+                break
+        }
+    }
+
     ColumnLayout {
         anchors.fill: parent
         spacing: 0

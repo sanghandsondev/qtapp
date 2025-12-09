@@ -12,7 +12,7 @@ wpctl set-default <node_id>
 1/ Khi nhận noti start pull thì hiển thị xoay tròn để đợi cùng text phụ gì đó
 khi end noti pull thì sẽ sắp xếp rồi ném danh sách vào listModel
 
-2/ 
+2/ Co ket noi phone bluetooth cho phep dong bo thi bluetooth icon chuyen xanh o Header
 
 10/ Mua bíp bíp về để làm chuông báo thức. 
 Giao diện giống đặt báo thức của Iphone nhưng có thể đơn giản hơn chút

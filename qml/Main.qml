@@ -69,6 +69,8 @@ Window {
                 case "Record":
                     recordPage.processServerMessage(message)
                     break;
+                case "Call":
+                    callPage.processServerMessage(message)
                 default:
                     console.warn("Unknown component in server message:", message.data.component)
                     break;
@@ -225,6 +227,7 @@ Window {
                         }
 
                         Pages.Call {
+                            id: callPage
                             anchors.fill: parent
                             visible: currentPageId === "Call"
                         }
