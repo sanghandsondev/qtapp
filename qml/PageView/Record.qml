@@ -241,11 +241,10 @@ Item {
         anchors.margins: 20
         spacing: 16
 
-        // --- Header ---
         Text {
-            text: "Record"
+            text: "Saved Recordings"
             color: Theme.primaryText
-            font.pointSize: 20
+            font.pointSize: 18
             font.bold: true
         }
 
@@ -253,105 +252,6 @@ Item {
             Layout.fillWidth: true
             Layout.preferredHeight: 1
             color: Theme.separator
-        }
-
-        // --- New Record Section ---
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 16
-            
-            // Record Button
-            Rectangle {
-                id: recordButton
-                Layout.preferredWidth: 48
-                Layout.preferredHeight: 48
-                Layout.minimumWidth: 48
-                Layout.minimumHeight: 48
-                radius: width / 2
-                color: "transparent" // Nền ngoài trong suốt
-                border.color: Theme.buttonBorder // Border màu mặc định
-                border.width: 2
-
-                Rectangle {
-                    id: innerShape
-                    anchors.centerIn: parent    
-                    color: "#ef4444" // Màu đỏ cho hình bên trong
-
-                    // Trạng thái khi không ghi âm: hình tròn lớn
-                    // Trạng thái khi ghi âm: hình vuông bo góc nhỏ hơn
-                    width: isRecording ? 24 : 36
-                    height: isRecording ? 24 : 36
-                    radius: isRecording ? 4 : 18 // 18 để thành hình tròn (36/2)
-
-                    // Hiệu ứng chuyển đổi mượt mà
-                    Behavior on width { NumberAnimation { duration: 200; easing.type: Easing.InOutQuad } }
-                    Behavior on height { NumberAnimation { duration: 200; easing.type: Easing.InOutQuad } }
-                    Behavior on radius { NumberAnimation { duration: 200; easing.type: Easing.InOutQuad } }
-                }
-
-                MouseArea {
-                    anchors.fill: parent
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: {
-                        SoundManager.playTouch()
-                        if (isRecording) {
-                            stopRecording()
-                        } else {
-                            startRecording()
-                        }
-                    }
-                }
-            }
-
-            // Timer Display
-            Text {
-                Layout.alignment: Qt.AlignVCenter
-                text: formatTime(recordTime) + " / 04:00"
-                color: isRecording ? Theme.primaryText : Theme.secondaryText
-                font.pointSize: 16
-                font.family: "monospace" // Use a monospaced font for stable width
-            }
-
-            // Spacer to push trash icon to the right
-            Item {
-                Layout.fillWidth: true
-            }
-
-            // Cancel/Trash Icon - visible only when recording
-            Text {
-                Layout.alignment: Qt.AlignVCenter
-                Layout.rightMargin: 10 // Thêm margin bên phải cho icon
-                text: "delete" // Material Symbols icon name
-                font.family: materialFontFamily
-                font.pixelSize: 40
-                color: Theme.secondaryText
-                opacity: isRecording ? 1.0 : 0.0 // Use opacity for smooth transition
-                visible: opacity > 0 // Hide when not recording to prevent interaction
-
-                Behavior on opacity { NumberAnimation { duration: 50 } }
-
-                MouseArea {
-                    anchors.fill: parent
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: {
-                        SoundManager.playTouch()
-                        cancelRecording()
-                    }
-                }
-            }
-        }
-
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 1
-            color: Theme.separator
-        }
-
-        // --- Recordings List Header ---
-        Text {
-            text: "Saved Recordings"
-            color: Theme.secondaryText
-            font.pointSize: 14
         }
 
         // --- Recordings List (Scrollable) ---
@@ -382,6 +282,36 @@ Item {
                     }
                     ListElement {
                         recordId: 1234566
+                        name: "A HandSome Man's Recording Example Anathor Level 2"
+                        duration: 48 // 0:48
+                        filepath: "/path/to/recording2.mp3"
+                    }
+                    ListElement {
+                        recordId: 1234566
+                        name: "A HandSome Man's Recording Example Anathor Level 2"
+                        duration: 48 // 0:48
+                        filepath: "/path/to/recording2.mp3"
+                    }
+                    ListElement {
+                        recordId: 123
+                        name: "A HandSome Man's Recording Example Anathor Level 2"
+                        duration: 48 // 0:48
+                        filepath: "/path/to/recording2.mp3"
+                    }
+                    ListElement {
+                        recordId: 12334566
+                        name: "A HandSome Man's Recording Example Anathor Level 2"
+                        duration: 48 // 0:48
+                        filepath: "/path/to/recording2.mp3"
+                    }
+                    ListElement {
+                        recordId: 12346566
+                        name: "A HandSome Man's Recording Example Anathor Level 2"
+                        duration: 48 // 0:48
+                        filepath: "/path/to/recording2.mp3"
+                    }
+                    ListElement {
+                        recordId: 123465663333
                         name: "A HandSome Man's Recording Example Anathor Level 2"
                         duration: 48 // 0:48
                         filepath: "/path/to/recording2.mp3"
@@ -655,6 +585,114 @@ Item {
                                         Layout.alignment: Qt.AlignVCenter
                                 }
                             }
+                        }
+                    }
+                }
+            }
+        }
+
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 1
+            color: Theme.separator
+        }
+
+        // --- New Record Section ---
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.alignment: Qt.AlignVCenter
+            spacing: 10
+
+            // Left container for Timer
+            Item {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 48 // Match button height
+
+                // Timer Display
+                Text {
+                    anchors.left: parent.left
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.leftMargin: 10
+                    text: formatTime(recordTime) + " / 04:00"
+                    color: isRecording ? Theme.primaryText : Theme.secondaryText
+                    font.pointSize: 16
+                    font.family: "monospace"
+                    opacity: isRecording ? 1.0 : 0.0
+                    visible: opacity > 0
+                    Behavior on opacity { NumberAnimation { duration: 50 } }
+                }
+            }
+
+            // Center container for Record Button
+            Item {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 48
+
+                Rectangle {
+                    id: recordButton
+                    anchors.centerIn: parent
+                    width: 48
+                    height: 48
+                    radius: width / 2
+                    color: "transparent"
+                    border.color: Theme.buttonBorder
+                    border.width: 2
+
+                    Rectangle {
+                        id: innerShape
+                        anchors.centerIn: parent
+                        color: "#ef4444"
+
+                        width: isRecording ? 24 : 36
+                        height: isRecording ? 24 : 36
+                        radius: isRecording ? 4 : 18
+
+                        Behavior on width { NumberAnimation { duration: 300; easing.type: Easing.InOutQuad } }
+                        Behavior on height { NumberAnimation { duration: 300; easing.type: Easing.InOutQuad } }
+                        Behavior on radius { NumberAnimation { duration: 300; easing.type: Easing.InOutQuad } }
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        anchors.margins: -10 // Larger click area
+                        onClicked: {
+                            SoundManager.playTouch()
+                            if (isRecording) {
+                                stopRecording()
+                            } else {
+                                startRecording()
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Right container for Trash Icon
+            Item {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 48
+
+                // Cancel/Trash Icon
+                Text {
+                    anchors.right: parent.right
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.rightMargin: 10
+                    text: "delete"
+                    font.family: materialFontFamily
+                    font.pixelSize: 36
+                    color: Theme.secondaryText
+                    opacity: isRecording ? 1.0 : 0.0
+                    visible: opacity > 0
+                    Behavior on opacity { NumberAnimation { duration: 50 } }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        anchors.margins: -10 // Larger click area
+                        onClicked: {
+                            SoundManager.playTouch()
+                            cancelRecording()
                         }
                     }
                 }

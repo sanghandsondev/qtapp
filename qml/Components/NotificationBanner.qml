@@ -16,57 +16,6 @@ Rectangle {
     property string notificationType: "info" // "success", "warning", "error"
     property int topMargin: 0
 
-    // Timer để tự động ẩn
-    Timer {
-        id: hideTimer
-        interval: 5000 // 5 giây
-        repeat: false
-        onTriggered: hide()
-    }
-
-    // Animation để hiển thị và ẩn
-    Behavior on x {
-        NumberAnimation { duration: 1000; easing.type: Easing.OutCubic }
-    }
-    Behavior on opacity {
-        NumberAnimation { duration: 500 }
-    }
-
-    // Cập nhật màu sắc dựa trên loại thông báo
-    onNotificationTypeChanged: {
-        switch (notificationType) {
-            case "success":
-                banner.border.color = "#4ade80"; // Lighter Green
-                break;
-            case "warning":
-                banner.border.color = "#fb923c"; // Lighter Orange
-                break;
-            case "error":
-                banner.border.color = "#f87171"; // Lighter Red
-                break;
-            default:
-                banner.border.color = "#60a5fa"; // Lighter Blue
-                break;
-        }
-    }
-
-    Text {
-        id: messageText
-        anchors.centerIn: parent
-        width: parent.width - 24 // Thêm padding
-        text: banner.notificationText
-        color: Theme.primaryText
-        font.pointSize: 12 // Giảm kích thước font
-        elide: Text.ElideRight // Thêm dấu "..." cho văn bản dài
-        horizontalAlignment: Text.AlignHCenter // Căn giữa văn bản ngắn
-    }
-
-    MouseArea {
-        anchors.fill: parent
-        cursorShape: Qt.PointingHandCursor
-        onClicked: hide()
-    }
-
     // Hàm để hiển thị banner
     function show(text, type) {
         hideTimer.stop();
@@ -89,5 +38,57 @@ Rectangle {
         // Trượt ra ngoài màn hình bên phải
         banner.x = parent.width;
         banner.opacity = 0;
+    }
+
+    // Cập nhật màu sắc dựa trên loại thông báo
+    onNotificationTypeChanged: {
+        switch (notificationType) {
+            case "success":
+                banner.border.color = "#4ade80"; // Lighter Green
+                break;
+            case "warning":
+                banner.border.color = "#fb923c"; // Lighter Orange
+                break;
+            case "error":
+                banner.border.color = "#f87171"; // Lighter Red
+                break;
+            default:
+                banner.border.color = "#60a5fa"; // Lighter Blue
+                break;
+        }
+    }
+
+    // Timer để tự động ẩn
+    Timer {
+        id: hideTimer
+        interval: 5000 // 5 giây
+        repeat: false
+        onTriggered: hide()
+    }
+
+    // Animation để hiển thị và ẩn
+    Behavior on x {
+        NumberAnimation { duration: 1000; easing.type: Easing.OutCubic }
+    }
+
+    Behavior on opacity {
+        NumberAnimation { duration: 500 }
+    }
+
+    Text {
+        id: messageText
+        anchors.centerIn: parent
+        width: parent.width - 24 // Thêm padding
+        text: banner.notificationText
+        color: Theme.primaryText
+        font.pointSize: 12 // Giảm kích thước font
+        elide: Text.ElideRight // Thêm dấu "..." cho văn bản dài
+        horizontalAlignment: Text.AlignHCenter // Căn giữa văn bản ngắn
+    }
+
+    MouseArea {
+        anchors.fill: parent
+        cursorShape: Qt.PointingHandCursor
+        onClicked: hide()
     }
 }

@@ -11,6 +11,7 @@ Item {
     property bool isSyncing: false
 
     property var contactList: []
+    property var seenNumbers: new Set()
     
     signal notify(string message, string type)
 
@@ -41,18 +42,20 @@ Item {
             case "pbap_phonebook_pull_start_noti":
                 console.log("PhoneBook: Starting contact sync.")
                 contactList = []
+                seenNumbers.clear()
                 phonebookModel.clear()
                 break
             case "pbap_phonebook_pull_noti":
-                // Add contact to cache
-                contactList.push({
-                                    name: data.contact_name,
-                                    number: data.contact_number
-                                })
+                if (data.contact_number && !seenNumbers.has(data.contact_number)) {
+                    contactList.push({
+                                        name: data.contact_name,
+                                        number: data.contact_number
+                                    })
+                    seenNumbers.add(data.contact_number)
+                }
                 break
             case "pbap_phonebook_pull_end_noti":
                 console.log("PhoneBook: Contact sync finished. Sorting and displaying.")
-                // Sort the cache alphabetically by name
                 contactList.sort(function(a, b) {
                     return a.name.localeCompare(b.name, 'vi')
                 })
@@ -68,6 +71,7 @@ Item {
             case "pbap_session_end_noti":
                 console.log("PhoneBook: PBAP session ended. Clearing data.")
                 contactList = []
+                seenNumbers.clear()
                 phonebookModel.clear()
                 break
             }
