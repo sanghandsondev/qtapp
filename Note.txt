@@ -7,9 +7,166 @@ sudo apt install pipewire \
 wpctl status
 wpctl set-default <node_id>
 
+///////////////////////////////////////////////////////////////////////////////////
+Phương pháp 1: Sử dụng VNC Server cho Framebuffer (Khuyến nghị)
+Đây là phương pháp trực tiếp và hiệu quả nhất. Chúng ta sẽ sử dụng một VNC server đặc biệt có khả năng đọc trực tiếp từ framebuffer (lớp DispmanX) của Raspberry Pi. dispmanx_vnc là một lựa chọn tuyệt vời cho việc này.
+
+1. SSH vào Raspberry Pi của bạn ở nhà. (Bạn có thể sử dụng các phương pháp như Port Forwarding + DDNS hoặc ngrok mà chúng ta đã thảo luận trước đó).
+2. Cài đặt và biên dịch dispmanx_vnc trên Pi 4
+sudo apt-get update
+sudo apt-get install -y build-essential rpi-update
+
+# Cài đặt các gói cần thiết để biên dịch
+sudo apt-get update
+sudo apt-get install -y build-essential rpi-update
+
+# Tải mã nguồn
+git clone https://github.com/ssv/dispmanx_vnc.git
+cd dispmanx_vnc
+
+# Biên dịch
+make
+
+3. Chạy ứng dụng Qt của bạn
+4. Chạy dispmanx_vnc server
+# Chạy VNC server trong nền (background)
+sudo ./dispmanx_vncserver &
+
+Server này sẽ bắt đầu chạy và lắng nghe kết nối VNC trên cổng mặc định 5900.
+
+5. connect
+Sử dụng một VNC client bất kỳ (như RealVNC Viewer, TightVNC Viewer).
+Kết nối đến địa chỉ IP public (hoặc tên miền DDNS) của nhà bạn, với cổng đã được port forward tới cổng 5900 của Pi.
+Ví dụ: my-home-pi.ddns.net:5900
+
+Mở MobaXterm và khởi động một phiên (session) mới bằng cách nhấn vào nút "Session" ở góc trên cùng bên trái.
+
+Trong cửa sổ "Session settings", chọn loại session là "VNC".
+
+Điền thông tin kết nối:
+
+Remote host: Nhập địa chỉ IP public hoặc tên miền DDNS của mạng nhà bạn (ví dụ: my-home-pi.ddns.net như trong ghi chú của bạn).
+Port: Để trống nếu bạn đã port forward cổng 5900 bên ngoài vào cổng 5900 của Pi. Nếu bạn forward một cổng khác (ví dụ: 5901 -> 5900), hãy điền số cổng bên ngoài đó vào đây.
+Nhấn "OK".
 
 ///////////////////////////////////////////////////////////////////////////////////
+CÁC BƯỚC ĐỂ SSH PORT FORWARDING 
+1/ Đăng nhập vào Router: Mở trình duyệt và truy cập vào trang quản trị của router (thường là 192.168.1.1 hoặc 192.168.0.1).
 
+2/ Tìm mục Port Forwarding: Tìm đến mục có tên là Port Forwarding, Virtual Server, NAT Forwarding hoặc tương tự.
+
+3/ Tạo quy tắc mới:
+External Port (Cổng ngoài): Chọn một cổng bất kỳ, ví dụ 2222 (không nên dùng cổng 22 mặc định để tăng bảo mật).
+Internal Port (Cổng trong): 22 (đây là cổng SSH mặc định của Pi).
+Internal IP Address (Địa chỉ IP trong): Địa chỉ IP tĩnh của Raspberry Pi (ví dụ: 192.168.1.50).
+Protocol (Giao thức): TCP.
+
+4/ Tìm địa chỉ IP Public của nhà bạn:
+
+Khi đang ở nhà, mở trình duyệt và tìm kiếm "what is my IP". Google sẽ cho bạn biết địa chỉ IP public của mạng nhà bạn. Ghi lại địa chỉ này.
+
+5/ Connect 
+ssh <tên_user_pi>@<ĐỊA_CHỈ_IP_PUBLIC_NHÀ_BẠN> -p <CỔNG_NGOÀI>
+ssh pi@203.162.100.200 -p 2222
+
+>> LƯU Ý: Hầu hết các nhà mạng cung cấp địa chỉ IP public động. 
+>> Để giải quyết, bạn nên dùng Dynamic DNS (DDNS).
+>> Dynamic DNS (DDNS): Các dịch vụ như No-IP hoặc DuckDNS sẽ cung cấp cho bạn một 
+tên miền miễn phí (ví dụ: my-home-pi.ddns.net). Bạn cài một client trên Pi hoặc 
+router để nó tự động cập nhật IP public mỗi khi thay đổi.
+
+>> Sau khi cài đặt DDNS, bạn chỉ cần SSH tới tên miền đó thay vì IP:
+>> ssh pi@my-home-pi.ddns.net -p 2222
+
+>> Bạn đăng ký một tài khoản miễn phí tại một nhà cung cấp DDNS như No-IP hoặc DuckDNS.
+Bạn chọn một tên miền dễ nhớ và không bao giờ thay đổi, ví dụ: my-home-pi.ddns.net.
+
+>> Bạn cài một chương trình nhỏ gọi là "client" ngay trên Raspberry Pi của bạn (hoặc đôi khi trên chính router của bạn).
+Nó sẽ chạy ngầm và liên tục kiểm tra: "Địa chỉ IP public hiện tại của nhà mình là gì?"
+Nó so sánh địa chỉ IP này với địa chỉ mà dịch vụ DDNS đang lưu giữ cho tên miền my-home-pi.ddns.net.
+Nếu phát hiện địa chỉ IP đã thay đổi, client sẽ ngay lập tức gửi một thông báo cập nhật đến máy chủ DDNS: "Này No-IP, địa chỉ mới của my-home-pi.ddns.net bây giờ là 118.70.50.99 nhé!"
+//////////////////////////////////////////////////////////////////////////////////
+Chào bạn, tôi sẽ hướng dẫn chi tiết cách cài đặt "chương trình client" này trên Raspberry Pi của bạn. Chúng ta sẽ sử dụng dịch vụ **DuckDNS** vì nó miễn phí, đơn giản và rất phổ biến cho Raspberry Pi.
+
+Quá trình này gồm 3 bước chính: tạo tài khoản DuckDNS, tạo script cập nhật trên Pi, và tự động hóa việc chạy script đó.
+
+### Bước 1: Tạo tài khoản và tên miền trên DuckDNS
+
+1.  **Truy cập trang web:** Mở trình duyệt và đi đến [www.duckdns.org](https://www.duckdns.org).
+2.  **Đăng nhập:** Sử dụng một tài khoản có sẵn (Google, GitHub,...) để đăng nhập.
+3.  **Tạo tên miền (subdomain):**
+    *   Trong ô `subdomain`, gõ tên miền bạn muốn, ví dụ: `my-home-pi`.
+    *   Nhấn nút **"add domain"**.
+    *   Nếu thành công, bạn sẽ thấy tên miền đầy đủ của mình (ví dụ: `my-home-pi.duckdns.org`) được tạo ra.
+
+4.  **Lấy thông tin quan trọng:**
+    *   **Tên miền của bạn:** `my-home-pi.duckdns.org`
+    *   **Token của bạn:** Một chuỗi ký tự dài và ngẫu nhiên, nằm ngay cạnh tên miền của bạn.
+
+    Hãy sao chép và lưu lại **tên miền** và **token** này, chúng ta sẽ cần nó ở bước tiếp theo.
+
+### Bước 2: Tạo Script cập nhật IP trên Raspberry Pi
+
+Bây giờ, chúng ta sẽ tạo một file script nhỏ trên Pi. Script này sẽ tự động lấy địa chỉ IP public hiện tại của bạn và gửi nó cho DuckDNS để cập nhật.
+
+1.  **SSH vào Raspberry Pi của bạn.**
+
+2.  **Tạo một thư mục cho DuckDNS:**
+    ```bash
+    mkdir ~/duckdns
+    cd ~/duckdns
+    ```
+
+3.  **Tạo file script:**
+    ```bash
+    nano duck.sh
+    ```
+
+4.  **Dán nội dung sau vào file `duck.sh`:**
+    Hãy thay thế `your_domain` bằng tên miền của bạn (chỉ phần đầu, ví dụ: `my-home-pi`) và `your_token` bằng token bạn đã lưu ở Bước 1.
+
+    ```bash
+    #!/bin/bash
+    echo url="https://www.duckdns.org/update?domains=your_domain&token=your_token&ip=" | curl -k -o ~/duckdns/duck.log -K -
+    ```
+
+    *   **Ví dụ:** Nếu tên miền của bạn là `my-home-pi` và token là `abc-123-def-456`, dòng lệnh sẽ là:
+        ```bash
+        echo url="https://www.duckdns.org/update?domains=my-home-pi&token=abc-123-def-456&ip=" | curl -k -o ~/duckdns/duck.log -K -
+        ```
+
+5.  **Lưu và thoát:** Nhấn `Ctrl + X`, sau đó `Y`, và `Enter`.
+
+6.  **Cấp quyền thực thi cho script:**
+    ```bash
+    chmod 700 duck.sh
+    ```
+
+### Bước 3: Tự động chạy Script bằng Cron
+
+Để Pi tự động cập nhật IP mỗi 5 phút, chúng ta sẽ dùng `cron` (bộ lập lịch của Linux).
+
+1.  **Mở trình soạn thảo cron:**
+    ```bash
+    crontab -e
+    ```
+    Nếu đây là lần đầu bạn dùng, nó có thể hỏi bạn chọn trình soạn thảo, hãy chọn `nano` (thường là lựa chọn số 1).
+
+2.  **Thêm một dòng mới vào cuối file:**
+    Dòng này yêu cầu hệ thống chạy script `duck.sh` của bạn mỗi 5 phút.
+
+    ```
+    */5 * * * * ~/duckdns/duck.sh
+    ```
+
+3.  **Lưu và thoát:** Nhấn `Ctrl + X`, sau đó `Y`, và `Enter`.
+
+Hệ thống sẽ báo `crontab: installing new crontab`.
+
+**Hoàn tất!** Từ bây giờ, Raspberry Pi của bạn sẽ tự động cập nhật địa chỉ IP public cho tên miền DuckDNS của bạn mỗi 5 phút. Bạn có thể yên tâm SSH vào Pi bằng tên miền (`ssh pi@my-home-pi.duckdns.org -p 2222`) mà không cần lo lắng về việc IP thay đổi nữa.
+
+
+/////////////////////////////////////////////////////////////////////////////////
 
 3/ Dec 09 21:08:57 raspberrypi hardwaremanager[12261]: [HardwareManager][12261][21:08:57.863][BluetoothWorker.cpp:108][dispatchMessage] [WARN]BluetoothWorker: Received unhandled D-Bus message. Path: /, Interface: org.ofono.Manager, Member: ModemAdded
 
