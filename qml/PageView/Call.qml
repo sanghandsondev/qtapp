@@ -14,19 +14,25 @@ Item {
     property bool isPhoneConnected: false
     property bool isSyncingContacts: false
     property bool isSyncingHistory: false
+
     property bool isInCall: dialPage.isInCall
     property alias callName: dialPage.callName
     property alias callNumber: dialPage.callNumber
     property alias callStatusText: dialPage.callStatusText
 
+    property var wsClient
+    property bool isCallProgress: false
+
     signal notify(string message, string type)
     signal callStateUpdated(string name, string number, string status)
-    signal callEnded()
 
     // Reset to main dial view when the page becomes visible again.
     onVisibleChanged: {
         if (visible) {
             currentPage = "dial"
+        } else {
+            // Clear the dialed number when leaving the call page
+            dialPage.dialedNumber = ""
         }
     }
 
@@ -100,10 +106,19 @@ Item {
                 if (msgStatus) {
                     isInCall = false
                     dialPage.resetCallState()
-                    // Emit signal for the main view
-                    callEnded()
-                    // notify("Call ended with " + serverData.call_name, "info")
                 }
+                break
+            case "dial_call_noti":
+                if (msgStatus) {
+                    dialPage.dialedNumber = ""
+                }
+                isCallProgress = false
+                break
+            case "answer_call_noti":
+                isCallProgress = false
+                break
+            case "hangup_call_noti":
+                isCallProgress = false
                 break
             default:
                 console.log("Call Page received unknown message type:", msgType)
@@ -191,16 +206,20 @@ Item {
             CallPages.Dial {
                 id: dialPage
                 anchors.fill: parent
+                wsClient: callRoot.wsClient         // Pass WebSocket instance
                 visible: currentPage === "dial"
                 isPhoneConnected: callRoot.isPhoneConnected
+                isCallProgress: callRoot.isCallProgress
                 onNotify: (message, type) => callRoot.notify(message, type)
             }
 
             CallPages.PhoneBook {
                 id: phoneBookPage
                 anchors.fill: parent
+                wsClient: callRoot.wsClient         // Pass WebSocket instance
                 visible: currentPage === "phonebook"
                 isPhoneConnected: callRoot.isPhoneConnected
+                isCallProgress: callRoot.isCallProgress
                 isSyncing: callRoot.isSyncingContacts
                 onNotify: (message, type) => callRoot.notify(message, type)
             }

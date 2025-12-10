@@ -12,6 +12,9 @@ Item {
 
     property var contactList: []
     property var seenNumbers: new Set()
+
+    property var wsClient
+    property bool isCallProgress: false
     
     signal notify(string message, string type)
 
@@ -254,19 +257,22 @@ Item {
                                 id: callMouseArea
                                 anchors.fill: parent
                                 cursorShape: Qt.PointingHandCursor
+                                enabled: !phoneBookRoot.isCallProgress
                                 onClicked: {
                                     SoundManager.playTouch()
                                     if (!phoneBookRoot.isPhoneConnected) {
                                         phoneBookRoot.notify("Please connect bluetooth and Sync your phone to make calls.", "warning")
                                         return
                                     }
-                                    console.log("Calling " + model.name + " at " + model.number)
-                                    // TODO: Implement call functionality
+                                    if (wsClient && model.number && wsClient.sendMessage({command: "dial_call", data: {number: model.number}})) {
+                                        console.log("Calling " + model.name + " at " + model.number)
+                                        isCallProgress = true
                                     }
                                 }
                             }
                         }
-
+                    }
+                    
                     Rectangle {
                         visible: index < phonebookModel.count - 1
                         anchors.bottom: parent.bottom

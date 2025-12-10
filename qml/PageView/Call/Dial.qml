@@ -17,6 +17,9 @@ Item {
     property string callName: ""
     property string callNumber: ""
 
+    property var wsClient
+    property bool isCallProgress: false
+
     signal notify(string message, string type)
 
     // Function to handle button presses
@@ -64,6 +67,7 @@ Item {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 80
                     Layout.alignment: Qt.AlignVCenter
+                    Layout.topMargin: 40
 
                     Text {
                         id: numberDisplay
@@ -135,7 +139,7 @@ Item {
                         MouseArea {
                             id: callMouseArea
                             anchors.fill: parent
-                            enabled: dialRoot.dialedNumber.length > 0
+                            enabled: dialRoot.dialedNumber.length > 0 && !dialRoot.isCallProgress
                             cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                             onClicked: {
                                 SoundManager.playTouch()
@@ -143,8 +147,10 @@ Item {
                                     dialRoot.notify("Please connect bluetooth and Sync your phone to make calls.", "warning")
                                     return
                                 }
-                                // TODO: Handle making a call
-                                console.log("Calling " + dialRoot.dialedNumber)
+                                if (wsClient && dialRoot.dialedNumber && wsClient.sendMessage({command: "dial_call", data: {number: dialRoot.dialedNumber}})) {
+                                    console.log("Calling at phonenumber: " + dialRoot.dialedNumber)
+                                    isCallProgress = true
+                                }
                             }
                         }
                     }
@@ -181,10 +187,10 @@ Item {
             GridLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                Layout.rightMargin: 20
+                Layout.rightMargin: 40
                 Layout.minimumWidth: (80 * 3) + (30 * 2) // 3 buttons * 80px + 2 spacings * 30px
                 columns: 3
-                columnSpacing: 30
+                columnSpacing: 20
                 rowSpacing: 20
 
                 Repeater {
@@ -224,7 +230,7 @@ Item {
                             Text {
                                 text: model.main
                                 font.pointSize: 26
-                                font.bold: true
+                                // font.bold: true
                                 color: Theme.primaryText
                                 Layout.alignment: Qt.AlignHCenter
                             }
@@ -349,10 +355,17 @@ Item {
                                 id: endCallMouseArea
                                 anchors.fill: parent
                                 cursorShape: Qt.PointingHandCursor
+                                enabled: !dialRoot.isCallProgress
                                 onClicked: {
                                     SoundManager.playTouch()
-                                    // TODO: Implement hangup call
-                                    console.log("Hanging up call...")
+                                    if (!dialRoot.isPhoneConnected) {
+                                        dialRoot.notify("Please connect bluetooth and Sync your phone to end the call.", "warning")
+                                        return
+                                    }
+                                    if (wsClient && wsClient.sendMessage({command: "hangup_call", data: {}})) {
+                                        console.log("Hangup call " + callName + " with phonenumber " + callNumber)
+                                        isCallProgress = true
+                                    }
                                 }
                             }
                         }
@@ -379,11 +392,18 @@ Item {
                             MouseArea {
                                 id: acceptCallMouseArea
                                 anchors.fill: parent
+                                enabled: !dialRoot.isCallProgress
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: {
                                     SoundManager.playTouch()
-                                    // TODO: Implement answer call
-                                    console.log("Answering call...")
+                                    if (!dialRoot.isPhoneConnected) {
+                                        dialRoot.notify("Please connect bluetooth and Sync your phone to answer the call.", "warning")
+                                        return
+                                    }
+                                    if (wsClient  && wsClient.sendMessage({command: "answer_call", data: {}})) {
+                                        console.log("Answer call " + callName + " with phonenumber " + callNumber)
+                                        isCallProgress = true
+                                    }
                                 }
                             }
                         }

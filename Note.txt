@@ -9,8 +9,7 @@ wpctl set-default <node_id>
 
 
 ///////////////////////////////////////////////////////////////////////////////////
-1/ Phím số hơi béo
-2/ Text khi gõ phím số sát bên trên quá
+
 
 3/ Dec 09 21:08:57 raspberrypi hardwaremanager[12261]: [HardwareManager][12261][21:08:57.863][BluetoothWorker.cpp:108][dispatchMessage] [WARN]BluetoothWorker: Received unhandled D-Bus message. Path: /, Interface: org.ofono.Manager, Member: ModemAdded
 
@@ -110,11 +109,6 @@ Type=signal  Endian=l  Flags=1  Version=1 Cookie=1196  Timestamp="Tue 2025-12-09
           };
   };
 
-
-
-
-
-4/ Tách ofonoDBus ra một class riêng, tách khỏi bluez 
 
 
 5/ Conflic nang profile giua blueZ va ofono ve A2DP gi do -> ko connect dc loa 

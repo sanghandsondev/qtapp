@@ -4,7 +4,35 @@ import com.company.style 1.0
 import com.company.sound 1.0
 import com.company.utils 1.0
 
+
 Rectangle {
+
+    property string callName: ""
+    property string callNumber: ""
+    property string callStatus: ""
+
+    property var wsClient
+    property bool isCallProgress: false
+
+    signal accepted()
+    signal rejected()
+    signal bannerClicked()
+
+    // --- Functions ---
+    // These functions are no longer needed for visibility but can be kept for updating data if needed.
+    function show(name, number, status) {
+        bannerRoot.callName = name
+        bannerRoot.callNumber = number
+        bannerRoot.callStatus = status
+        bannerRoot.visible = true
+    }
+
+    function hide() {
+        bannerRoot.visible = false
+    }
+
+    // --- Banner UI ---
+
     id: bannerRoot
     width: 480
     height: 100
@@ -44,27 +72,6 @@ Rectangle {
             NumberAnimation { properties: "opacity"; duration: 300 }
         }
     ]
-
-    property string callName: ""
-    property string callNumber: ""
-    property string callStatus: ""
-
-    signal accepted()
-    signal rejected()
-    signal bannerClicked()
-
-    // --- Functions ---
-    // These functions are no longer needed for visibility but can be kept for updating data if needed.
-    function show(name, number, status) {
-        bannerRoot.callName = name
-        bannerRoot.callNumber = number
-        bannerRoot.callStatus = status
-        bannerRoot.visible = true
-    }
-
-    function hide() {
-        bannerRoot.visible = false
-    }
 
     // --- Main Content ---
     MouseArea {
@@ -135,6 +142,7 @@ Rectangle {
                 MouseArea {
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
+                    enabled: !bannerRoot.isCallProgress
                     onClicked: {
                         SoundManager.playTouch()
                         bannerRoot.rejected()
@@ -163,6 +171,7 @@ Rectangle {
                 MouseArea {
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
+                    enabled: !bannerRoot.isCallProgress
                     onClicked: {
                         SoundManager.playTouch()
                         bannerRoot.accepted()

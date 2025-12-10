@@ -606,7 +606,7 @@ Item {
             // Left container for Timer
             Item {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 48 // Match button height
+                Layout.preferredHeight: 54 // Match button height
 
                 // Timer Display
                 Text {
@@ -626,13 +626,13 @@ Item {
             // Center container for Record Button
             Item {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 48
+                Layout.preferredHeight: 54
 
                 Rectangle {
                     id: recordButton
                     anchors.centerIn: parent
-                    width: 48
-                    height: 48
+                    width: 54
+                    height: 54
                     radius: width / 2
                     color: "transparent"
                     border.color: Theme.buttonBorder
@@ -643,9 +643,9 @@ Item {
                         anchors.centerIn: parent
                         color: "#ef4444"
 
-                        width: isRecording ? 24 : 36
-                        height: isRecording ? 24 : 36
-                        radius: isRecording ? 4 : 18
+                        width: isRecording ? 26 : 42
+                        height: isRecording ? 26 : 42
+                        radius: isRecording ? 4 : 21
 
                         Behavior on width { NumberAnimation { duration: 300; easing.type: Easing.InOutQuad } }
                         Behavior on height { NumberAnimation { duration: 300; easing.type: Easing.InOutQuad } }
@@ -671,7 +671,7 @@ Item {
             // Right container for Trash Icon
             Item {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 48
+                Layout.preferredHeight: 54
 
                 // Cancel/Trash Icon
                 Text {

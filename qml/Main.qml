@@ -20,6 +20,8 @@ Window {
     property string currentPageId: "Home"
     property var currentTime: new Date()
 
+    property bool isCallProgress: false        // global flag to indicate if a call operation is in progress (Dialing, Answering, Rejecting)
+
     // Global timer to update the current time for all components (e.g., Header, ScreenSaver)
     Timer {
         interval: 1000
@@ -229,15 +231,14 @@ Window {
                             id: callPage
                             anchors.fill: parent
                             visible: currentPageId === "Call"
+                            wsClient: wsClient          // Pass the wsClient instance
+                            isCallProgress: root.isCallProgress
                             onNotify: (message, type) => showNotification(message, type)
                             onCallStateUpdated: (name, number, status) => {
                                 // Just update the banner's data. Visibility is handled by bindings.
                                 callBanner.callName = name
                                 callBanner.callNumber = number
                                 callBanner.callStatus = status
-                            }
-                            onCallEnded: {
-                                // No longer need to explicitly hide banner. The binding on isInCall handles it.
                             }
                         }
 
@@ -274,19 +275,32 @@ Window {
                             callName: callPage.callName
                             callNumber: callPage.callNumber
                             callStatus: callPage.callStatusText
-                            // The banner is visible only when a call is active AND we are not on the Call page.
+                            wsClient: wsClient          // Pass the wsClient instance
                             visible: callPage.isInCall && currentPageId !== "Call"
+                            isCallProgress: root.isCallProgress
 
                             onBannerClicked: {
                                 currentPageId = "Call"
                             }
                             onAccepted: {
-                                // TODO: Send accept call command via WebSocket
-                                console.log("Call accepted via banner")
+                                if (!callPage.isPhoneConnected) {
+                                    showNotification("Please connect bluetooth and Sync your phone to answer the call.", "warning")
+                                    return
+                                }
+                                if (wsClient && wsClient.sendMessage({command: "answer_call", data : {}})) {
+                                    isCallProgress = true
+                                    console.log("Sent answer call command via banner")
+                                }
                             }
                             onRejected: {
-                                // TODO: Send reject call command via WebSocket
-                                console.log("Call rejected via banner")
+                                if (!callPage.isPhoneConnected) {
+                                    showNotification("Please connect bluetooth and Sync your phone to end the call.", "warning")
+                                    return
+                                }
+                                if (wsClient && wsClient.sendMessage({command: "hangup_call", data : {}})) {
+                                    isCallProgress = true
+                                    console.log("Sent reject call command via banner")
+                                }
                             }
                         }
 
